@@ -1,0 +1,3 @@
+﻿--------- beginning of main
+10-25 11:27:42.067  8628  8628 D Hava    : Tıklandı: Ankara
+10-25 11:27:43.196  8628  8628 D Hava    : Tıklandı: Bursa

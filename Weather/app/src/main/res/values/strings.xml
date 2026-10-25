@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">Hava</string>
     <string name="greeting">Merhaba Kamp!</string>
+    <string name="region_subtitle">%1$s Bölgesi</string>
 </resources>
