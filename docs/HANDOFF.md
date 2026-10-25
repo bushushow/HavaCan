@@ -55,10 +55,10 @@ cd /c/Users/bsroz/turkcell_camp/Weather && JAVA_HOME="/c/Program Files/Android/A
 | Ana ekran: Normal ve Koşucu Modu | Bitti, push edildi | Animasyonlu ada, HavaCan, saatlik tahmin, koşu uygunluk penceresi |
 | Şehir seçimi: 81 il, 973 ilçe, ülke | Bitti, push edildi | Kaynaklar `docs/data-sources.md` |
 | Planlarım, Yeni plan, Plan B, takvim, bildirim | Bitti, push edildi | |
-| Dolabım (Salla Kombin) | Bitti, **yerel commit `dd48cb7`, push edilmedi** | Galeri/kamera, Room, cihazda renk bulma, sallama ve butonla kombin, eksik kategori uyarısı |
-| Koşu Planla | **Kodlandı, commit edilmedi** | Ayrıntılar aşağıda |
+| Dolabım (Salla Kombin) | Bitti, push edildi (`dd48cb7`) | Galeri/kamera, Room, cihazda renk bulma, sallama ve butonla kombin, eksik kategori uyarısı |
+| Koşu Planla | Kodlandı, push edildi (`cd538ee`); son tur cihazda görülmedi | Ayrıntılar aşağıda |
 
-### Koşu Planla (son çalışma, commit edilmemiş)
+### Koşu Planla (son çalışma)
 
 - Akış: Ana ekran → Koşucu Modu → "Koşuyu planla" → Koşu Planla → "Koşumu planla" → Planlarım. Planlarım'da koşu kartına dokununca düzenleme modunda açılır.
 - Dosyalar: `ui/run/RunPlannerScreen.kt`, `RunPlannerViewModel.kt`, `RunPlannerRoute.kt`, `RunScene.kt` (Canvas park sahnesi + koşan HavaCan + konfeti), `WheelTimePicker.kt` (kaydırmalı tekerlekler), `domain/running/RunSlotPlanner.kt`; `model/Plan.kt` içine `run: RunDetails?` ve `reminderMinutes: Long?` eklendi.
@@ -75,7 +75,7 @@ cd /c/Users/bsroz/turkcell_camp/Weather && JAVA_HOME="/c/Program Files/Android/A
 
 ## 6. Açık işler ve bilinen eksikler
 
-- **Commit/push**: Koşu Planla commit edilmedi; `dd48cb7` (Dolabım) push edilmedi. İkisi için de kullanıcı onayı gerekli.
+- **Commit/push**: Her şey `main` dalına push edildi. Yeni işlerde yine önce kullanıcıdan onay al.
 - **AI kıyafet analizi**: `backend/havacan-api` henüz deploy edilmedi. Kullanıcı Cloudflare hesabı ve OpenRouter anahtarıyla kuracak (`backend/havacan-api/README.md`), sonra `Weather/local.properties` içine `HAVACAN_API_URL=` yazacak. O zamana kadar editörde "Yapay zekâ bağlantısı kurulu değil" yazması normal.
 - **GPS konumu yok**: Konum izni eklenmedi; konum il/ilçe seçiciyle seçiliyor.
 - **Hatırlatma zamanlaması**: WorkManager kesin saatli değil; pil tasarrufunda birkaç dakika gecikebilir.
@@ -108,6 +108,5 @@ Ortak altyapı fikri: hepsi aynı `WeatherRepository`, `AppGraph`, plan deposu v
 
 ## 9. Yeni oturumda ilk adımlar
 
-1. `git status` ile commit edilmemiş Koşu Planla değişikliklerini gör; kullanıcıya commit edilip edilmeyeceğini sor.
-2. Kullanıcının Koşu Planla test geri bildirimini al ve hızlıca düzelt.
-3. Sonra yol haritasındaki bir sonraki özelliğe (kullanıcı hangisini isterse) geç.
+1. Kullanıcının Koşu Planla test geri bildirimini al ve hızlıca düzelt.
+2. Sonra yol haritasındaki bir sonraki özelliğe (kullanıcı hangisini isterse) geç.
