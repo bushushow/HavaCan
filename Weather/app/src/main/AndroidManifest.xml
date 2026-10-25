@@ -6,6 +6,18 @@
     <!-- Plans: read the phone calendar (Google Calendar included) and notify about weather changes -->
     <uses-permission android:name="android.permission.READ_CALENDAR" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- HavaCan ile Sesli Kullanım: listens only for a turn the user starts, while the app is open -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
+    <!-- Android 11+: lets the app see the phone's speech recognition and text-to-speech services -->
+    <queries>
+        <intent>
+            <action android:name="android.speech.RecognitionService" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.TTS_SERVICE" />
+        </intent>
+    </queries>
 
     <application
         android:allowBackup="true"

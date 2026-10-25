@@ -10,7 +10,6 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -36,9 +35,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -56,19 +53,35 @@ import com.example.weather.ui.home.HomeActions
 import com.example.weather.ui.home.HomeScreen
 import com.example.weather.ui.home.HomeViewModel
 import com.example.weather.ui.home.ShakeEffect
-import com.example.weather.ui.home.character.HavaCanEvent
 import com.example.weather.ui.home.character.HavaCanMotion
-import com.example.weather.ui.home.character.drawHavaCanFace
 import com.example.weather.ui.home.components.HavaCanBottomNavigation
 import com.example.weather.ui.home.components.HomeTab
 import com.example.weather.ui.home.rememberReduceMotion
 import com.example.weather.ui.home.scene.rememberSceneClock
 import com.example.weather.ui.theme.Navy
 import com.example.weather.ui.theme.NavySoft
+import android.content.Context
+import android.view.accessibility.AccessibilityManager
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.example.weather.domain.voice.VoiceDestination
+import com.example.weather.ui.chat.ChatActions
+import com.example.weather.ui.chat.ChatScreen
+import com.example.weather.ui.profile.ProfileScreen
+import com.example.weather.ui.voice.VoiceGuideBar
+import com.example.weather.ui.voice.VoiceGuideController
+import com.example.weather.ui.voice.rememberMicrophoneAccess
 
 private const val TAG = "Hava"
 
-private enum class Sheet { None, Chat, Notifications }
+private enum class Sheet { None, Notifications }
 
 /** App shell: bottom navigation, the home screen, the Kamp+ city search and small info sheets. */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -77,8 +90,11 @@ fun HavaApp(
     openPlanId: String? = null,
     onOpenPlanHandled: () -> Unit = {},
     viewModel: HomeViewModel = viewModel(factory = HomeViewModel.Factory),
+    voice: VoiceGuideController = viewModel(factory = VoiceGuideController.Factory),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val voiceState by voice.state.collectAsStateWithLifecycle()
+    val messages by voice.messages.collectAsStateWithLifecycle()
     val reduceMotion = rememberReduceMotion()
     val clock = rememberSceneClock(paused = reduceMotion)
     val motion = remember { HavaCanMotion() }
@@ -103,6 +119,26 @@ fun HavaApp(
     // A notification about a plan opens the Planlar tab
     LaunchedEffect(openPlanId) { if (openPlanId != null) tab = HomeTab.Plans }
 
+    // Screens opened by voice (or by a card in the chat); overlays close so the screen is really in front
+    val go: (VoiceDestination) -> Unit = { destination ->
+        showCityPicker = false
+        sheet = Sheet.None
+        if (destination != VoiceDestination.RunPlanner) runPlanner = null
+        when (destination) {
+            VoiceDestination.Home -> tab = HomeTab.Weather
+            VoiceDestination.Plans -> tab = HomeTab.Plans
+            VoiceDestination.Chat -> tab = HomeTab.HavaCan
+            VoiceDestination.Wardrobe -> tab = HomeTab.Wardrobe
+            VoiceDestination.Profile -> tab = HomeTab.Profile
+            VoiceDestination.RunPlanner -> runPlanner = RunPlannerRequest(System.currentTimeMillis())
+        }
+    }
+    LaunchedEffect(voice) { voice.navigation.collect { go(it) } }
+    VoiceSystemHooks(voice)
+    val tapMicrophone = rememberMicrophoneAccess { voice.tapMicrophone() }
+    val startGuide = rememberMicrophoneAccess { voice.startSession(continuous = true) }
+    val enableGuide = rememberMicrophoneAccess { voice.setGuideEnabled(true) }
+
     val openSalla = {
         sallaSignal++
         outfitRequest++
@@ -112,7 +148,7 @@ fun HavaApp(
 
     Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         when (tab) {
-            HomeTab.Weather, HomeTab.HavaCan -> HomeScreen(
+            HomeTab.Weather -> HomeScreen(
                 state = state,
                 motion = motion,
                 clock = clock,
@@ -148,23 +184,41 @@ fun HavaApp(
                 outfitRequest = outfitRequest,
                 onShowBottomBar = { showBottomBar = it },
             )
-            HomeTab.Profile -> ComingSoon(stringResource(R.string.nav_profile))
+            HomeTab.HavaCan -> ChatScreen(
+                state = voiceState,
+                messages = messages,
+                clock = clock,
+                actions = ChatActions(
+                    onSend = voice::submitTyped,
+                    onMic = tapMicrophone,
+                    onHeadset = {
+                        when {
+                            !voiceState.settings.guideEnabled -> tab = HomeTab.Profile
+                            voiceState.sessionActive -> voice.stopSession()
+                            else -> startGuide()
+                        }
+                    },
+                    onBell = { sheet = Sheet.Notifications },
+                    onSpeak = voice::speakMessage,
+                    onOpen = go,
+                    onDismissNotice = voice::dismissNotice,
+                ),
+            )
+            HomeTab.Profile -> ProfileScreen(
+                state = voiceState,
+                onGuideChange = { on -> if (on) enableGuide() else voice.setGuideEnabled(false) },
+                onSpeakTypedChange = voice::setSpeakTypedReplies,
+                onTryGuide = startGuide,
+            )
         }
 
         // Plan sub-screens (editor, Plan B) hide the bar; every other tab always shows it
         if ((tab != HomeTab.Plans && tab != HomeTab.Wardrobe) || showBottomBar) HavaCanBottomNavigation(
-            selected = if (tab == HomeTab.HavaCan) HomeTab.Weather else tab,
+            selected = tab,
             havaCanPulse = havaCanPulse,
             onSelect = { selected ->
-                if (selected == HomeTab.HavaCan) {
-                    // The chat screen comes later: HavaCan reacts and says so, instead of a dead button
-                    havaCanPulse++
-                    tab = HomeTab.Weather
-                    motion.send(HavaCanEvent.ChatRequested, state.mode.name == "Runner", clock())
-                    sheet = Sheet.Chat
-                } else {
-                    tab = selected
-                }
+                if (selected == HomeTab.HavaCan) havaCanPulse++
+                tab = selected
             },
             modifier = Modifier.align(Alignment.BottomCenter),
         )
@@ -215,6 +269,19 @@ fun HavaApp(
                 },
             )
         }
+
+        // The chat has its own microphone; everywhere else the voice guide floats above the bottom bar
+        if (tab != HomeTab.HavaCan && (voiceState.settings.guideEnabled || voiceState.sessionActive)) {
+            VoiceGuideBar(
+                state = voiceState,
+                onMic = tapMicrophone,
+                onStop = { voice.stopSession() },
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .windowInsetsPadding(WindowInsets.navigationBars)
+                    .padding(bottom = 92.dp),
+            )
+        }
     }
 
     if (sheet != Sheet.None) {
@@ -228,7 +295,6 @@ fun HavaApp(
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 when (sheet) {
-                    Sheet.Chat -> InfoContent(stringResource(R.string.chat_soon_title), stringResource(R.string.chat_soon_body))
                     Sheet.Notifications -> InfoContent(stringResource(R.string.cd_notifications), stringResource(R.string.notifications_empty))
                     Sheet.None -> Unit
                 }
@@ -246,28 +312,6 @@ private fun InfoContent(title: String, body: String) {
     Text(body, style = MaterialTheme.typography.bodyLarge, color = NavySoft)
 }
 
-/** Honest placeholder for screens we'll design next. */
-@Composable
-private fun ComingSoon(name: String) {
-    Column(
-        Modifier
-            .fillMaxSize()
-            .padding(32.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-    ) {
-        Canvas(Modifier.size(96.dp)) { drawHavaCanFace(Offset(size.width / 2, size.height / 2), size.minDimension / 2.2f) }
-        Spacer(Modifier.height(16.dp))
-        Text(stringResource(R.string.soon_title, name), style = MaterialTheme.typography.headlineSmall, color = Navy)
-        Text(
-            stringResource(R.string.soon_body),
-            style = MaterialTheme.typography.bodyLarge,
-            color = NavySoft,
-            textAlign = TextAlign.Center,
-        )
-    }
-}
-
 private val RunRequestSaver = androidx.compose.runtime.saveable.Saver<RunPlannerRequest?, String>(
     save = { r -> r?.let { "${it.token}|${it.planId.orEmpty()}|${it.start.orEmpty()}" } ?: "" },
     restore = { raw ->
@@ -276,3 +320,38 @@ private val RunRequestSaver = androidx.compose.runtime.saveable.Saver<RunPlanner
         }
     },
 )
+
+/**
+ * Ties the voice guide to the system: stops it the moment the app leaves the screen, tells it
+ * whether TalkBack is on, and hands TalkBack the answers to read when it is.
+ */
+@Composable
+private fun VoiceSystemHooks(voice: VoiceGuideController) {
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+    DisposableEffect(lifecycle) {
+        val observer = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_STOP -> voice.onAppHidden()
+                Lifecycle.Event.ON_START -> voice.refreshAvailability()
+                else -> Unit
+            }
+        }
+        lifecycle.addObserver(observer)
+        onDispose { lifecycle.removeObserver(observer) }
+    }
+
+    val context = LocalContext.current
+    DisposableEffect(context) {
+        val manager = context.getSystemService(Context.ACCESSIBILITY_SERVICE) as AccessibilityManager
+        voice.setScreenReaderActive(manager.isTouchExplorationEnabled)
+        val listener = AccessibilityManager.TouchExplorationStateChangeListener { voice.setScreenReaderActive(it) }
+        manager.addTouchExplorationStateChangeListener(listener)
+        onDispose { manager.removeTouchExplorationStateChangeListener(listener) }
+    }
+
+    val view = LocalView.current
+    LaunchedEffect(voice, view) {
+        @Suppress("DEPRECATION") // still the way to hand a sentence to TalkBack from outside any node
+        voice.announcements.collect { view.announceForAccessibility(it) }
+    }
+}

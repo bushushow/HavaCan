@@ -70,7 +70,7 @@ fun HavaCanBottomNavigation(selected: HomeTab, havaCanPulse: Int, onSelect: (Hom
             NavItem(HomeTab.Plans, selected, R.string.nav_plans, onSelect) { tint ->
                 Icon(painterResource(R.drawable.ic_calendar), null, tint = tint, modifier = Modifier.size(26.dp))
             }
-            HavaCanButton(havaCanPulse) { onSelect(HomeTab.HavaCan) }
+            HavaCanButton(havaCanPulse, selected == HomeTab.HavaCan) { onSelect(HomeTab.HavaCan) }
             NavItem(HomeTab.Wardrobe, selected, R.string.nav_wardrobe, onSelect) { tint ->
                 Icon(painterResource(R.drawable.ic_hanger), null, tint = tint, modifier = Modifier.size(28.dp))
             }
@@ -111,7 +111,7 @@ private fun NavItem(
 }
 
 @Composable
-private fun HavaCanButton(pulse: Int, onClick: () -> Unit) {
+private fun HavaCanButton(pulse: Int, isSelected: Boolean, onClick: () -> Unit) {
     val bounce = remember { Animatable(1f) }
     LaunchedEffect(pulse) {
         if (pulse == 0) return@LaunchedEffect
@@ -121,7 +121,7 @@ private fun HavaCanButton(pulse: Int, onClick: () -> Unit) {
     Column(
         Modifier
             .offset(y = (-6).dp)
-            .selectable(selected = false, role = Role.Button, onClick = onClick),
+            .selectable(selected = isSelected, role = Role.Tab, onClick = onClick),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Box(
@@ -133,7 +133,13 @@ private fun HavaCanButton(pulse: Int, onClick: () -> Unit) {
         ) {
             Canvas(Modifier.size(50.dp)) { drawHavaCanFace(Offset(size.width / 2, size.height / 2), size.minDimension / 2.1f) }
         }
-        Text(stringResource(R.string.nav_havacan), style = MaterialTheme.typography.labelMedium, color = Navy)
-        Spacer(Modifier.height(6.dp))
+        Text(stringResource(R.string.nav_havacan), style = MaterialTheme.typography.labelMedium, color = if (isSelected) HavaBlue else Navy)
+        Spacer(Modifier.height(3.dp))
+        Box(
+            Modifier
+                .width(18.dp)
+                .height(3.dp)
+                .background(if (isSelected) HavaBlue else Color.Transparent, CircleShape),
+        )
     }
 }

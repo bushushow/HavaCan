@@ -67,10 +67,6 @@
     <string name="nav_profile">Profil</string>
 
     <!-- Not built yet: say so honestly -->
-    <string name="soon_title">%1$s yakında</string>
-    <string name="soon_body">Bu ekranı bir sonraki aşamada birlikte tasarlayacağız.</string>
-    <string name="chat_soon_title">HavaCan ile sohbet yakında</string>
-    <string name="chat_soon_body">Yazarak ya da konuşarak HavaCan\'a hava durumunu sorabileceksin. Bu ekran bir sonraki aşamada geliyor.</string>
     <string name="notifications_empty">Henüz bildirimin yok. Proaktif hava uyarıları Planlar ekranıyla gelecek.</string>
     <string name="run_plan_title">Koşu planı</string>
     <string name="run_plan_note">Skorlar HavaCan\'ın varsayılan eşiklerine göre (hissedilen sıcaklık, yağış, rüzgar, UV, gün ışığı) Open-Meteo tahmininden hesaplanır. Tıbbi tavsiye değildir. Koşuyu takvime ekleme Planlar ekranıyla gelecek.</string>
@@ -274,4 +270,62 @@
     <string name="run_reminder_at">Bildirim saati: %1$s</string>
     <string name="run_reminder_at_note">Bildirim saati: %1$s</string>
     <string name="run_reminder_too_short">En az 5 dakika önce olmalı.</string>
+
+    <!-- HavaCan Asistan (chat) -->
+    <string name="chat_title_suffix">Asistan</string>
+    <string name="chat_hello">Merhaba!</string>
+    <string name="chat_hello_sub">Bugün ne planlıyoruz?</string>
+    <string name="chat_hint">HavaCan\'a yaz…</string>
+    <string name="chat_suggest_outfit">Yarın ne giyeyim?</string>
+    <string name="chat_suggest_plans">Planlarımı kontrol et</string>
+    <string name="quick_weather_today">Bugün hava nasıl?</string>
+    <string name="quick_run_time">Yarın koşuya kaçta çıkayım?</string>
+    <string name="quick_outfit">Bugün ne giyeyim?</string>
+    <string name="quick_plans">Planlarımı oku</string>
+    <string name="quick_new_plan">Yarın saat 6\'da piknik planı oluştur</string>
+    <string name="quick_help">Neler yapabilirsin?</string>
+    <string name="cd_user_message">Sen, saat %1$s: %2$s</string>
+    <string name="cd_havacan_message">HavaCan: %1$s</string>
+    <string name="cd_open_card">%1$s, aç</string>
+    <string name="cd_speak_message">Yanıtı sesli dinle</string>
+    <string name="cd_quick_questions">Hazır sorular</string>
+    <string name="cd_send">Gönder</string>
+    <string name="cd_talk">Konuş: sesli soru sor</string>
+    <string name="cd_stop_listening">Dinlemeyi durdur</string>
+    <string name="cd_interrupt">HavaCan\'ı sustur ve konuş</string>
+    <string name="cd_havacan_hero">HavaCan, sesli asistan</string>
+    <string name="cd_voice_start">Sesli rehberi başlat</string>
+    <string name="cd_voice_stop">Sesli rehberi kapat</string>
+    <string name="cd_voice_settings">Sesli kullanım ayarları</string>
+
+    <!-- Voice guide -->
+    <string name="voice_guide_title">HavaCan sesli rehber</string>
+    <string name="voice_listening">Dinliyorum…</string>
+    <string name="voice_thinking">HavaCan düşünüyor…</string>
+    <string name="voice_speaking">HavaCan konuşuyor…</string>
+    <string name="voice_tap_to_talk">Konuşmak için mikrofona dokun</string>
+    <string name="mic_permission_title">Mikrofon izni</string>
+    <string name="mic_permission_body">HavaCan seni duyabilmek için mikrofonu kullanır. Mikrofon yalnızca sen düğmeye dokunduğunda ve uygulama açıkken dinler; HavaCan ses kaydı saklamaz. Konuşmayı yazıya telefonunun konuşma tanıma hizmeti çevirir.</string>
+    <string name="mic_permission_allow">İzin ver</string>
+    <string name="not_now">Şimdi değil</string>
+    <string name="mic_denied">Mikrofon izni verilmedi. İstersen telefon ayarlarından HavaCan için açabilirsin.</string>
+
+    <!-- Profile -->
+    <string name="settings_title">Ayarlar</string>
+    <string name="voice_setting_title">HavaCan ile Sesli Kullanım</string>
+    <string name="voice_setting_body">Uygulamayı Türkçe sesli komutlarla kullan. Her ekranda bir mikrofon düğmesi çıkar; HavaCan yalnızca sen başlattığında ve uygulama açıkken dinler.</string>
+    <string name="voice_howto_title">Nasıl kullanılır?</string>
+    <string name="voice_howto_body">Mikrofon düğmesine dokun ve konuş: \"Bugün hava nasıl?\", \"Planlarımı göster\", \"Yarın ne giyeyim?\", \"Koşu planla\", \"Dolabıma git\", \"Ana sayfaya dön\". HavaCan yanıtlayınca yeniden dinler. Plan kurarken ya da silerken önce sana okur ve \"evet\" demeni bekler. Kapatmak için \"Sesli rehberi kapat\" de ya da çarpı düğmesine dokun.</string>
+    <string name="voice_talkback_note">TalkBack açık: yanıtları TalkBack okur. Sıradaki komut için mikrofon düğmesine iki kez dokun.</string>
+    <string name="voice_try">Sesli rehberi dene</string>
+    <string name="voice_speak_typed_title">Yazılı mesajlara sesli yanıt</string>
+    <string name="voice_speak_typed_body">Sohbette yazarak sorduklarını da HavaCan sesli okusun. Sesle sorulanlar her zaman sesli yanıtlanır.</string>
+    <string name="voice_no_recognizer">Bu telefonda konuşma tanıma hizmeti bulunamadı; sesli kullanım açılamıyor.</string>
+    <string name="voice_no_turkish_tts">Telefonda Türkçe ses paketi yok; yanıtlar yalnızca yazılı görünür. Ayarlar > Metin okuma çıkışı bölümünden Türkçeyi indirebilirsin.</string>
+    <string name="voice_no_tts">Metin okuma (TTS) bu telefonda çalışmıyor; yanıtlar yalnızca yazılı görünür.</string>
+    <string name="about_title">Hakkında</string>
+    <string name="about_version">HavaCan %1$s</string>
+    <string name="about_weather_data">Hava tahmini: Open-Meteo (open-meteo.com), CC BY 4.0</string>
+    <string name="about_place_data">İl, ilçe ve şehir verisi: Open-Meteo Geocoding ve GeoNames (geonames.org), CC BY 4.0</string>
+    <string name="about_font">Yazı tipi: Nunito, SIL Open Font License 1.1</string>
 </resources>

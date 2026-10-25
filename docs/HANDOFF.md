@@ -57,6 +57,17 @@ cd /c/Users/bsroz/turkcell_camp/Weather && JAVA_HOME="/c/Program Files/Android/A
 | Planlarım, Yeni plan, Plan B, takvim, bildirim | Bitti, push edildi | |
 | Dolabım (Salla Kombin) | Bitti, push edildi (`dd48cb7`) | Galeri/kamera, Room, cihazda renk bulma, sallama ve butonla kombin, eksik kategori uyarısı |
 | Koşu Planla | Kodlandı, push edildi (`cd538ee`); son tur cihazda görülmedi | Ayrıntılar aşağıda |
+| HavaCan Asistan (sohbet) + Sesli Rehber + Profil + OpenRouter | Yerelde commit edildi, **push edilmedi**; kullanıcı cihazda denedi, çalışıyor | Ayrıntılar aşağıda |
+
+### HavaCan Asistan ve Sesli Rehber (son çalışma)
+
+- Orta düğme artık sohbet ekranını açıyor (`ui/chat/ChatScreen.kt`, `AssistantHero.kt`). Mikrofon mesaj çubuğunun sağında; yazı varken gönder düğmesi. Ayrı "Sesli konuş" düğmesi ya da "Sesli yanıt açık" kartı yok.
+- Beyin: `domain/voice/VoiceCommandParser.kt` (kurala dayalı Türkçe komut ayrıştırma: navigasyon, bilgi sorgusu, işlem, oturum sonu) ve `HavaCanAssistant.kt` (yanıtları `WeatherRepository`, plan deposu, Dolabım, `PlanAdvisor`, `RunSlotPlanner`, `OutfitEngine` ile gerçek veriden üretir). Plan oluşturma/silme önce okunur, "evet" beklenir. Plan değiştirme ve takvim güncelleme sesle desteklenmiyor; dürüstçe söyleniyor.
+- Oturum: `ui/voice/VoiceGuideController.kt` (activity ViewModel). Kullanıcı başlatır; tek cümle dinler, yanıtlar, TTS bittikten 400 ms sonra yeniden dinler. İki kez sessizlik, "sesli rehberi kapat", çarpı düğmesi, uygulamadan çıkış ya da 5 dk sınırı oturumu bitirir. TalkBack açıkken yanıtları TalkBack okur (kendi TTS'imiz susar) ve sıradaki tur mikrofona dokunarak başlar.
+- Her ana ekranda `VoiceGuideBar` (sol altta mikrofon, oturumda durum çubuğu). Navigasyon `HavaApp.kt` içindeki `go()` ile.
+- Profil: `ui/profile/ProfileScreen.kt`: "HavaCan ile Sesli Kullanım" anahtarı (açılınca mikrofon izni açıklamalı istenir), "Yazılı mesajlara sesli yanıt", "Hakkında" ve veri atıfları.
+- Serbest sorular (kuralların anlamadığı) backend `POST /v1/chat` ucuna gider; yalnızca metin döner, uygulama ona göre işlem yapmaz. Backend deploy edilmeden "Bunu anlayamadım" + örnek komutlar gösterilir.
+- Birim testleri: toplam 131 test geçiyor (`VoiceCommandParserTest`, `HavaCanAssistantTest`, `VoiceGuideControllerTest` dahil).
 
 ### Koşu Planla (son çalışma)
 
@@ -75,14 +86,13 @@ cd /c/Users/bsroz/turkcell_camp/Weather && JAVA_HOME="/c/Program Files/Android/A
 
 ## 6. Açık işler ve bilinen eksikler
 
-- **Commit/push**: Her şey `main` dalına push edildi. Yeni işlerde yine önce kullanıcıdan onay al.
-- **AI kıyafet analizi**: `backend/havacan-api` henüz deploy edilmedi. Kullanıcı Cloudflare hesabı ve OpenRouter anahtarıyla kuracak (`backend/havacan-api/README.md`), sonra `Weather/local.properties` içine `HAVACAN_API_URL=` yazacak. O zamana kadar editörde "Yapay zekâ bağlantısı kurulu değil" yazması normal.
+- **Commit/push**: Sesli rehber ve OpenRouter işi yerelde commit edildi, push edilmedi. Yeni işlerde yine önce kullanıcıdan onay al.
+- **Backend**: `backend/havacan-api` Vercel'de çalışıyor: `https://havacan-api.vercel.app` (OpenRouter anahtarı Vercel'de Secret ortam değişkeni). `Weather/local.properties` içinde `HAVACAN_API_URL` bu adres. Cloudflare Worker da deploy edildi ama kullanıcının ağı `*.workers.dev` adreslerini engelliyor (tarayıcı ECH ile açıyor, uygulama açamıyor); kullanılmıyor. Backend değişince: `cd backend/havacan-api && npx vercel --prod`. Vercel GitHub bağlantısı kurulamadı (private repo), otomatik deploy yok.
 - **GPS konumu yok**: Konum izni eklenmedi; konum il/ilçe seçiciyle seçiliyor.
 - **Hatırlatma zamanlaması**: WorkManager kesin saatli değil; pil tasarrufunda birkaç dakika gecikebilir.
 - **Tahmin önbelleği yalnızca bellekte**: İnternet yokken eski tahmin gösterilmiyor; hata kartı çıkıyor.
 - **Görseller**: HavaCan ve sahneler Canvas çizimi. Gerçek 3D asset'ler ve uygulama simgesi henüz yok (`docs/havacan-assets.md`). Uygulama şu an varsayılan Android simgesini kullanıyor.
-- **Profil sekmesi** "yakında" ekranı. Buraya Open-Meteo ve GeoNames (CC BY) atıflarını içeren bir "Hakkında" bölümü eklenmeli.
-- Orta düğme (HavaCan sohbet) şimdilik "yakında" bilgisi gösteriyor.
+- **Sesli rehber sınırları**: Uyandırma kelimesi ve arka planda dinleme yok (bilerek). Konuşma tanıma telefonun hizmetine bağlı (emülatörde host mikrofonu açılmalı); Türkçe TTS paketi yoksa yanıtlar yalnızca yazılı. Sohbet geçmişi yalnızca bellekte. Sesle plan şehri her zaman ana şehir; türü açık hava.
 
 ## 7. Yol haritası (kullanıcıyla konuşulan, sırayla yapılacak özellikler)
 
@@ -93,9 +103,9 @@ Kullanıcı bunları "sırayla yaparız" dedi; her biri için önce kısa plan, 
 3. **Work Mode (İş modu)**: İşe gidiş-dönüş saatlerine göre hava özeti, şemsiye/mont uyarısı, yolculuk planı.
 4. **Weather DNA**: Kullanıcının hava tercihlerini (sıcak/soğuk hassasiyeti, yağmur toleransı) öğrenip önerileri kişiselleştirme.
 5. **Event Scanner**: Etkinlik afişi/davetiye fotoğrafından tarih, saat, yer okuyup plana ekleme ve hava riskini gösterme.
-6. **HavaCan sohbet / sesli asistan**: Orta düğme; yazılı ve sesli soru-cevap. LLM çağrıları da backend üzerinden gitmeli (anahtar istemcide olmaz).
+6. ~~**HavaCan sohbet / sesli asistan**~~: yapıldı (yukarıda). Sonraki adım: sesle plan değiştirme (onaylı), sohbet geçmişini saklama.
 7. **Seyahat / bavul önerisi**: Gidilecek yerin tahminine göre bavul listesi; Dolabım ile bağlanabilir.
-8. **Profil**: Ayarlar, tercihler, "Hakkında" ve veri atıfları.
+8. **Profil**: Sesli kullanım ayarları ve "Hakkında" yapıldı; kişisel tercihler (ad, Weather DNA) eksik.
 
 Ortak altyapı fikri: hepsi aynı `WeatherRepository`, `AppGraph`, plan deposu ve HavaCan karakter/animasyon sistemini kullanmalı; yeni bağımsız veri sistemleri kurulmamalı.
 
