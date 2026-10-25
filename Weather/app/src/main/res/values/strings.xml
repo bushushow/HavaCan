@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Hava</string>
+    <string name="app_name">HavaCan</string>
     <string name="greeting">Merhaba Kamp!</string>
     <string name="region_subtitle">%1$s Bölgesi</string>
     <string name="province_region_subtitle">%1$s · %2$s Bölgesi</string>
@@ -16,4 +16,55 @@
     <string name="retry">Tekrar dene</string>
     <string name="city_not_found">Şehir bulunamadı</string>
     <string name="city_not_found_detail">“%1$s” ile eşleşen bir şehir yok.</string>
+
+    <!-- Home -->
+    <string name="runner_mode">Koşucu modu</string>
+    <string name="cd_runner_mode_on">Koşucu modu açık. Kapatmak için dokun.</string>
+    <string name="cd_runner_mode_off">Koşucu modu kapalı. Açmak için dokun.</string>
+    <string name="cd_notifications">Bildirimler</string>
+    <string name="cd_choose_city">Konum: %1$s. Değiştirmek için dokun.</string>
+    <string name="temperature">%1$d°</string>
+    <string name="feels_like">Hissedilen %1$d°</string>
+    <string name="high_low">%1$d° / %2$d°</string>
+    <string name="forecast_for">%1$s tahmini</string>
+    <string name="now">Şimdi</string>
+    <string name="weather_loading">Hava yükleniyor</string>
+    <string name="weather_error_title">Hava bilgisi alınamadı</string>
+    <string name="weather_empty">Bu konum için tahmin bulunamadı.</string>
+    <string name="coming_hours">Önümüzdeki saatler</string>
+    <string name="runner_best_title">Koşu için en iyi saat</string>
+    <string name="runner_plan">Koşuyu planla</string>
+    <string name="runner_none_title">Koşu için uygun saat yok</string>
+    <string name="runner_none_detail">Önümüzdeki 24 saatte koşuya uygun bir saat bulunamadı.</string>
+    <string name="runner_inspect">Saatleri incele</string>
+    <string name="insight_rain_now">Şu an yağışlı</string>
+    <string name="insight_rain_coming">Yağmur geliyor</string>
+    <string name="insight_dry">Bugün yağış beklenmiyor</string>
+    <string name="insight_rain_probability">Yağış ihtimali %%%1$d</string>
+    <string name="insight_lowest">En düşük %1$d°</string>
+    <string name="insight_show_hour">Saati göster</string>
+    <string name="salla_title">Salla Kombin</string>
+    <string name="salla_normal">Dolabından öner</string>
+    <string name="salla_runner">Koşuya uygun parçalar</string>
+    <string name="cd_open">Aç</string>
+
+    <!-- Bottom navigation -->
+    <string name="nav_weather">Hava</string>
+    <string name="nav_plans">Planlar</string>
+    <string name="nav_havacan">HavaCan</string>
+    <string name="nav_wardrobe">Dolabım</string>
+    <string name="nav_profile">Profil</string>
+
+    <!-- Not built yet: say so honestly -->
+    <string name="soon_title">%1$s yakında</string>
+    <string name="soon_body">Bu ekranı bir sonraki aşamada birlikte tasarlayacağız.</string>
+    <string name="chat_soon_title">HavaCan ile sohbet yakında</string>
+    <string name="chat_soon_body">Yazarak ya da konuşarak HavaCan\'a hava durumunu sorabileceksin. Bu ekran bir sonraki aşamada geliyor.</string>
+    <string name="notifications_empty">Henüz bildirimin yok. Proaktif hava uyarıları Planlar ekranıyla gelecek.</string>
+    <string name="salla_sheet_body">Dolabın henüz boş. Dolabım ekranında kıyafetlerini eklediğinde, telefonu salladığında HavaCan bu havaya uygun bir kombin önerecek.</string>
+    <string name="salla_sheet_runner">Koşucu modundayken öneriler koşu kıyafetlerine odaklanacak.</string>
+    <string name="run_plan_title">Koşu planı</string>
+    <string name="run_plan_note">Skorlar HavaCan\'ın varsayılan eşiklerine göre (hissedilen sıcaklık, yağış, rüzgar, UV, gün ışığı) Open-Meteo tahmininden hesaplanır. Tıbbi tavsiye değildir. Koşuyu takvime ekleme Planlar ekranıyla gelecek.</string>
+    <string name="run_plan_hour">%1$s · %2$d° · skor %3$d</string>
+    <string name="close">Kapat</string>
 </resources>

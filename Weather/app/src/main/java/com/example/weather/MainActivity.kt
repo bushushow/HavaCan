@@ -12,8 +12,8 @@ import com.example.weather.ui.theme.WeatherTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // Light status bar icons in both themes: they sit on the blue header gradient
-        enableEdgeToEdge(statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT))
+        // Dark status bar icons on the ivory background (light icons in dark theme)
+        enableEdgeToEdge(statusBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT))
         setContent {
             WeatherTheme {
                 HavaApp()
