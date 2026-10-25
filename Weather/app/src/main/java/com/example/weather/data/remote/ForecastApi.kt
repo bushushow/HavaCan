@@ -14,7 +14,8 @@ interface ForecastApi {
         @Query("daily") daily: String = DAILY_FIELDS,
         // "auto" returns times in the location's own time zone, not the phone's
         @Query("timezone") timezone: String = "auto",
-        @Query("forecast_days") forecastDays: Int = 3,
+        // 16 days is Open-Meteo's maximum; plans further out show "no forecast yet"
+        @Query("forecast_days") forecastDays: Int = 16,
     ): ForecastResponse
 
     companion object {
@@ -23,6 +24,6 @@ interface ForecastApi {
         const val HOURLY_FIELDS =
             "temperature_2m,apparent_temperature,precipitation_probability,precipitation," +
                 "weather_code,wind_speed_10m,wind_gusts_10m,uv_index,is_day"
-        const val DAILY_FIELDS = "temperature_2m_max,temperature_2m_min,sunrise,sunset"
+        const val DAILY_FIELDS = "weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset"
     }
 }

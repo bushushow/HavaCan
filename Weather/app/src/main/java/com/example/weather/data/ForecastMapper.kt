@@ -29,7 +29,8 @@ object ForecastMapper {
                 windSpeed = current.windSpeed,
             ),
             hourly = hourly,
-            today = mapToday(response, currentTime.substringBefore('T')),
+            today = mapDaily(response).firstOrNull { it.date == currentTime.substringBefore('T') },
+            daily = mapDaily(response),
         )
     }
 
@@ -55,15 +56,19 @@ object ForecastMapper {
         }
     }
 
-    private fun mapToday(response: ForecastResponse, today: String): DailySummary? {
-        val d = response.daily ?: return null
-        val i = d.time?.indexOf(today)?.takeIf { it >= 0 } ?: return null
-        return DailySummary(
-            date = today,
-            temperatureMax = d.temperatureMax?.getOrNull(i) ?: return null,
-            temperatureMin = d.temperatureMin?.getOrNull(i) ?: return null,
-            sunrise = d.sunrise?.getOrNull(i),
-            sunset = d.sunset?.getOrNull(i),
-        )
+    private fun mapDaily(response: ForecastResponse): List<DailySummary> {
+        val d = response.daily ?: return emptyList()
+        val days = d.time ?: return emptyList()
+        return days.indices.mapNotNull { i ->
+            DailySummary(
+                date = days[i] ?: return@mapNotNull null,
+                temperatureMax = d.temperatureMax?.getOrNull(i) ?: return@mapNotNull null,
+                temperatureMin = d.temperatureMin?.getOrNull(i) ?: return@mapNotNull null,
+                sunrise = d.sunrise?.getOrNull(i),
+                sunset = d.sunset?.getOrNull(i),
+                condition = WeatherCondition.fromWmo(d.weatherCode?.getOrNull(i)),
+                precipitationProbabilityMax = d.precipitationProbabilityMax?.getOrNull(i),
+            )
+        }
     }
 }

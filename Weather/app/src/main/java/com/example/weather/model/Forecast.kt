@@ -68,6 +68,8 @@ data class DailySummary(
     val temperatureMin: Double,
     val sunrise: String?,
     val sunset: String?,
+    val condition: WeatherCondition = WeatherCondition.Unknown,
+    val precipitationProbabilityMax: Int? = null,
 )
 
 data class Forecast(
@@ -75,6 +77,8 @@ data class Forecast(
     val current: CurrentWeather,
     val hourly: List<HourlyWeather>,
     val today: DailySummary?,
+    /** Every forecast day, today first. */
+    val daily: List<DailySummary> = listOfNotNull(today),
 ) {
     /** Index of the hour that contains [current]'s time; hours before it are in the past. */
     val currentHourIndex: Int

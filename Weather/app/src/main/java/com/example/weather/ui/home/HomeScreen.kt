@@ -176,8 +176,8 @@ fun HomeScreen(
     Column(
         modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .statusBarsPadding(),
+            .statusBarsPadding()
+            .verticalScroll(rememberScrollState()),
     ) {
         HomeTopBar(
             cityName = state.city.name,

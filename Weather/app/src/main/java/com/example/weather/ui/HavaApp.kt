@@ -42,7 +42,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.weather.R
 import com.example.weather.domain.running.RunningAdvice
+import com.example.weather.model.City
 import com.example.weather.ui.city.CityRoute
+import com.example.weather.ui.plans.PlansRoute
+import androidx.compose.runtime.LaunchedEffect
 import com.example.weather.ui.home.HomeActions
 import com.example.weather.ui.home.HomeScreen
 import com.example.weather.ui.home.HomeViewModel
@@ -65,7 +68,11 @@ private enum class Sheet { None, RunPlan, Salla, Chat, Notifications }
 /** App shell: bottom navigation, the home screen, the Kamp+ city search and small info sheets. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HavaApp(viewModel: HomeViewModel = viewModel(factory = HomeViewModel.Factory)) {
+fun HavaApp(
+    openPlanId: String? = null,
+    onOpenPlanHandled: () -> Unit = {},
+    viewModel: HomeViewModel = viewModel(factory = HomeViewModel.Factory),
+) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val reduceMotion = rememberReduceMotion()
     val clock = rememberSceneClock(paused = reduceMotion)
@@ -77,6 +84,12 @@ fun HavaApp(viewModel: HomeViewModel = viewModel(factory = HomeViewModel.Factory
     var runAdvice by remember { mutableStateOf<RunningAdvice?>(null) }
     var sallaSignal by remember { mutableIntStateOf(0) }
     var havaCanPulse by remember { mutableIntStateOf(0) }
+    var showBottomBar by remember { mutableStateOf(true) }
+    // Who gets the city the picker returns: the home screen (null) or the plan editor
+    var cityPickTarget by remember { mutableStateOf<((City) -> Unit)?>(null) }
+
+    // A notification about a plan opens the Planlar tab
+    LaunchedEffect(openPlanId) { if (openPlanId != null) tab = HomeTab.Plans }
 
     val openSalla = {
         sallaSignal++
@@ -102,12 +115,21 @@ fun HavaApp(viewModel: HomeViewModel = viewModel(factory = HomeViewModel.Factory
                 onHourSelected = { viewModel.onHourSelected(it.time) },
                 onRetry = viewModel::retry,
             )
-            HomeTab.Plans -> ComingSoon(stringResource(R.string.nav_plans))
+            HomeTab.Plans -> PlansRoute(
+                clock = clock,
+                openPlanId = openPlanId,
+                onOpenPlanHandled = onOpenPlanHandled,
+                onCityClick = { cityPickTarget = null; showCityPicker = true },
+                onBellClick = { sheet = Sheet.Notifications },
+                onPickPlanCity = { onPicked -> cityPickTarget = onPicked; showCityPicker = true },
+                onShowBottomBar = { showBottomBar = it },
+            )
             HomeTab.Wardrobe -> ComingSoon(stringResource(R.string.nav_wardrobe))
             HomeTab.Profile -> ComingSoon(stringResource(R.string.nav_profile))
         }
 
-        HavaCanBottomNavigation(
+        // Plan sub-screens (editor, Plan B) hide the bar; every other tab always shows it
+        if (tab != HomeTab.Plans || showBottomBar) HavaCanBottomNavigation(
             selected = if (tab == HomeTab.HavaCan) HomeTab.Weather else tab,
             havaCanPulse = havaCanPulse,
             onSelect = { selected ->
@@ -133,7 +155,9 @@ fun HavaApp(viewModel: HomeViewModel = viewModel(factory = HomeViewModel.Factory
             CityRoute(
                 onCityClick = { city ->
                     Log.d(TAG, "Tıklandı: ${city.name}")
-                    viewModel.onCityChosen(city)
+                    val target = cityPickTarget
+                    if (target != null) target(city) else viewModel.onCityChosen(city)
+                    cityPickTarget = null
                     showCityPicker = false
                 },
             )

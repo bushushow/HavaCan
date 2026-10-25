@@ -38,6 +38,8 @@ data class HourlyDto(
 
 data class DailyDto(
     val time: List<String?>? = null,
+    @SerializedName("weather_code") val weatherCode: List<Int?>? = null,
+    @SerializedName("precipitation_probability_max") val precipitationProbabilityMax: List<Int?>? = null,
     @SerializedName("temperature_2m_max") val temperatureMax: List<Double?>? = null,
     @SerializedName("temperature_2m_min") val temperatureMin: List<Double?>? = null,
     val sunrise: List<String?>? = null,
