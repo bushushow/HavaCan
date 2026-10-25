@@ -24,6 +24,7 @@ fun CityList(
     cities: List<City>,
     onCityClick: (City) -> Unit,
     modifier: Modifier = Modifier,
+    selectedCityId: Long? = null,
     contentPadding: PaddingValues = PaddingValues(16.dp),
 ) {
     LazyColumn(
@@ -45,6 +46,7 @@ fun CityList(
                     ?: city.country,
                 badge = province?.plate?.toString()?.padStart(2, '0') ?: city.countryCode ?: "?",
                 badgeColor = province?.let { regionColor(it.region) } ?: ForeignCityColor,
+                selected = city.id == selectedCityId,
                 onClick = { onCityClick(city) },
             )
         }
