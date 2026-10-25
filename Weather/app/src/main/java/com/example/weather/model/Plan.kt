@@ -12,12 +12,20 @@ enum class PlanType(val label: String) {
 
 enum class Reminder(val label: String, val minutesBefore: Long?) {
     None("Yok", null),
+    FifteenMinutes("15 dk önce", 15),
+    ThirtyMinutes("30 dk önce", 30),
     OneHour("1 saat önce", 60),
     ThreeHours("3 saat önce", 180),
     OneDay("1 gün önce", 24 * 60),
 }
 
 enum class PlanSource { App, Calendar }
+
+/** A run's goal and length. [distanceKm] is null for a free run with no distance target. */
+data class RunDetails(
+    val distanceKm: Int?,
+    val durationMinutes: Int,
+)
 
 /**
  * A plan the user wants HavaCan to watch. [date] ("2026-10-25") and [time] ("17:00") are local
@@ -37,6 +45,10 @@ data class Plan(
     val calendarEventId: Long? = null,
     /** Last risk state we notified about, so the watcher only speaks up when it changes. */
     val lastNotified: String? = null,
+    /** Set for plans made in Koşu Planla; null for every other plan (and older saved plans). */
+    val run: RunDetails? = null,
+    /** A reminder at any offset (picked on a clock); when set it wins over [reminder]. */
+    val reminderMinutes: Long? = null,
 ) {
     val localDate: LocalDate get() = LocalDate.parse(date)
     val localTime: LocalTime get() = LocalTime.parse(time)
@@ -47,4 +59,12 @@ data class Plan(
 
     /** "17.00", the Turkish way of writing times. */
     val timeLabel: String get() = time.replace(':', '.')
+
+    val isRun: Boolean get() = run != null
+
+    /** How long before the start the reminder fires; null for no reminder. */
+    val reminderMinutesBefore: Long? get() = reminderMinutes ?: reminder.minutesBefore
+
+    /** When a run ends; null for plans without a duration. */
+    val endDateTime: LocalDateTime? get() = run?.let { dateTime.plusMinutes(it.durationMinutes.toLong()) }
 }

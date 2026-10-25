@@ -66,7 +66,7 @@ class CalendarGateway(private val context: Context) {
         return Intent(Intent.ACTION_INSERT, CalendarContract.Events.CONTENT_URI)
             .putExtra(CalendarContract.Events.TITLE, plan.title)
             .putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, start)
-            .putExtra(CalendarContract.EXTRA_EVENT_END_TIME, start + 60 * 60 * 1000)
+            .putExtra(CalendarContract.EXTRA_EVENT_END_TIME, start + (plan.run?.durationMinutes ?: 60) * 60 * 1000L)
             .putExtra(CalendarContract.Events.EVENT_LOCATION, listOfNotNull(plan.placeName, plan.city.name).joinToString(", "))
     }
 

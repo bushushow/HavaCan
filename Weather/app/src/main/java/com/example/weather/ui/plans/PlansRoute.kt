@@ -15,7 +15,19 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.runtime.Composable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -28,6 +40,7 @@ import com.example.weather.data.AppGraph
 import com.example.weather.model.City
 import com.example.weather.model.Plan
 import com.example.weather.model.PlanSource
+import com.example.weather.ui.run.RunSaved
 import java.time.LocalDateTime
 
 /** Which plans screen is showing; a plan id travels with the sub-screens. */
@@ -50,6 +63,9 @@ fun PlansRoute(
     onBellClick: () -> Unit,
     onPickPlanCity: (onPicked: (City) -> Unit) -> Unit,
     onShowBottomBar: (Boolean) -> Unit,
+    onOpenRunPlan: (planId: String) -> Unit,
+    runNotice: RunSaved?,
+    onRunNoticeShown: () -> Unit,
     viewModel: PlansViewModel = viewModel(factory = PlansViewModel.Factory),
 ) {
     val context = LocalContext.current
@@ -77,91 +93,114 @@ fun PlansRoute(
     }
     val notificationPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {}
 
-    AnimatedContent(
-        targetState = destination,
-        transitionSpec = {
-            val forward = targetState != PlansDestination.List
-            (slideInHorizontally(tween(320)) { if (forward) it / 3 else -it / 3 } + fadeIn(tween(250))) togetherWith
-                (slideOutHorizontally(tween(320)) { if (forward) -it / 3 else it / 3 } + fadeOut(tween(200)))
-        },
-        label = "plans",
-    ) { dest ->
-        when (dest) {
-            PlansDestination.List -> PlansScreen(
-                state = state,
-                clock = clock,
-                onCityClick = onCityClick,
-                onBellClick = onBellClick,
-                onConnectCalendar = { calendarPermission.launch(Manifest.permission.READ_CALENDAR) },
-                onSelectDate = viewModel::selectDate,
-                onOpenPlan = { destination = PlansDestination.Editor(it.plan.id) },
-                onPlanB = { destination = PlansDestination.PlanB(it.plan.id) },
-                onAddPlan = {
-                    editorCity = null
-                    destination = PlansDestination.Editor(null)
-                },
-            )
-            is PlansDestination.Editor -> {
-                val existing = dest.planId?.let { id -> state.items.firstOrNull { it.plan.id == id }?.plan }
-                val initial = existing ?: rememberSaveable(saver = PlanSaver) { blankPlan(viewModel.newPlanId(), state.homeCity) }
-                PlanEditorScreen(
-                    initial = initial,
-                    isNew = existing == null,
-                    city = editorCity ?: initial.city,
+    // A run saved in Koşu Planla: confirm it here and offer the phone calendar (the user confirms there)
+    val snackbar = remember { SnackbarHostState() }
+    val savedMessage = stringResource(R.string.run_saved_snackbar)
+    val addToCalendar = stringResource(R.string.add_to_calendar_short)
+    var pendingNotice by remember { mutableStateOf<RunSaved?>(null) }
+    LaunchedEffect(runNotice) {
+        if (runNotice != null) {
+            pendingNotice = runNotice
+            onRunNoticeShown()
+        }
+    }
+    LaunchedEffect(pendingNotice) {
+        val notice = pendingNotice ?: return@LaunchedEffect
+        val result = snackbar.showSnackbar(savedMessage, actionLabel = addToCalendar, withDismissAction = true, duration = SnackbarDuration.Long)
+        if (result == SnackbarResult.ActionPerformed) {
+            runCatching { context.startActivity(AppGraph.get(context).calendar.insertIntent(notice.plan)) }
+                .onFailure { if (it is ActivityNotFoundException) Toast.makeText(context, "Takvim uygulaması bulunamadı", Toast.LENGTH_SHORT).show() }
+        }
+    }
+
+    Box(Modifier.fillMaxSize()) {
+        AnimatedContent(
+            targetState = destination,
+            transitionSpec = {
+                val forward = targetState != PlansDestination.List
+                (slideInHorizontally(tween(320)) { if (forward) it / 3 else -it / 3 } + fadeIn(tween(250))) togetherWith
+                    (slideOutHorizontally(tween(320)) { if (forward) -it / 3 else it / 3 } + fadeOut(tween(200)))
+            },
+            label = "plans",
+        ) { dest ->
+            when (dest) {
+                PlansDestination.List -> PlansScreen(
+                    state = state,
                     clock = clock,
-                    onPickCity = { onPickPlanCity { picked -> editorCity = picked } },
-                    onSave = { plan, addToCalendar ->
-                        viewModel.save(plan)
-                        if ((plan.follow || plan.reminder.minutesBefore != null) && Build.VERSION.SDK_INT >= 33 &&
-                            !PlanNotifications.canNotify(context)
-                        ) {
-                            notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
-                        }
-                        if (addToCalendar) {
-                            runCatching { context.startActivity(AppGraph.get(context).calendar.insertIntent(plan)) }
-                                .onFailure { if (it is ActivityNotFoundException) Toast.makeText(context, "Takvim uygulaması bulunamadı", Toast.LENGTH_SHORT).show() }
-                        }
+                    onCityClick = onCityClick,
+                    onBellClick = onBellClick,
+                    onConnectCalendar = { calendarPermission.launch(Manifest.permission.READ_CALENDAR) },
+                    onSelectDate = viewModel::selectDate,
+                    onOpenPlan = { if (it.plan.isRun) onOpenRunPlan(it.plan.id) else destination = PlansDestination.Editor(it.plan.id) },
+                    onPlanB = { destination = PlansDestination.PlanB(it.plan.id) },
+                    onAddPlan = {
                         editorCity = null
-                        destination = PlansDestination.List
-                    },
-                    onDelete = {
-                        dest.planId?.let(viewModel::delete)
-                        destination = PlansDestination.List
-                    },
-                    onBack = {
-                        editorCity = null
-                        destination = PlansDestination.List
+                        destination = PlansDestination.Editor(null)
                     },
                 )
-            }
-            is PlansDestination.PlanB -> {
-                val item = state.items.firstOrNull { it.plan.id == dest.planId }
-                if (item == null) {
-                    // The plan is gone or no longer at risk; nothing to decide
-                    LaunchedEffect(Unit) { destination = PlansDestination.List }
-                } else {
-                    PlanBScreen(
-                        item = item,
+                is PlansDestination.Editor -> {
+                    val existing = dest.planId?.let { id -> state.items.firstOrNull { it.plan.id == id }?.plan }
+                    val initial = existing ?: rememberSaveable(saver = PlanSaver) { blankPlan(viewModel.newPlanId(), state.homeCity) }
+                    PlanEditorScreen(
+                        initial = initial,
+                        isNew = existing == null,
+                        city = editorCity ?: initial.city,
                         clock = clock,
-                        onApply = { choice ->
-                            when (choice) {
-                                PlanBChoice.Move -> item.alternative?.let { hour ->
-                                    viewModel.moveTo(item.plan, hour)
-                                    val eventId = item.plan.calendarEventId
-                                    if (item.plan.source == PlanSource.Calendar && eventId != null) {
-                                        runCatching { context.startActivity(AppGraph.get(context).calendar.editIntent(eventId)) }
-                                    }
-                                }
-                                PlanBChoice.Indoor -> viewModel.moveIndoors(item.plan)
-                                PlanBChoice.Keep -> viewModel.keepAndFollow(item.plan)
+                        onPickCity = { onPickPlanCity { picked -> editorCity = picked } },
+                        onSave = { plan, addToCalendar ->
+                            viewModel.save(plan)
+                            if ((plan.follow || plan.reminderMinutesBefore != null) && Build.VERSION.SDK_INT >= 33 &&
+                                !PlanNotifications.canNotify(context)
+                            ) {
+                                notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
                             }
+                            if (addToCalendar) {
+                                runCatching { context.startActivity(AppGraph.get(context).calendar.insertIntent(plan)) }
+                                    .onFailure { if (it is ActivityNotFoundException) Toast.makeText(context, "Takvim uygulaması bulunamadı", Toast.LENGTH_SHORT).show() }
+                            }
+                            editorCity = null
                             destination = PlansDestination.List
                         },
-                        onBack = { destination = PlansDestination.List },
+                        onDelete = {
+                            dest.planId?.let(viewModel::delete)
+                            destination = PlansDestination.List
+                        },
+                        onBack = {
+                            editorCity = null
+                            destination = PlansDestination.List
+                        },
                     )
+                }
+                is PlansDestination.PlanB -> {
+                    val item = state.items.firstOrNull { it.plan.id == dest.planId }
+                    if (item == null) {
+                        // The plan is gone or no longer at risk; nothing to decide
+                        LaunchedEffect(Unit) { destination = PlansDestination.List }
+                    } else {
+                        PlanBScreen(
+                            item = item,
+                            clock = clock,
+                            onApply = { choice ->
+                                when (choice) {
+                                    PlanBChoice.Move -> item.alternative?.let { hour ->
+                                        viewModel.moveTo(item.plan, hour)
+                                        val eventId = item.plan.calendarEventId
+                                        if (item.plan.source == PlanSource.Calendar && eventId != null) {
+                                            runCatching { context.startActivity(AppGraph.get(context).calendar.editIntent(eventId)) }
+                                        }
+                                    }
+                                    PlanBChoice.Indoor -> viewModel.moveIndoors(item.plan)
+                                    PlanBChoice.Keep -> viewModel.keepAndFollow(item.plan)
+                                }
+                                destination = PlansDestination.List
+                            },
+                            onBack = { destination = PlansDestination.List },
+                        )
+                    }
                 }
             }
         }
+        SnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter).padding(bottom = 110.dp))
     }
 }
 

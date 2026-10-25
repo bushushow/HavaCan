@@ -41,7 +41,7 @@ class WorkPlanScheduler(private val context: Context) : PlanScheduler {
     private val work get() = WorkManager.getInstance(context)
 
     override fun schedule(plan: Plan) {
-        val minutes = plan.reminder.minutesBefore
+        val minutes = plan.reminderMinutesBefore
         val fireAt = minutes?.let { plan.dateTime.minusMinutes(it) }
         val delay = fireAt?.let { Duration.between(LocalDateTime.now(), it) }
         if (delay != null && !delay.isNegative) {

@@ -309,8 +309,27 @@ private fun PlanRow(item: PlanItem, onClick: () -> Unit) {
             }
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text(item.plan.timeLabel, style = MaterialTheme.typography.headlineSmall, color = Navy)
-                Text(item.plan.title, style = MaterialTheme.typography.titleMedium, color = Navy)
+                val run = item.plan.run
+                val end = item.plan.endDateTime
+                Text(
+                    if (end != null) "${item.plan.timeLabel}–%02d.%02d".format(end.hour, end.minute) else item.plan.timeLabel,
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = Navy,
+                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (run != null) {
+                        Icon(painterResource(R.drawable.ic_run), stringResource(R.string.run_plan_type), tint = HavaBlue, modifier = Modifier.size(20.dp))
+                        Spacer(Modifier.width(6.dp))
+                    }
+                    Text(item.plan.title, style = MaterialTheme.typography.titleMedium, color = Navy)
+                }
+                if (run != null) {
+                    Text(
+                        listOfNotNull(run.distanceKm?.let { "$it km" }, "${run.durationMinutes} dk").joinToString(" · "),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = NavySoft,
+                    )
+                }
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(painterResource(R.drawable.ic_place), null, tint = NavySoft, modifier = Modifier.size(16.dp))
                     Spacer(Modifier.width(4.dp))
@@ -326,6 +345,9 @@ private fun PlanRow(item: PlanItem, onClick: () -> Unit) {
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     OutlookChip(item)
                     if (item.plan.source == PlanSource.Calendar) Chip(stringResource(R.string.chip_calendar), HavaBlueLight, HavaBlue, null)
+                    if (item.plan.isRun) {
+                        Chip(stringResource(if (item.plan.follow) R.string.chip_follow_on else R.string.chip_follow_off), HavaBlueLight, if (item.plan.follow) HavaBlue else NavySoft, null)
+                    }
                 }
             }
             Icon(painterResource(R.drawable.ic_chevron_right), null, tint = Navy)

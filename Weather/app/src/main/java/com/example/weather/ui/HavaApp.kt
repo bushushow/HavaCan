@@ -6,7 +6,9 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -45,6 +47,9 @@ import com.example.weather.domain.running.RunningAdvice
 import com.example.weather.model.City
 import com.example.weather.ui.city.CityRoute
 import com.example.weather.ui.plans.PlansRoute
+import com.example.weather.ui.run.RunPlannerRequest
+import com.example.weather.ui.run.RunPlannerRoute
+import com.example.weather.ui.run.RunSaved
 import com.example.weather.ui.wardrobe.WardrobeRoute
 import androidx.compose.runtime.LaunchedEffect
 import com.example.weather.ui.home.HomeActions
@@ -60,11 +65,10 @@ import com.example.weather.ui.home.rememberReduceMotion
 import com.example.weather.ui.home.scene.rememberSceneClock
 import com.example.weather.ui.theme.Navy
 import com.example.weather.ui.theme.NavySoft
-import kotlin.math.roundToInt
 
 private const val TAG = "Hava"
 
-private enum class Sheet { None, RunPlan, Chat, Notifications }
+private enum class Sheet { None, Chat, Notifications }
 
 /** App shell: bottom navigation, the home screen, the Kamp+ city search and small info sheets. */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -82,7 +86,12 @@ fun HavaApp(
     var tab by rememberSaveable { mutableStateOf(HomeTab.Weather) }
     var showCityPicker by rememberSaveable { mutableStateOf(false) }
     var sheet by remember { mutableStateOf(Sheet.None) }
-    var runAdvice by remember { mutableStateOf<RunningAdvice?>(null) }
+    // Koşu Planla, opened from Koşucu Modu or from a run in Planlarım; null when closed
+    var runPlanner by rememberSaveable(stateSaver = RunRequestSaver) { mutableStateOf<RunPlannerRequest?>(null) }
+    var lastRunRequest by remember { mutableStateOf<RunPlannerRequest?>(null) }
+    LaunchedEffect(runPlanner) { if (runPlanner != null) lastRunRequest = runPlanner }
+    // Told to Planlarım after a run is saved, for the confirmation and the calendar offer
+    var runNotice by remember { mutableStateOf<RunSaved?>(null) }
     var sallaSignal by remember { mutableIntStateOf(0) }
     var havaCanPulse by remember { mutableIntStateOf(0) }
     var showBottomBar by remember { mutableStateOf(true) }
@@ -99,7 +108,7 @@ fun HavaApp(
         outfitRequest++
         tab = HomeTab.Wardrobe
     }
-    ShakeEffect(enabled = tab == HomeTab.Weather && !showCityPicker && sheet == Sheet.None, onShake = openSalla)
+    ShakeEffect(enabled = tab == HomeTab.Weather && !showCityPicker && sheet == Sheet.None && runPlanner == null, onShake = openSalla)
 
     Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         when (tab) {
@@ -112,7 +121,10 @@ fun HavaApp(
                 actions = HomeActions(
                     onCityClick = { showCityPicker = true },
                     onBellClick = { sheet = Sheet.Notifications },
-                    onPlanRun = { runAdvice = it; sheet = Sheet.RunPlan },
+                    onPlanRun = { advice ->
+                        val start = (advice as? RunningAdvice.BestWindow)?.window?.hours?.firstOrNull()?.hour?.time
+                        runPlanner = RunPlannerRequest(System.currentTimeMillis(), start = start)
+                    },
                     onSalla = openSalla,
                 ),
                 onToggleRunner = viewModel::toggleRunnerMode,
@@ -127,6 +139,9 @@ fun HavaApp(
                 onBellClick = { sheet = Sheet.Notifications },
                 onPickPlanCity = { onPicked -> cityPickTarget = onPicked; showCityPicker = true },
                 onShowBottomBar = { showBottomBar = it },
+                onOpenRunPlan = { id -> runPlanner = RunPlannerRequest(System.currentTimeMillis(), planId = id) },
+                runNotice = runNotice,
+                onRunNoticeShown = { runNotice = null },
             )
             HomeTab.Wardrobe -> WardrobeRoute(
                 clock = clock,
@@ -153,6 +168,36 @@ fun HavaApp(
             },
             modifier = Modifier.align(Alignment.BottomCenter),
         )
+
+        AnimatedVisibility(
+            visible = runPlanner != null,
+            enter = slideInHorizontally(tween(380)) { it / 2 } + fadeIn(tween(250)),
+            exit = slideOutHorizontally(tween(280)) { it / 2 } + fadeOut(tween(200)),
+        ) {
+            val request = runPlanner ?: lastRunRequest
+            if (request != null) {
+                Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
+                    RunPlannerRoute(
+                        request = request,
+                        clock = clock,
+                        reduceMotion = reduceMotion,
+                        onPickCity = { onPicked -> cityPickTarget = onPicked; showCityPicker = true },
+                        onClose = { runPlanner = null },
+                        onSaved = { saved ->
+                            if (runPlanner != null) {
+                                runPlanner = null
+                                runNotice = saved
+                                tab = HomeTab.Plans
+                            }
+                        },
+                        onDeleted = {
+                            runPlanner = null
+                            tab = HomeTab.Plans
+                        },
+                    )
+                }
+            }
+        }
 
         AnimatedVisibility(
             visible = showCityPicker,
@@ -183,7 +228,6 @@ fun HavaApp(
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 when (sheet) {
-                    Sheet.RunPlan -> RunPlanContent(runAdvice)
                     Sheet.Chat -> InfoContent(stringResource(R.string.chat_soon_title), stringResource(R.string.chat_soon_body))
                     Sheet.Notifications -> InfoContent(stringResource(R.string.cd_notifications), stringResource(R.string.notifications_empty))
                     Sheet.None -> Unit
@@ -200,27 +244,6 @@ fun HavaApp(
 private fun InfoContent(title: String, body: String) {
     Text(title, style = MaterialTheme.typography.headlineSmall, color = Navy)
     Text(body, style = MaterialTheme.typography.bodyLarge, color = NavySoft)
-}
-
-@Composable
-private fun RunPlanContent(advice: RunningAdvice?) {
-    Text(stringResource(R.string.run_plan_title), style = MaterialTheme.typography.headlineSmall, color = Navy)
-    if (advice is RunningAdvice.BestWindow) {
-        Text(
-            "${advice.window.dayLabel} · ${advice.window.rangeLabel}",
-            style = MaterialTheme.typography.titleLarge,
-            color = Navy,
-        )
-        advice.window.hours.forEach { s ->
-            Text(
-                stringResource(R.string.run_plan_hour, s.hour.hourLabel, s.hour.apparentTemperature.roundToInt(), s.score),
-                style = MaterialTheme.typography.bodyLarge,
-                color = Navy,
-            )
-        }
-        Text(advice.window.reasons.joinToString(" • "), style = MaterialTheme.typography.bodyLarge, color = NavySoft)
-    }
-    Text(stringResource(R.string.run_plan_note), style = MaterialTheme.typography.bodyMedium, color = NavySoft)
 }
 
 /** Honest placeholder for screens we'll design next. */
@@ -244,3 +267,12 @@ private fun ComingSoon(name: String) {
         )
     }
 }
+
+private val RunRequestSaver = androidx.compose.runtime.saveable.Saver<RunPlannerRequest?, String>(
+    save = { r -> r?.let { "${it.token}|${it.planId.orEmpty()}|${it.start.orEmpty()}" } ?: "" },
+    restore = { raw ->
+        raw.split('|').takeIf { it.size == 3 }?.let { (token, id, start) ->
+            RunPlannerRequest(token.toLong(), id.ifEmpty { null }, start.ifEmpty { null })
+        }
+    },
+)
