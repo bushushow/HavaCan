@@ -45,6 +45,7 @@ import com.example.weather.domain.running.RunningAdvice
 import com.example.weather.model.City
 import com.example.weather.ui.city.CityRoute
 import com.example.weather.ui.plans.PlansRoute
+import com.example.weather.ui.wardrobe.WardrobeRoute
 import androidx.compose.runtime.LaunchedEffect
 import com.example.weather.ui.home.HomeActions
 import com.example.weather.ui.home.HomeScreen
@@ -63,7 +64,7 @@ import kotlin.math.roundToInt
 
 private const val TAG = "Hava"
 
-private enum class Sheet { None, RunPlan, Salla, Chat, Notifications }
+private enum class Sheet { None, RunPlan, Chat, Notifications }
 
 /** App shell: bottom navigation, the home screen, the Kamp+ city search and small info sheets. */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -85,6 +86,8 @@ fun HavaApp(
     var sallaSignal by remember { mutableIntStateOf(0) }
     var havaCanPulse by remember { mutableIntStateOf(0) }
     var showBottomBar by remember { mutableStateOf(true) }
+    // Bumped by the home Salla Kombin card or a shake on the home screen: opens today's outfit
+    var outfitRequest by rememberSaveable { mutableIntStateOf(0) }
     // Who gets the city the picker returns: the home screen (null) or the plan editor
     var cityPickTarget by remember { mutableStateOf<((City) -> Unit)?>(null) }
 
@@ -93,7 +96,8 @@ fun HavaApp(
 
     val openSalla = {
         sallaSignal++
-        sheet = Sheet.Salla
+        outfitRequest++
+        tab = HomeTab.Wardrobe
     }
     ShakeEffect(enabled = tab == HomeTab.Weather && !showCityPicker && sheet == Sheet.None, onShake = openSalla)
 
@@ -124,12 +128,16 @@ fun HavaApp(
                 onPickPlanCity = { onPicked -> cityPickTarget = onPicked; showCityPicker = true },
                 onShowBottomBar = { showBottomBar = it },
             )
-            HomeTab.Wardrobe -> ComingSoon(stringResource(R.string.nav_wardrobe))
+            HomeTab.Wardrobe -> WardrobeRoute(
+                clock = clock,
+                outfitRequest = outfitRequest,
+                onShowBottomBar = { showBottomBar = it },
+            )
             HomeTab.Profile -> ComingSoon(stringResource(R.string.nav_profile))
         }
 
         // Plan sub-screens (editor, Plan B) hide the bar; every other tab always shows it
-        if (tab != HomeTab.Plans || showBottomBar) HavaCanBottomNavigation(
+        if ((tab != HomeTab.Plans && tab != HomeTab.Wardrobe) || showBottomBar) HavaCanBottomNavigation(
             selected = if (tab == HomeTab.HavaCan) HomeTab.Weather else tab,
             havaCanPulse = havaCanPulse,
             onSelect = { selected ->
@@ -176,11 +184,6 @@ fun HavaApp(
             ) {
                 when (sheet) {
                     Sheet.RunPlan -> RunPlanContent(runAdvice)
-                    Sheet.Salla -> InfoContent(
-                        stringResource(R.string.salla_title),
-                        stringResource(R.string.salla_sheet_body) +
-                            if (state.mode.name == "Runner") "\n\n" + stringResource(R.string.salla_sheet_runner) else "",
-                    )
                     Sheet.Chat -> InfoContent(stringResource(R.string.chat_soon_title), stringResource(R.string.chat_soon_body))
                     Sheet.Notifications -> InfoContent(stringResource(R.string.cd_notifications), stringResource(R.string.notifications_empty))
                     Sheet.None -> Unit

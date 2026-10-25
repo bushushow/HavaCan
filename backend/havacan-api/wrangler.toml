@@ -1,0 +1,16 @@
+# HavaCan API: a tiny Cloudflare Worker that keeps the OpenRouter key off the phone.
+name = "havacan-api"
+main = "src/index.js"
+compatibility_date = "2025-09-01"
+
+[vars]
+# Any vision-capable OpenRouter model; check price and availability on openrouter.ai/models first.
+MODEL = "google/gemini-2.5-flash"
+
+# The key is NOT here. Set it once with:  npx wrangler secret put OPENROUTER_API_KEY
+
+# Optional: per-IP rate limit (Cloudflare Workers rate limiting binding).
+[[ratelimits]]
+name = "RATE_LIMITER"
+namespace_id = "1001"
+simple = { limit = 20, period = 60 }

@@ -1,7 +1,12 @@
 package com.example.weather.data
 
 import android.content.Context
+import com.example.weather.BuildConfig
 import com.example.weather.data.remote.ApiClient
+import com.example.weather.data.wardrobe.BackendClothingAnalyzer
+import com.example.weather.data.wardrobe.PhotoStore
+import com.example.weather.data.wardrobe.WardrobeDatabase
+import com.example.weather.data.wardrobe.WardrobeRepository
 import java.io.File
 
 /**
@@ -13,6 +18,12 @@ class AppGraph private constructor(context: Context) {
     val plans: PlanRepository = FilePlanStore(File(context.filesDir, "plans.json"))
     val location: LocationStore = PreferencesLocationStore(context)
     val calendar = CalendarGateway(context)
+    private val database = WardrobeDatabase.create(context)
+    val wardrobe = WardrobeRepository(
+        dao = database.wardrobe(),
+        photos = PhotoStore(context),
+        analyzer = BuildConfig.HAVACAN_API_URL.takeIf { it.isNotBlank() }?.let(::BackendClothingAnalyzer),
+    )
 
     companion object {
         @Volatile private var instance: AppGraph? = null
