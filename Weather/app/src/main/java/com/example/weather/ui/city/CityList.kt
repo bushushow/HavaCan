@@ -4,8 +4,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -30,14 +28,8 @@ fun CityList(
     LazyColumn(
         modifier = modifier,
         contentPadding = contentPadding,
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        item {
-            Text(
-                text = stringResource(R.string.greeting),
-                style = MaterialTheme.typography.headlineSmall,
-            )
-        }
         items(cities, key = { it.id }) { city ->
             val province = city.province
             CityCard(
@@ -57,6 +49,6 @@ fun CityList(
 @Composable
 private fun CityListPreview() {
     WeatherTheme {
-        CityList(cities = sampleCities, onCityClick = {})
+        CityList(cities = sampleCities, onCityClick = {}, selectedCityId = sampleCities[1].id)
     }
 }
