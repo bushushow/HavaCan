@@ -12,5 +12,7 @@ interface CityApi {
         @Query("count") count: Int = 20,
         @Query("language") language: String = "tr",
         @Query("format") format: String = "json",
+        /** ISO 3166-1 alpha-2; null searches worldwide (Retrofit drops null query params). */
+        @Query("countryCode") countryCode: String? = null,
     ): CitySearchResponse
 }

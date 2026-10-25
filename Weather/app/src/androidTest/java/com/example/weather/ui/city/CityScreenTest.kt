@@ -7,7 +7,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import com.example.weather.data.sampleCities
+import com.example.weather.data.provinceCities
 import com.example.weather.model.City
 import com.example.weather.ui.theme.WeatherTheme
 import org.junit.Assert.assertEquals
@@ -46,7 +46,7 @@ class CityScreenTest {
 
     @Test
     fun successShowsCitiesAndReportsClicks() {
-        show(CityUiState.Success(sampleCities.take(3)), query = "a")
+        show(CityUiState.Success(provinceCities.filter { it.name in setOf("Adana", "Ankara", "Antalya") }), query = "a")
         composeRule.onNodeWithText("Sonuçlar").assertIsDisplayed()
         composeRule.onNodeWithText("3 şehir").assertIsDisplayed()
         composeRule.onNodeWithText("Ankara").performClick()
@@ -55,9 +55,9 @@ class CityScreenTest {
 
     @Test
     fun selectedCityIsMarkedSelected() {
-        val ankara = sampleCities.first { it.name == "Ankara" }
-        show(CityUiState.Success(sampleCities, isSuggestion = true), selectedCityId = ankara.id)
-        composeRule.onNodeWithText("Popüler şehirler").assertIsDisplayed()
+        val ankara = provinceCities.first { it.name == "Ankara" }
+        show(CityUiState.Success(provinceCities, isSuggestion = true), selectedCityId = ankara.id)
+        composeRule.onNodeWithText("81 il").assertIsDisplayed()
         composeRule.onNode(SemanticsMatcher.expectValue(SemanticsProperties.Selected, true)).assertExists()
     }
 

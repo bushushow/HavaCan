@@ -33,7 +33,7 @@ class TurkishProvincesTest {
 
     @Test
     fun everySampleCityResolvesToAProvince() {
-        sampleCities.forEach { city -> assertEquals(city.name, city.province?.name) }
-        assert(sampleCities.size >= 10)
+        provinceCities.forEach { city -> assertEquals(city.name, city.province?.name) }
+        assert(provinceCities.size >= 10)
     }
 }

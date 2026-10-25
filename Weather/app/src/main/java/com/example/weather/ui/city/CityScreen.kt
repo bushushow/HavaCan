@@ -1,5 +1,22 @@
 package com.example.weather.ui.city
 
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Surface
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.semantics.Role
+import com.example.weather.data.Countries
+import com.example.weather.data.TURKIYE
+import com.example.weather.data.TurkishProvinces
+import com.example.weather.data.normalizeForSearch
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -73,6 +90,13 @@ fun CityRoute(
     viewModel: CityViewModel = viewModel(factory = CityViewModel.Factory),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val countryCode by viewModel.countryCode.collectAsStateWithLifecycle()
+    val browsingPlate by viewModel.browsingPlate.collectAsStateWithLifecycle()
+    var showCountries by rememberSaveable { mutableStateOf(false) }
+
+    // Back from a district list returns to the provinces before it closes the picker
+    BackHandler(enabled = browsingPlate != null) { viewModel.onExitDistricts() }
+
     CityScreen(
         uiState = uiState,
         query = viewModel.query,
@@ -83,7 +107,22 @@ fun CityRoute(
             onCityClick(city)
         },
         onRetry = viewModel::retry,
+        countryCode = countryCode,
+        onCountryClick = { showCountries = true },
+        onBrowseDistricts = { city -> TurkishProvinces.find(city.admin1)?.let { viewModel.onBrowseDistricts(it.plate) } },
+        onExitDistricts = viewModel::onExitDistricts,
     )
+
+    if (showCountries) {
+        CountryPickerSheet(
+            selected = countryCode,
+            onSelect = { code ->
+                viewModel.onCountrySelected(code)
+                showCountries = false
+            },
+            onDismiss = { showCountries = false },
+        )
+    }
 }
 
 @Composable
@@ -95,6 +134,11 @@ fun CityScreen(
     onCityClick: (City) -> Unit,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
+    countryCode: String? = TURKIYE,
+    onCountryClick: () -> Unit = {},
+    /** Shows an "İlçeler" button on Turkish provinces when set. */
+    onBrowseDistricts: ((City) -> Unit)? = null,
+    onExitDistricts: () -> Unit = {},
 ) {
     BoxWithConstraints(
         modifier = modifier
@@ -120,23 +164,37 @@ fun CityScreen(
                     .weight(1f)
                     .imePadding(),
             ) {
+                CountryBar(countryCode, onCountryClick)
                 when (uiState) {
                     CityUiState.Loading -> LoadingState(contentPadding = listPadding)
                     is CityUiState.Success -> {
+                        val districtsOf = uiState.districtsOf
                         SectionHeader(
-                            title = stringResource(
-                                if (uiState.isSuggestion) R.string.section_popular else R.string.section_results,
-                            ),
+                            title = when {
+                                districtsOf != null -> stringResource(R.string.districts_of, districtsOf)
+                                uiState.isSuggestion -> stringResource(
+                                    if (countryCode == TURKIYE) R.string.section_provinces else R.string.section_popular,
+                                )
+                                else -> stringResource(R.string.section_results)
+                            },
                             count = uiState.cities.size,
+                            onBack = if (districtsOf != null) onExitDistricts else null,
                         )
                         CityList(
                             cities = uiState.cities,
                             selectedCityId = selectedCityId,
                             onCityClick = onCityClick,
+                            onBrowseDistricts = if (districtsOf == null) onBrowseDistricts else null,
                             modifier = Modifier.fillMaxSize(),
                             contentPadding = listPadding,
                         )
                     }
+                    is CityUiState.Prompt -> MessageState(
+                        icon = R.drawable.ic_search,
+                        title = uiState.countryName?.let { stringResource(R.string.prompt_country, it) }
+                            ?: stringResource(R.string.prompt_world),
+                        detail = stringResource(R.string.prompt_detail),
+                    )
                     is CityUiState.Empty -> MessageState(
                         icon = R.drawable.ic_search,
                         title = stringResource(R.string.city_not_found),
@@ -252,13 +310,22 @@ private fun SearchField(query: String, onQueryChange: (String) -> Unit, modifier
 }
 
 @Composable
-private fun SectionHeader(title: String, count: Int) {
+private fun SectionHeader(title: String, count: Int, onBack: (() -> Unit)? = null) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 20.dp, end = 20.dp, top = 20.dp, bottom = 12.dp),
+            .padding(start = if (onBack != null) 8.dp else 20.dp, end = 20.dp, top = 12.dp, bottom = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
+        if (onBack != null) {
+            IconButton(onClick = onBack) {
+                Icon(
+                    painterResource(R.drawable.ic_arrow_back),
+                    stringResource(R.string.back_to_provinces),
+                    tint = MaterialTheme.colorScheme.onBackground,
+                )
+            }
+        }
         Text(
             text = title,
             style = MaterialTheme.typography.titleSmall,
@@ -373,5 +440,90 @@ private fun MessageState(
             Spacer(Modifier.size(8.dp))
             action()
         }
+    }
+}
+
+/** "🇹🇷 Türkiye ⌄" chip that opens the country picker. */
+@Composable
+private fun CountryBar(countryCode: String?, onClick: () -> Unit) {
+    val country = Countries.byCode(countryCode)
+    val world = stringResource(R.string.country_world)
+    val label = country?.let { "${it.flag}  ${it.name}" } ?: "\uD83C\uDF0D  $world"
+    val description = stringResource(R.string.cd_choose_country, country?.name ?: world)
+    Row(Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = 12.dp)) {
+        Surface(
+            onClick = onClick,
+            shape = CircleShape,
+            color = MaterialTheme.colorScheme.surface,
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+            modifier = Modifier.heightIn(min = 40.dp).semantics { contentDescription = description },
+        ) {
+            Row(
+                Modifier.padding(start = 14.dp, end = 8.dp, top = 8.dp, bottom = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(label, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurface)
+                Icon(
+                    painterResource(R.drawable.ic_expand_more),
+                    null,
+                    tint = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.size(20.dp),
+                )
+            }
+        }
+    }
+}
+
+/** Searchable list of every country: worldwide first, then Türkiye, then A–Z in Turkish order. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun CountryPickerSheet(selected: String?, onSelect: (String?) -> Unit, onDismiss: () -> Unit) {
+    var filter by rememberSaveable { mutableStateOf("") }
+    val countries = remember(filter) {
+        val needle = normalizeForSearch(filter)
+        Countries.all.filter { needle.isEmpty() || normalizeForSearch(it.name).contains(needle) }
+    }
+    ModalBottomSheet(onDismissRequest = onDismiss) {
+        OutlinedTextField(
+            value = filter,
+            onValueChange = { filter = it },
+            placeholder = { Text(stringResource(R.string.country_search)) },
+            leadingIcon = { Icon(painterResource(R.drawable.ic_search), contentDescription = null) },
+            singleLine = true,
+            shape = RoundedCornerShape(16.dp),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+        )
+        LazyColumn(Modifier.fillMaxWidth(), contentPadding = PaddingValues(vertical = 8.dp)) {
+            if (filter.isBlank()) {
+                item(key = "world") {
+                    CountryRow("\uD83C\uDF0D", stringResource(R.string.country_world), selected == null) { onSelect(null) }
+                }
+            }
+            items(countries, key = { it.code }) { country ->
+                CountryRow(country.flag, country.name, country.code == selected) { onSelect(country.code) }
+            }
+        }
+    }
+}
+
+@Composable
+private fun CountryRow(flag: String, name: String, selected: Boolean, onClick: () -> Unit) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .selectable(selected = selected, role = Role.RadioButton, onClick = onClick)
+            .heightIn(min = 52.dp)
+            .padding(horizontal = 24.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(flag, style = MaterialTheme.typography.titleLarge)
+        Spacer(Modifier.size(16.dp))
+        Text(
+            name,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.weight(1f),
+        )
+        if (selected) Icon(painterResource(R.drawable.ic_check), null, tint = MaterialTheme.colorScheme.primary)
     }
 }

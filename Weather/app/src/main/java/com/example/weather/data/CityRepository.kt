@@ -10,8 +10,8 @@ class CityRepository(private val api: CityApi) {
      * Searches cities by name. Keeps only populated places (the API also returns airports,
      * mountains, …) and lists Turkish results first, otherwise in the API's relevance order.
      */
-    suspend fun searchCities(query: String): List<City> =
-        api.searchCities(name = query.trim())
+    suspend fun searchCities(query: String, countryCode: String? = null): List<City> =
+        api.searchCities(name = query.trim(), countryCode = countryCode)
             .results
             .orEmpty()
             .filter { it.featureCode?.startsWith("PPL") ?: true }

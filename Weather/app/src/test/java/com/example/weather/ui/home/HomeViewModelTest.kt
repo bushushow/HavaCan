@@ -7,7 +7,7 @@ import com.example.weather.data.remote.CurrentDto
 import com.example.weather.data.remote.ForecastApi
 import com.example.weather.data.remote.ForecastResponse
 import com.example.weather.data.remote.HourlyDto
-import com.example.weather.data.sampleCities
+import com.example.weather.data.provinceCities
 import com.example.weather.model.City
 import com.example.weather.ui.city.ErrorReason
 import kotlinx.coroutines.Dispatchers
@@ -87,7 +87,7 @@ class HomeViewModelTest {
     @Test
     fun choosingCityLoadsItAndRemembersIt() = runTest(dispatcher) {
         val vm = viewModel()
-        val izmir = sampleCities.first { it.name == "İzmir" }
+        val izmir = provinceCities.first { it.name == "İzmir" }
         vm.onCityChosen(izmir)
         advanceTimeBy(1_000)
         runCurrent()

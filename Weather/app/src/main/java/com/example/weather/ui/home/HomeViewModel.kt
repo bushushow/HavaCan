@@ -12,7 +12,7 @@ import com.example.weather.data.LocationStore
 import com.example.weather.data.PreferencesLocationStore
 import com.example.weather.data.WeatherRepository
 import com.example.weather.data.remote.ApiClient
-import com.example.weather.data.sampleCities
+import com.example.weather.data.provinceCities
 import com.example.weather.domain.insight.WeatherInsightBuilder
 import com.example.weather.domain.running.RunningSuitabilityCalculator
 import com.example.weather.model.City
@@ -104,7 +104,7 @@ class HomeViewModel(
     }
 
     companion object {
-        val DEFAULT_CITY: City = sampleCities.first { it.name == "Ankara" }
+        val DEFAULT_CITY: City = provinceCities.first { it.name == "Ankara" }
 
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {

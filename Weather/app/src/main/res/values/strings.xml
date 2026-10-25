@@ -7,6 +7,17 @@
     <string name="search_clear">Aramayı temizle</string>
     <string name="result_count">%1$d şehir</string>
     <string name="section_popular">Popüler şehirler</string>
+    <string name="section_provinces">81 il</string>
+    <string name="districts_of">%1$s ilçeleri</string>
+    <string name="districts_button">İlçeler</string>
+    <string name="cd_districts">%1$s ilçelerini göster</string>
+    <string name="back_to_provinces">İllere dön</string>
+    <string name="country_world">Tüm dünya</string>
+    <string name="country_search">Ülke ara</string>
+    <string name="cd_choose_country">Ülke: %1$s. Değiştirmek için dokun.</string>
+    <string name="prompt_country">%1$s içinde şehir ara</string>
+    <string name="prompt_world">Dünyada şehir ara</string>
+    <string name="prompt_detail">Aramak için en az 2 harf yaz.</string>
     <string name="section_results">Sonuçlar</string>
     <string name="loading">Şehirler yükleniyor</string>
     <string name="error_title">Bağlantı kurulamadı</string>

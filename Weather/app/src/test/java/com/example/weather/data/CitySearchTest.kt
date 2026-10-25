@@ -4,16 +4,19 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 
 class CitySearchTest {
-    private fun names(query: String) = sampleCities.filterByQuery(query).map { it.name }
+    private fun names(query: String) = provinceCities.filterByQuery(query).map { it.name }
 
     @Test
     fun blankQueryReturnsAllCities() {
-        assertEquals(sampleCities.size, sampleCities.filterByQuery("  ").size)
+        assertEquals(provinceCities.size, provinceCities.filterByQuery("  ").size)
     }
 
     @Test
     fun matchesAnywhereInTheName() {
-        assertEquals(listOf("Adana", "Ankara", "Antalya", "Gaziantep", "İstanbul", "Van"), names("an"))
+        assertEquals(listOf("Kahramanmaraş"), names("maraş"))
+        assertEquals(listOf("Trabzon"), names("trab"))
+        // "kir" matches ı as well as i, anywhere in the name
+        assertEquals(setOf("Çankırı", "Diyarbakır", "Kırklareli", "Kırşehir", "Tekirdağ", "Kırıkkale"), names("kir").toSet())
     }
 
     @Test

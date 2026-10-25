@@ -3,7 +3,7 @@ package com.example.weather.ui.city
 import androidx.lifecycle.SavedStateHandle
 import com.example.weather.data.CityRepository
 import com.example.weather.data.remote.CityApi
-import com.example.weather.data.sampleCities
+import com.example.weather.data.provinceCities
 import com.example.weather.model.City
 import com.example.weather.model.CitySearchResponse
 import kotlinx.coroutines.Dispatchers
@@ -39,8 +39,14 @@ class CityViewModelTest {
     @After
     fun tearDown() = Dispatchers.resetMain()
 
+    private val samsunDistricts = listOf(
+        City(9549747, "Atakum", 41.35, 36.23, countryCode = "TR", admin1 = "Samsun"),
+        City(740264, "İlkadım", 41.28, 36.34, countryCode = "TR", admin1 = "Samsun"),
+        City(751077, "Bafra", 41.57, 35.91, countryCode = "TR", admin1 = "Samsun"),
+    )
+
     private fun viewModel(handle: SavedStateHandle = SavedStateHandle()) =
-        CityViewModel(CityRepository(api), handle)
+        CityViewModel(CityRepository(api), handle, districts = { plate -> if (plate == 55) samsunDistricts else emptyList() })
 
     /** Collects every state the ViewModel emits while [block] runs. */
     private fun TestScope.statesOf(vm: CityViewModel, block: suspend () -> Unit): List<CityUiState> {
@@ -57,7 +63,7 @@ class CityViewModelTest {
     fun blankQueryShowsSuggestionsWithoutCallingApi() = runTest(dispatcher) {
         val vm = viewModel()
         val states = statesOf(vm) {}
-        assertEquals(CityUiState.Success(sampleCities, isSuggestion = true), states.last())
+        assertEquals(CityUiState.Success(provinceCities, isSuggestion = true), states.last())
         assertEquals(0, api.calls)
     }
 
@@ -136,6 +142,49 @@ class CityViewModelTest {
         assertEquals(ankara.id, restored.selectedCityId)
     }
 
+    @Test
+    fun turkiyeIsDefaultAndListsAll81Provinces() = runTest(dispatcher) {
+        val vm = viewModel()
+        val states = statesOf(vm) {}
+        assertEquals(81, (states.last() as CityUiState.Success).cities.size)
+        assertEquals("TR", vm.countryCode.value)
+    }
+
+    @Test
+    fun searchIsLimitedToChosenCountry() = runTest(dispatcher) {
+        api.response = CitySearchResponse(listOf(ankara))
+        val vm = viewModel()
+        statesOf(vm) {
+            vm.onCountrySelected("DE")
+            vm.onQueryChange("berlin")
+        }
+        assertEquals(listOf<String?>("DE"), api.countries)
+    }
+
+    @Test
+    fun otherCountryWithoutQueryPromptsInsteadOfFakeList() = runTest(dispatcher) {
+        val vm = viewModel()
+        val states = statesOf(vm) { vm.onCountrySelected(null) }
+        assertEquals(CityUiState.Prompt(null), states.last())
+        assertEquals(0, api.calls)
+    }
+
+    @Test
+    fun browsingDistrictsListsProvinceThenDistrictsAndFiltersLocally() = runTest(dispatcher) {
+        val vm = viewModel()
+        val listed = statesOf(vm) { vm.onBrowseDistricts(55) }.last() as CityUiState.Success
+        assertEquals("Samsun", listed.districtsOf)
+        assertEquals(listOf("Samsun", "Atakum", "İlkadım", "Bafra"), listed.cities.map { it.name })
+
+        val filtered = statesOf(vm) { vm.onQueryChange("ata") }.last() as CityUiState.Success
+        assertEquals(listOf("Atakum"), filtered.cities.map { it.name })
+        assertEquals(0, api.calls)
+
+        val back = statesOf(vm) { vm.onExitDistricts() }.last() as CityUiState.Success
+        assertEquals(null, back.districtsOf)
+        assertEquals(81, back.cities.size)
+    }
+
     private val ankara = City(323786, "Ankara", 39.91987, 32.85427, countryCode = "TR", admin1 = "Ankara", featureCode = "PPLC")
 
     private class FakeCityApi : CityApi {
@@ -144,8 +193,13 @@ class CityViewModelTest {
         val queries = mutableListOf<String>()
         val calls get() = queries.size
 
-        override suspend fun searchCities(name: String, count: Int, language: String, format: String): CitySearchResponse {
+        val countries = mutableListOf<String?>()
+
+        override suspend fun searchCities(
+            name: String, count: Int, language: String, format: String, countryCode: String?,
+        ): CitySearchResponse {
             queries += name
+            countries += countryCode
             delay(50)
             failure?.let { throw it }
             return response

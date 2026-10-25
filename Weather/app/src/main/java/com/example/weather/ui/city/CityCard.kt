@@ -46,6 +46,8 @@ fun CityCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     selected: Boolean = false,
+    /** Replaces the trailing chevron, e.g. with an "İlçeler" button. */
+    trailing: (@Composable () -> Unit)? = null,
 ) {
     val colors = MaterialTheme.colorScheme
     Card(
@@ -83,11 +85,15 @@ fun CityCard(
                     )
                 }
             }
-            Icon(
-                painter = painterResource(if (selected) R.drawable.ic_check_circle else R.drawable.ic_chevron_right),
-                contentDescription = null,
-                tint = if (selected) colors.primary else colors.onSurfaceVariant.copy(alpha = 0.6f),
-            )
+            if (trailing != null && !selected) {
+                trailing()
+            } else {
+                Icon(
+                    painter = painterResource(if (selected) R.drawable.ic_check_circle else R.drawable.ic_chevron_right),
+                    contentDescription = null,
+                    tint = if (selected) colors.primary else colors.onSurfaceVariant.copy(alpha = 0.6f),
+                )
+            }
         }
     }
 }
