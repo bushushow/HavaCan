@@ -3,30 +3,30 @@ package com.example.weather.ui.theme
 import androidx.compose.ui.graphics.Color
 import com.example.weather.data.Region
 
-// Brand palette: clear-sky blues
-val SkyPrimary = Color(0xFF1E5AA8)
-val SkyPrimaryContainer = Color(0xFFD8E6FF)
-val SkyOnPrimaryContainer = Color(0xFF0B2A55)
-val SkyBackground = Color(0xFFF3F6FB)
-val SkySurfaceVariant = Color(0xFFE6ECF5)
-val SkyOnSurface = Color(0xFF162033)
-val SkyOnSurfaceVariant = Color(0xFF55627A)
-val SkyOutline = Color(0xFFC4CEDD)
+// HavaCan palette: warm ivory canvas, deep navy type, vivid blue, sunny yellow
+val Ivory = Color(0xFFFBF7EE)
+val IvoryDeep = Color(0xFFF3EEE2)
+val Navy = Color(0xFF0B1B3F)
+val NavySoft = Color(0xFF4A5675)
+val HavaBlue = Color(0xFF1D63F0)
+val HavaBlueDeep = Color(0xFF0F47C2)
+val HavaBlueLight = Color(0xFFE6EEFF)
+val SkyTint = Color(0xFFF2F6FF)
+val Sun = Color(0xFFFFC72C)
+val SunDeep = Color(0xFFF5A300)
+val SunLight = Color(0xFFFFF4CC)
+val GoodGreen = Color(0xFF6CC24A)
+val RiskRed = Color(0xFFE5484D)
 
-val NightPrimary = Color(0xFF9EC3FF)
-val NightOnPrimary = Color(0xFF0B2A55)
-val NightPrimaryContainer = Color(0xFF203E6B)
-val NightOnPrimaryContainer = Color(0xFFD8E6FF)
-val NightBackground = Color(0xFF0D131E)
-val NightSurface = Color(0xFF172030)
-val NightSurfaceVariant = Color(0xFF232D3F)
-val NightOnSurface = Color(0xFFE4E9F2)
-val NightOnSurfaceVariant = Color(0xFFADB8CA)
-val NightOutline = Color(0xFF3A465B)
+val NightBackground = Color(0xFF0B1430)
+val NightSurface = Color(0xFF15214A)
+val NightSurfaceVariant = Color(0xFF1E2C5C)
+val NightOnSurface = Color(0xFFEAF0FF)
+val NightOnSurfaceVariant = Color(0xFFAEB9D8)
 
-// Header gradient, top to bottom
-val DayHeaderGradient = listOf(Color(0xFF5C9EEA), Color(0xFF2A5FB5))
-val NightHeaderGradient = listOf(Color(0xFF253B63), Color(0xFF131D30))
+// Header gradient of the city search screen, top to bottom
+val DayHeaderGradient = listOf(Color(0xFF3D82FF), HavaBlueDeep)
+val NightHeaderGradient = listOf(Color(0xFF233A7A), Color(0xFF111C40))
 
 // Plate badge colours per geographic region; dark enough for white text in both themes
 val ForeignCityColor = Color(0xFF546E7A)

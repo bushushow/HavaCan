@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit
 /** Single Retrofit setup for the app. Open-Meteo needs no API key. */
 object ApiClient {
     private const val GEOCODING_BASE_URL = "https://geocoding-api.open-meteo.com/"
+    private const val FORECAST_BASE_URL = "https://api.open-meteo.com/"
 
     private val okHttpClient: OkHttpClient by lazy {
         OkHttpClient.Builder()
@@ -24,12 +25,14 @@ object ApiClient {
             .build()
     }
 
-    val cityApi: CityApi by lazy {
+    val cityApi: CityApi by lazy { retrofit(GEOCODING_BASE_URL).create(CityApi::class.java) }
+
+    val forecastApi: ForecastApi by lazy { retrofit(FORECAST_BASE_URL).create(ForecastApi::class.java) }
+
+    private fun retrofit(baseUrl: String): Retrofit =
         Retrofit.Builder()
-            .baseUrl(GEOCODING_BASE_URL)
+            .baseUrl(baseUrl)
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
-            .create(CityApi::class.java)
-    }
 }

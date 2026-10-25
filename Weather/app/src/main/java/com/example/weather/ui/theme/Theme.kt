@@ -10,38 +10,50 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 
 private val LightColorScheme = lightColorScheme(
-    primary = SkyPrimary,
+    primary = HavaBlue,
     onPrimary = Color.White,
-    primaryContainer = SkyPrimaryContainer,
-    onPrimaryContainer = SkyOnPrimaryContainer,
-    background = SkyBackground,
-    onBackground = SkyOnSurface,
+    primaryContainer = HavaBlueLight,
+    onPrimaryContainer = HavaBlueDeep,
+    secondary = Sun,
+    onSecondary = Navy,
+    secondaryContainer = SunLight,
+    onSecondaryContainer = Navy,
+    tertiary = GoodGreen,
+    background = Ivory,
+    onBackground = Navy,
     surface = Color.White,
-    onSurface = SkyOnSurface,
-    surfaceVariant = SkySurfaceVariant,
-    onSurfaceVariant = SkyOnSurfaceVariant,
-    outline = SkyOutline,
+    onSurface = Navy,
+    surfaceVariant = SkyTint,
+    onSurfaceVariant = NavySoft,
+    outline = Color(0xFFD9DEEA),
+    error = RiskRed,
 )
 
 private val DarkColorScheme = darkColorScheme(
-    primary = NightPrimary,
-    onPrimary = NightOnPrimary,
-    primaryContainer = NightPrimaryContainer,
-    onPrimaryContainer = NightOnPrimaryContainer,
+    primary = Color(0xFF6E9BFF),
+    onPrimary = Navy,
+    primaryContainer = Color(0xFF1C3A8A),
+    onPrimaryContainer = HavaBlueLight,
+    secondary = Sun,
+    onSecondary = Navy,
+    secondaryContainer = Color(0xFF4A3A00),
+    onSecondaryContainer = SunLight,
+    tertiary = GoodGreen,
     background = NightBackground,
     onBackground = NightOnSurface,
     surface = NightSurface,
     onSurface = NightOnSurface,
     surfaceVariant = NightSurfaceVariant,
     onSurfaceVariant = NightOnSurfaceVariant,
-    outline = NightOutline,
+    outline = Color(0xFF2E3B6B),
+    error = Color(0xFFFF6B6F),
 )
 
-/** Gradient behind the app header; differs between light and dark theme. */
+/** Gradient behind the city search header; differs between light and dark theme. */
 val LocalHeaderGradient = staticCompositionLocalOf { DayHeaderGradient }
 
 /**
- * The app uses its own sky palette instead of wallpaper-based dynamic colour,
+ * The app uses its own HavaCan palette instead of wallpaper-based dynamic colour,
  * so the brand looks the same on every device.
  */
 @Composable
