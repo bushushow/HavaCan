@@ -2,10 +2,18 @@
     <string name="app_name">Hava</string>
     <string name="greeting">Merhaba Kamp!</string>
     <string name="region_subtitle">%1$s Bölgesi</string>
+    <string name="province_region_subtitle">%1$s · %2$s Bölgesi</string>
     <string name="search_label">Şehir ara</string>
     <string name="search_clear">Aramayı temizle</string>
     <string name="result_count">%1$d şehir</string>
-    <string name="section_cities">Şehirler</string>
+    <string name="section_popular">Popüler şehirler</string>
+    <string name="section_results">Sonuçlar</string>
+    <string name="loading">Şehirler yükleniyor</string>
+    <string name="error_title">Bağlantı kurulamadı</string>
+    <string name="error_no_connection">İnternet bağlantını kontrol edip tekrar dene.</string>
+    <string name="error_server">Hava servisi şu an yanıt vermiyor. Biraz sonra tekrar dene.</string>
+    <string name="error_unknown">Beklenmeyen bir yanıt geldi. Tekrar dene.</string>
+    <string name="retry">Tekrar dene</string>
     <string name="city_not_found">Şehir bulunamadı</string>
     <string name="city_not_found_detail">“%1$s” ile eşleşen bir şehir yok.</string>
 </resources>

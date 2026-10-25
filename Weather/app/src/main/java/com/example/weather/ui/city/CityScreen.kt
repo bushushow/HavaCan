@@ -1,5 +1,10 @@
 package com.example.weather.ui.city
 
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -13,6 +18,7 @@ import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
@@ -24,6 +30,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -35,23 +42,23 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.weather.R
-import com.example.weather.data.filterByQuery
 import com.example.weather.model.City
 import com.example.weather.ui.theme.LocalHeaderGradient
 
@@ -59,17 +66,36 @@ import com.example.weather.ui.theme.LocalHeaderGradient
 private val WideLayoutMinWidth = 600.dp
 private val ContentMaxWidth = 720.dp
 
+/** Connects [CityScreen] to [CityViewModel]. */
+@Composable
+fun CityRoute(
+    onCityClick: (City) -> Unit,
+    viewModel: CityViewModel = viewModel(factory = CityViewModel.Factory),
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    CityScreen(
+        uiState = uiState,
+        query = viewModel.query,
+        onQueryChange = viewModel::onQueryChange,
+        selectedCityId = viewModel.selectedCityId,
+        onCityClick = { city ->
+            viewModel.onCitySelected(city)
+            onCityClick(city)
+        },
+        onRetry = viewModel::retry,
+    )
+}
+
 @Composable
 fun CityScreen(
-    cities: List<City>,
+    uiState: CityUiState,
+    query: String,
+    onQueryChange: (String) -> Unit,
+    selectedCityId: Long?,
     onCityClick: (City) -> Unit,
+    onRetry: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    // rememberSaveable keeps both values across rotation and process death; plain remember lost them
-    var query by rememberSaveable { mutableStateOf("") }
-    var selectedCityId by rememberSaveable { mutableStateOf<Long?>(null) }
-    val filtered = remember(cities, query) { cities.filterByQuery(query) }
-
     BoxWithConstraints(
         modifier = modifier
             .fillMaxSize()
@@ -80,11 +106,13 @@ fun CityScreen(
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Header(query = query, onQueryChange = { query = it }, wide = wide)
+            Header(query = query, onQueryChange = onQueryChange, wide = wide)
 
-            val sideAndBottom = WindowInsets.safeDrawing
-                .only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom)
+            val bottomInset = WindowInsets.safeDrawing
+                .only(WindowInsetsSides.Bottom)
                 .asPaddingValues()
+                .calculateBottomPadding()
+            val listPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = bottomInset + 16.dp)
             Column(
                 modifier = Modifier
                     .widthIn(max = ContentMaxWidth)
@@ -92,23 +120,41 @@ fun CityScreen(
                     .weight(1f)
                     .imePadding(),
             ) {
-                SectionHeader(count = filtered.size)
-                if (filtered.isEmpty()) {
-                    EmptyState(query = query, modifier = Modifier.fillMaxSize())
-                } else {
-                    CityList(
-                        cities = filtered,
-                        selectedCityId = selectedCityId,
-                        onCityClick = { city ->
-                            selectedCityId = city.id
-                            onCityClick(city)
-                        },
-                        modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(
-                            start = 16.dp,
-                            end = 16.dp,
-                            bottom = sideAndBottom.calculateBottomPadding() + 16.dp,
+                when (uiState) {
+                    CityUiState.Loading -> LoadingState(contentPadding = listPadding)
+                    is CityUiState.Success -> {
+                        SectionHeader(
+                            title = stringResource(
+                                if (uiState.isSuggestion) R.string.section_popular else R.string.section_results,
+                            ),
+                            count = uiState.cities.size,
+                        )
+                        CityList(
+                            cities = uiState.cities,
+                            selectedCityId = selectedCityId,
+                            onCityClick = onCityClick,
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = listPadding,
+                        )
+                    }
+                    is CityUiState.Empty -> MessageState(
+                        icon = R.drawable.ic_search,
+                        title = stringResource(R.string.city_not_found),
+                        detail = stringResource(R.string.city_not_found_detail, uiState.query),
+                    )
+                    is CityUiState.Error -> MessageState(
+                        icon = R.drawable.ic_cloud_off,
+                        title = stringResource(R.string.error_title),
+                        detail = stringResource(
+                            when (uiState.reason) {
+                                ErrorReason.NoConnection -> R.string.error_no_connection
+                                ErrorReason.Server -> R.string.error_server
+                                ErrorReason.Unknown -> R.string.error_unknown
+                            },
                         ),
+                        action = {
+                            Button(onClick = onRetry) { Text(stringResource(R.string.retry)) }
+                        },
                     )
                 }
             }
@@ -190,6 +236,7 @@ private fun SearchField(query: String, onQueryChange: (String) -> Unit, modifier
         },
         singleLine = true,
         shape = RoundedCornerShape(16.dp),
+        // Searching already runs while typing; the keyboard's search key just closes the keyboard
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
         keyboardActions = KeyboardActions(onSearch = { focusManager.clearFocus() }),
         colors = OutlinedTextFieldDefaults.colors(
@@ -205,7 +252,7 @@ private fun SearchField(query: String, onQueryChange: (String) -> Unit, modifier
 }
 
 @Composable
-private fun SectionHeader(count: Int) {
+private fun SectionHeader(title: String, count: Int) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -213,7 +260,7 @@ private fun SectionHeader(count: Int) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
-            text = stringResource(R.string.section_cities),
+            text = title,
             style = MaterialTheme.typography.titleSmall,
             color = MaterialTheme.colorScheme.onBackground,
             modifier = Modifier.weight(1f),
@@ -226,10 +273,73 @@ private fun SectionHeader(count: Int) {
     }
 }
 
+/** Pulsing placeholder cards shaped like the real list, so the layout doesn't jump when results arrive. */
 @Composable
-private fun EmptyState(query: String, modifier: Modifier = Modifier) {
+private fun LoadingState(contentPadding: PaddingValues) {
+    val pulse by rememberInfiniteTransition(label = "loading").animateFloat(
+        initialValue = 0.4f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(tween(700), RepeatMode.Reverse),
+        label = "pulse",
+    )
+    val description = stringResource(R.string.loading)
     Column(
-        modifier = modifier.padding(32.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(contentPadding)
+            .padding(top = 20.dp)
+            .alpha(pulse)
+            .semantics { contentDescription = description },
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        repeat(5) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(MaterialTheme.colorScheme.surface)
+                    .padding(horizontal = 16.dp, vertical = 14.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                Box(
+                    Modifier
+                        .size(52.dp)
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(MaterialTheme.colorScheme.surfaceVariant),
+                )
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Box(
+                        Modifier
+                            .width(120.dp)
+                            .height(16.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(MaterialTheme.colorScheme.surfaceVariant),
+                    )
+                    Box(
+                        Modifier
+                            .width(180.dp)
+                            .height(12.dp)
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(MaterialTheme.colorScheme.surfaceVariant),
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun MessageState(
+    icon: Int,
+    title: String,
+    detail: String,
+    action: (@Composable () -> Unit)? = null,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(32.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically),
     ) {
@@ -241,7 +351,7 @@ private fun EmptyState(query: String, modifier: Modifier = Modifier) {
             contentAlignment = Alignment.Center,
         ) {
             Icon(
-                painter = painterResource(R.drawable.ic_search),
+                painter = painterResource(icon),
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(32.dp),
@@ -249,15 +359,19 @@ private fun EmptyState(query: String, modifier: Modifier = Modifier) {
         }
         Spacer(Modifier.size(8.dp))
         Text(
-            text = stringResource(R.string.city_not_found),
+            text = title,
             style = MaterialTheme.typography.titleLarge,
             color = MaterialTheme.colorScheme.onBackground,
         )
         Text(
-            text = stringResource(R.string.city_not_found_detail, query.trim()),
+            text = detail,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
         )
+        if (action != null) {
+            Spacer(Modifier.size(8.dp))
+            action()
+        }
     }
 }

@@ -34,8 +34,12 @@ fun CityList(
             val province = city.province
             CityCard(
                 name = city.name,
-                subtitle = province?.let { stringResource(R.string.region_subtitle, it.region.label) }
-                    ?: city.country,
+                subtitle = when {
+                    province == null -> listOfNotNull(city.admin1, city.country).distinct().joinToString(", ")
+                    province.name == city.name -> stringResource(R.string.region_subtitle, province.region.label)
+                    // A district or town: show which province it belongs to
+                    else -> stringResource(R.string.province_region_subtitle, province.name, province.region.label)
+                },
                 badge = province?.plate?.toString()?.padStart(2, '0') ?: city.countryCode ?: "?",
                 badgeColor = province?.let { regionColor(it.region) } ?: ForeignCityColor,
                 selected = city.id == selectedCityId,

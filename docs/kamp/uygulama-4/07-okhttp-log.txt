@@ -1,0 +1,19 @@
+﻿
+10-25 12:08:18.248 12606 12730 I okhttp.OkHttpClient: --> GET https://geocoding-api.open-meteo.com/v1/search?name=izmir
+&count=20&language=tr&format=json
+10-25 12:08:19.883 12606 12730 I okhttp.OkHttpClient: <-- 200 OK https://geocoding-api.open-meteo.com/v1/search?name=iz
+mir&count=20&language=tr&format=json (1634ms, unknown-length body)
+10-25 12:08:27.524 12606 12730 I okhttp.OkHttpClient: --> GET https://geocoding-api.open-meteo.com/v1/search?name=xqzvw
+&count=20&language=tr&format=json
+10-25 12:08:27.618 12606 12730 I okhttp.OkHttpClient: <-- 200 OK https://geocoding-api.open-meteo.com/v1/search?name=xq
+zvw&count=20&language=tr&format=json (93ms, unknown-length body)
+10-25 12:08:40.583 12606 12730 I okhttp.OkHttpClient: --> GET https://geocoding-api.open-meteo.com/v1/search?name=bursa
+&count=20&language=tr&format=json
+10-25 12:08:40.594 12606 12730 I okhttp.OkHttpClient: <-- HTTP FAILED: java.net.UnknownHostException: Unable to resolve
+ host "geocoding-api.open-meteo.com": No address associated with hostname
+10-25 12:08:56.556 12606 12730 I okhttp.OkHttpClient: --> GET https://geocoding-api.open-meteo.com/v1/search?name=bursa
+&count=20&language=tr&format=json
+10-25 12:08:57.589 12606 12730 I okhttp.OkHttpClient: <-- 200 OK https://geocoding-api.open-meteo.com/v1/search?name=bu
+rsa&count=20&language=tr&format=json (1032ms, unknown-length body)
+
+
