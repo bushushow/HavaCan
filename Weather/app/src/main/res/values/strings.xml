@@ -36,7 +36,8 @@
     <string name="cd_choose_city">Konum: %1$s. Değiştirmek için dokun.</string>
     <string name="temperature">%1$d°</string>
     <string name="feels_like">Hissedilen %1$d°</string>
-    <string name="high_low">%1$d° / %2$d°</string>
+    <string name="high_low">↑ %1$d°  ↓ %2$d°</string>
+    <string name="cd_high_low">En yüksek %1$d°, en düşük %2$d°</string>
     <string name="forecast_for">%1$s tahmini</string>
     <string name="now">Şimdi</string>
     <string name="weather_loading">Hava yükleniyor</string>

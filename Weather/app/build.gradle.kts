@@ -7,12 +7,14 @@ plugins {
 }
 
 android {
-    namespace = "com.example.weather"
+    namespace = "com.kampplus.havacan"
     compileSdk {
         version = release(37)
     }
 
     defaultConfig {
+        // Kept from the first install until after the Kamp+ demo, so data on test phones survives;
+        // the code package is com.kampplus.havacan (namespace above).
         applicationId = "com.example.weather"
         minSdk = 24
         targetSdk = 37
