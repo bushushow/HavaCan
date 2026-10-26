@@ -11,15 +11,15 @@ Uygulama yayına çıkmadan önce bu kaynaklar uygulama içinde de anılmalı (�
 
 ## İl ve ilçe verisini yeniden üretmek
 
-`Weather/app/src/main/java/com/example/weather/data/ProvinceCities.kt` ve
+`Weather/app/src/main/java/com/kampplus/havacan/data/ProvinceCities.kt` ve
 `Weather/app/src/main/assets/districts_tr.json` elle düzenlenmez; şu iki script üretir:
 
 ```bash
 # GeoNames dosyalarını geonames/ klasörüne indir: admin1CodesASCII.txt, admin2Codes.txt, TR.zip (açılmış TR.txt)
 python tools/places/build_places.py geonames places.json
 python tools/places/emit_places.py places.json \
-  Weather/app/src/main/java/com/example/weather/data/TurkishProvinces.kt \
-  Weather/app/src/main/java/com/example/weather/data/ProvinceCities.kt \
+  Weather/app/src/main/java/com/kampplus/havacan/data/TurkishProvinces.kt \
+  Weather/app/src/main/java/com/kampplus/havacan/data/ProvinceCities.kt \
   Weather/app/src/main/assets/districts_tr.json
 ```
 
