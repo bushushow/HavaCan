@@ -22,6 +22,16 @@ HavaCan, Open-Meteo'nun gerçek tahminini alıp onu **kararlara** çevirir: koş
 
 > **Gerçek veri ilkesi.** Uygulamada demo verisi yoktur. Tahmin gelmezse puan ya da öneri uydurulmaz; ekranda nedeni ve "Tekrar dene" yazar. Kombinler yalnızca kullanıcının fotoğrafladığı kıyafetlerden kurulur.
 
+<div align="center">
+
+| Ana sayfa | Koyu tema | Planlarım | Dolabım | HavaCan Asistan |
+|:---:|:---:|:---:|:---:|:---:|
+| <img src="docs/screenshots/ana-sayfa.png" width="170" alt="Ana sayfa: gökyüzü başlığı, 15 derece açık hava, ada üstünde HavaCan ve saatlik sıcaklık grafiği"> | <img src="docs/screenshots/ana-sayfa-koyu.png" width="170" alt="Ana sayfanın koyu teması: lacivert kartlar ve sarı seçili sekme"> | <img src="docs/screenshots/planlarim.png" width="170" alt="Planlarım: haftalık hava şeridi, Weather Meet kartı ve hava takibi açık bir koşu planı"> | <img src="docs/screenshots/dolabim.png" width="170" alt="Dolabım: Salla Kombin kartı, kıyafet ekle düğmesi ve fotoğraflı kıyafetler"> | <img src="docs/screenshots/havacan-asistan.png" width="170" alt="HavaCan Asistan: karakter, karşılama ve iki hazır soru"> |
+
+<sub>Emülatörde gerçek Open-Meteo verisiyle alındı (Gümüşhane, 26 Ekim). Dolaptaki kıyafetler test için eklenmiş çizim fotoğraflardır.</sub>
+
+</div>
+
 ## Özellikler
 
 | | Özellik | Ne yapar | Kural nerede |
