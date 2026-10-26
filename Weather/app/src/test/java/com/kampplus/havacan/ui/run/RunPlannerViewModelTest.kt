@@ -2,6 +2,7 @@ package com.kampplus.havacan.ui.run
 
 import com.kampplus.havacan.data.FilePlanStore
 import com.kampplus.havacan.data.LocationStore
+import com.kampplus.havacan.data.OpenMeteoWeatherRepository
 import com.kampplus.havacan.data.PlanScheduler
 import com.kampplus.havacan.data.WeatherRepository
 import com.kampplus.havacan.data.provinceCities
@@ -104,7 +105,7 @@ class RunPlannerViewModelTest {
 
     private fun viewModel(store: FilePlanStore, planId: String? = null, start: String? = null) = RunPlannerViewModel(
         plans = store,
-        weather = WeatherRepository(api),
+        weather = OpenMeteoWeatherRepository(api),
         location = object : LocationStore {
             override fun load(): City = ankara
             override fun save(city: City) = Unit

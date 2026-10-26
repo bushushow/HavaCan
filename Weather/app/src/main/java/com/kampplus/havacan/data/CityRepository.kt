@@ -3,14 +3,19 @@ package com.kampplus.havacan.data
 import com.kampplus.havacan.data.remote.CityApi
 import com.kampplus.havacan.model.City
 
-/** Sits between the ViewModel and the API so the UI never deals with raw API quirks. */
-class CityRepository(private val api: CityApi) {
+/** Online place search, used when the on-phone list of provinces and districts has no match. */
+interface CityRepository {
+    suspend fun searchCities(query: String, countryCode: String? = null): List<City>
+}
+
+/** Open-Meteo Geocoding, so the UI never deals with raw API quirks. */
+class OpenMeteoCityRepository(private val api: CityApi) : CityRepository {
 
     /**
-     * Searches cities by name. Keeps only populated places (the API also returns airports,
-     * mountains, …) and lists Turkish results first, otherwise in the API's relevance order.
+     * Keeps only populated places (the API also returns airports, mountains, …) and lists
+     * Turkish results first, otherwise in the API's relevance order.
      */
-    suspend fun searchCities(query: String, countryCode: String? = null): List<City> =
+    override suspend fun searchCities(query: String, countryCode: String?): List<City> =
         api.searchCities(name = query.trim(), countryCode = countryCode)
             .results
             .orEmpty()

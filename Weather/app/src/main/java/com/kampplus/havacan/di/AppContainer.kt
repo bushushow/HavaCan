@@ -10,6 +10,8 @@ import com.kampplus.havacan.data.CityRepository
 import com.kampplus.havacan.data.DeviceLocator
 import com.kampplus.havacan.data.FilePlanStore
 import com.kampplus.havacan.data.LocationStore
+import com.kampplus.havacan.data.OpenMeteoCityRepository
+import com.kampplus.havacan.data.OpenMeteoWeatherRepository
 import com.kampplus.havacan.data.PlaceDirectory
 import com.kampplus.havacan.data.PlanRepository
 import com.kampplus.havacan.data.PlanScheduler
@@ -36,8 +38,8 @@ import java.io.File
 class AppContainer private constructor(context: Context) {
     private val backendUrl = BuildConfig.HAVACAN_API_URL.takeIf { it.isNotBlank() }
 
-    val weather = WeatherRepository(ApiClient.forecastApi)
-    val cities = CityRepository(ApiClient.cityApi)
+    val weather: WeatherRepository = OpenMeteoWeatherRepository(ApiClient.forecastApi)
+    val cities: CityRepository = OpenMeteoCityRepository(ApiClient.cityApi)
     val places = PlaceDirectory(AssetDistrictSource(context))
     val recentPlaces: RecentPlaces = PreferencesRecentPlaces(context)
     val deviceLocator: DeviceLocator = AndroidDeviceLocator(context)

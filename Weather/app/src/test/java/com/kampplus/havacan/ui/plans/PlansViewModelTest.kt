@@ -3,6 +3,7 @@ package com.kampplus.havacan.ui.plans
 import com.kampplus.havacan.data.CalendarEvent
 import com.kampplus.havacan.data.FilePlanStore
 import com.kampplus.havacan.data.LocationStore
+import com.kampplus.havacan.data.OpenMeteoWeatherRepository
 import com.kampplus.havacan.data.PlanScheduler
 import com.kampplus.havacan.data.WeatherRepository
 import com.kampplus.havacan.data.provinceCities
@@ -85,7 +86,7 @@ class PlansViewModelTest {
     private fun TestScope.viewModel(store: FilePlanStore): PlansViewModel {
         val vm = PlansViewModel(
             plans = store,
-            weather = WeatherRepository(api),
+            weather = OpenMeteoWeatherRepository(api),
             location = object : LocationStore {
                 override fun load(): City = ankara
                 override fun save(city: City) = Unit

@@ -2,6 +2,7 @@ package com.kampplus.havacan.ui.home
 
 import androidx.lifecycle.SavedStateHandle
 import com.kampplus.havacan.data.LocationStore
+import com.kampplus.havacan.data.OpenMeteoWeatherRepository
 import com.kampplus.havacan.data.WeatherRepository
 import com.kampplus.havacan.data.provinceCities
 import com.kampplus.havacan.data.remote.CurrentDto
@@ -41,7 +42,7 @@ class HomeViewModelTest {
     fun tearDown() = Dispatchers.resetMain()
 
     private fun TestScope.viewModel(handle: SavedStateHandle = SavedStateHandle()): HomeViewModel {
-        val vm = HomeViewModel(WeatherRepository(api), store, handle)
+        val vm = HomeViewModel(OpenMeteoWeatherRepository(api), store, handle)
         backgroundScope.launch(dispatcher) { vm.uiState.collect {} }
         advanceTimeBy(1_000)
         runCurrent()

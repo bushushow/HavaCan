@@ -5,6 +5,7 @@ import com.kampplus.havacan.data.CityRepository
 import com.kampplus.havacan.data.DeviceLocator
 import com.kampplus.havacan.data.DistrictSource
 import com.kampplus.havacan.data.Fix
+import com.kampplus.havacan.data.OpenMeteoCityRepository
 import com.kampplus.havacan.data.PlaceDirectory
 import com.kampplus.havacan.data.PlaceItem
 import com.kampplus.havacan.data.RecentPlaces
@@ -79,7 +80,7 @@ class LocationPickerViewModelTest {
     @Before
     fun setUp() {
         Dispatchers.setMain(dispatcher)
-        vm = LocationPickerViewModel(PlaceDirectory(districts), CityRepository(api), recents, locator, SavedStateHandle())
+        vm = LocationPickerViewModel(PlaceDirectory(districts), OpenMeteoCityRepository(api), recents, locator, SavedStateHandle())
     }
 
     @After
