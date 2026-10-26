@@ -46,15 +46,13 @@ cd /c/Users/bsroz/turkcell_camp/Weather && JAVA_HOME="/c/Program Files/Android/A
 
 ## 4. Mimari (bugünkü hali)
 
-- Tek `:app` modülü; paketler `model/`, `domain/` (saf Kotlin, birim testli kurallar), `data/` (repository'ler, kalıcılık, ağ), `ui/` (Compose ekranları, ViewModel'ler).
-- MVVM + `StateFlow`; ViewModel'ler `Factory` ile bağımlılık alıyor, çoğu `AppGraph.get(context)` (`data/AppGraph.kt`, elle DI) üzerinden.
-- Kurallar (`domain/`): `RunningSuitabilityCalculator`, `RunSlotPlanner`, `PlanAdvisor`, `OutfitEngine`, `WeatherInsight`, `voice/VoiceCommandParser`, `voice/HavaCanAssistant`.
-- Veri: Open-Meteo Forecast (16 gün, saatlik, `timezone=auto`, nem dahil) → `WeatherRepository` (10 dk bellek önbelleği). Konum arama: 81 il + 973 ilçe telefonda (`data/PlaceDirectory.kt`, `assets/districts_tr.json`), yalnızca yerelde sonuç yoksa Open-Meteo Geocoding.
-- Kalıcılık: planlar `FilePlanStore` (JSON, atomik yazma); Dolabım Room (`havacan.db`, fotoğraflar `filesDir/wardrobe`); ayarlar SharedPreferences (`LocationStore`, `VoiceSettings`, `ProfileStore`, `RecentPlaces`).
-- Bildirimler: WorkManager (`ui/plans/PlanWork.kt`): hatırlatma + 3 saatte bir hava takibi; Profil > Bildirimler tercihleri işçilerde uygulanıyor. Paket adı değiştiği için `WorkPlanScheduler.migrateWorkOnce()` açılışta eski işleri bir kez yeniden kuruyor.
-- Sıcaklık birimi `model/Units.kt` (`Double.deg()`), ekran tercihleri `ui/theme/DisplayPrefs.kt`: ikisi de global snapshot nesnesi (bölüm 8'de düzeltilecek).
-- Uygulama kabuğu `ui/HavaApp.kt`: alt menü Hava, Planlar, HavaCan (sohbet), Dolabım, Profil. Konum seçici ve Koşu Planla tam ekran katman. Sesli komutla gezinme `go()` ile. Navigation Compose kullanılmıyor.
-- Backend: `https://havacan-api.vercel.app` (`POST /v1/assistant` araçlı yapay zekâ, `POST /v1/clothing/analyze`). `Weather/local.properties` içinde `HAVACAN_API_URL` bu adres (dosya Git'e girmez).
+Ayrıntı ve gerekçeler: [`docs/ARCHITECTURE.md`](ARCHITECTURE.md) ve [`docs/adr/`](adr/).
+
+- İki modül: `:core:domain` (saf Kotlin: `model/`, `domain/`) ve `:app` (`data/`, `di/`, `ui/`). `domain` içinde Android/Room/Compose importu derlenmez.
+- Tek kurulum noktası `di/AppContainer`; repository'ler arayüz arkasında (`WeatherRepository`, `CityRepository`, `WardrobeRepository`, `PlanRepository`).
+- Ortak `LoadState<T>` ve `ErrorReason` (`ui/common`); sıcaklık birimi ve ekran tercihleri `ProfileStore.prefs` → `LocalDisplaySettings` (global durum yok).
+- Navigation Compose: `ui/navigation/HavaRoutes` (sekmeler, `city`, `run?planId&start`).
+- Kalite kapısı: `.github/workflows/android.yml` (spotless, testler, derleme).
 
 ## 5. Biten özellikler
 
@@ -107,31 +105,11 @@ Kullanıcı onayladı ("önce bu özelliği yaparız"). Referans görsel gelirse
 4. **Paylaş**: Android paylaşım ekranıyla hazır davet metni (WhatsApp vb.); istenirse telefon takvimine ekleme (`CalendarGateway.insertIntent`).
 5. **Bilerek yok**: Katılımcıların uygulama içinde canlı oy vermesi (hesap + sunucu gerekir); sahte çalışıyormuş gibi gösterilmez.
 
-Saf mantığı `domain/` altına koy ve birim testi yaz; ViewModel `AppGraph`'tan bağımlılık alsın; yeni bağımsız veri sistemi kurma.
+Saf mantığı `domain/` altına koy ve birim testi yaz; ViewModel `AppContainer`'dan bağımlılık alsın; yeni bağımsız veri sistemi kurma.
 
-## 8. Sıradaki iş 2: Mimari düzenlemeler
+## 8. Mimari düzenlemeler (yapıldı)
 
-Kullanıcı dört aşamanın hepsini istiyor. Görünüm değişmemeli; her aşamadan sonra derle + test + `spotlessCheck`. Başlarken kullanıcıya kaba süreyi söyle (toplam ~2 saat).
-
-**Temel repo nasıl:** tek `:app`, `model / data / ui` üç katman; repository'ler arayüz arkasında (fake'lerle test); ortak `LoadState<T>` (Loading/Success/Empty/Error); her ekran Route + Screen; Navigation Compose; CI (spotless + test + build), PR şablonu, `.editorconfig`, `docs/ARCHITECTURE.md` ("Hilt/UseCase/Room bilerek yok, ihtiyaç doğdukça ekle"), `docs/GIT-HISTORY.md` (Conventional Commits).
-
-**Bizde tespit edilen eksikler:**
-
-1. CI, PR şablonu, `docs/ARCHITECTURE.md`, ADR'ler yok.
-2. Katman ihlali: `domain` → `data` bağımlılığı (`OutfitEngine`/`HavaCanAssistant` Room varlığı `data.wardrobe.ClothingItem`'ı kullanıyor); `model/Units.kt` Compose'a bağımlı; `ErrorReason` `ui.city` paketinde ama ana sayfa da kullanıyor.
-3. DI tutarsız: `HomeViewModel` kendi `WeatherRepository`'sini kuruyor (iki ayrı önbellek); `CityRepository`, `WorkPlanScheduler`, `AssetDistrictSource` vb. ViewModel factory'lerinde tek tek oluşturuluyor.
-4. Global değişken durum: `Units`, `DisplayPrefs`.
-5. Navigasyon `HavaApp` içinde boolean/enum durumlarıyla; Navigation Compose yok.
-6. Bazı repository'ler arayüzsüz (`WeatherRepository`, `CityRepository`, `WardrobeRepository`).
-7. Dev dosyalar (600–800 satır: `RunPlannerScreen`, `HavaCanAssistant`, `LocationPickerScreen`).
-
-**Aşamalar:**
-
-1. **Kalite kapıları** (paket adı ve Spotless/ktlint **yapıldı**): GitHub Actions (`.github/workflows`, depo kökünde, `working-directory: Weather`; spotlessCheck + testDebugUnitTest + assembleDebug), PR şablonu, `docs/GIT-HISTORY.md` benzeri commit kuralları.
-2. **Katmanlar**: tek DI noktası (`AppGraph` → `AppContainer`, tüm ViewModel'ler oradan); repository arayüzleri; ortak `LoadState<T>` ve hata modeli (`ui/common`); domain'i Room'dan ayır (saf `ClothingItem` + `data` tarafında entity eşlemesi); `Units`/`DisplayPrefs` yerine `SettingsRepository` → Flow → CompositionLocal.
-3. **Modüller**: `:core:domain` (saf JVM, Android bağımlılığı derleyiciyle yasak), `:core:data`, `:app`.
-4. **Navigation Compose**: `HavaApp` sadeleşir; sesli komutla gezinme aynı rotaları kullanır. Geri tuşu ve sesli komut akışları kullanıcıya cihazda yeniden denetilmeli.
-5. En sonda `docs/ARCHITECTURE.md` (temel repoyla fark tablosu, katman diyagramı, "neden eklendi" gerekçeleri) ve `docs/adr/` (Room, WorkManager, backend, elle DI, modüller, yerel arama).
+`arch/refactor` dalında, `pre-architecture-final` etiketinden sonra yapıldı: CI ve commit kuralları, `AppContainer`, repository arayüzleri, Room'dan ayrılmış saf kurallar, global ayarların kaldırılması, ortak `LoadState`, `:core:domain` modülü, Navigation Compose, `ARCHITECTURE.md` ve ADR'ler. Her adım ayrı commit; testler ve derleme her adımda yeşil.
 
 ## 9. Tasarım dili
 
