@@ -53,6 +53,13 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.kampplus.havacan.R
 import com.kampplus.havacan.di.AppContainer
 import com.kampplus.havacan.domain.running.RunningAdvice
@@ -72,10 +79,12 @@ import com.kampplus.havacan.ui.home.components.HavaCanBottomNavigation
 import com.kampplus.havacan.ui.home.components.HomeTab
 import com.kampplus.havacan.ui.home.rememberReduceMotion
 import com.kampplus.havacan.ui.home.scene.rememberSceneClock
+import com.kampplus.havacan.ui.navigation.HavaRoutes
+import com.kampplus.havacan.ui.navigation.route
+import com.kampplus.havacan.ui.navigation.tabOf
 import com.kampplus.havacan.ui.plans.PlansRoute
 import com.kampplus.havacan.ui.profile.ProfileHooks
 import com.kampplus.havacan.ui.profile.ProfileRoute
-import com.kampplus.havacan.ui.run.RunPlannerRequest
 import com.kampplus.havacan.ui.run.RunPlannerRoute
 import com.kampplus.havacan.ui.run.RunSaved
 import com.kampplus.havacan.ui.theme.DarkPalette
@@ -109,13 +118,15 @@ fun HavaApp(
     val clock = rememberSceneClock(paused = reduceMotion)
     val motion = remember { HavaCanMotion() }
 
+    val nav = rememberNavController()
+    val backStack by nav.currentBackStackEntryAsState()
+    val route = backStack?.destination?.route
+    // The tab the bottom bar highlights; full-screen routes keep the tab they were opened from
     var tab by rememberSaveable { mutableStateOf(HomeTab.Weather) }
-    var showCityPicker by rememberSaveable { mutableStateOf(false) }
+    LaunchedEffect(route) { tabOf(route)?.let { tab = it } }
+    val onTab = tabOf(route) != null
+
     var sheet by remember { mutableStateOf(Sheet.None) }
-    // Koşu Planla, opened from Koşucu Modu or from a run in Planlarım; null when closed
-    var runPlanner by rememberSaveable(stateSaver = RunRequestSaver) { mutableStateOf<RunPlannerRequest?>(null) }
-    var lastRunRequest by remember { mutableStateOf<RunPlannerRequest?>(null) }
-    LaunchedEffect(runPlanner) { if (runPlanner != null) lastRunRequest = runPlanner }
     // Told to Planlarım after a run is saved, for the confirmation and the calendar offer
     var runNotice by remember { mutableStateOf<RunSaved?>(null) }
     var sallaSignal by remember { mutableIntStateOf(0) }
@@ -123,24 +134,35 @@ fun HavaApp(
     var showBottomBar by remember { mutableStateOf(true) }
     // Bumped by the home Salla Kombin card or a shake on the home screen: opens today's outfit
     var outfitRequest by rememberSaveable { mutableIntStateOf(0) }
-    // Who gets the city the picker returns: the home screen (null) or the plan editor
+    // Who gets the city the picker returns: the home screen (null), the plan editor, Koşu Planla…
     var cityPickTarget by remember { mutableStateOf<((City) -> Unit)?>(null) }
 
-    // A notification about a plan opens the Planlar tab
-    LaunchedEffect(openPlanId) { if (openPlanId != null) tab = HomeTab.Plans }
+    // Tabs keep their state when you leave and come back, like the bottom bar of any Android app
+    val openTab: (HomeTab) -> Unit = { target ->
+        nav.navigate(target.route) {
+            popUpTo(nav.graph.findStartDestination().id) { saveState = true }
+            launchSingleTop = true
+            restoreState = true
+        }
+    }
+    val openCityPicker: ((City) -> Unit)?.() -> Unit = {
+        cityPickTarget = this
+        nav.navigate(HavaRoutes.CITY) { launchSingleTop = true }
+    }
 
-    // Screens opened by voice (or by a card in the chat); overlays close so the screen is really in front
+    // A notification about a plan opens the Planlar tab
+    LaunchedEffect(openPlanId) { if (openPlanId != null) openTab(HomeTab.Plans) }
+
+    // Screens opened by voice (or by a card in the chat) use the same routes as taps
     val go: (VoiceDestination) -> Unit = { destination ->
-        showCityPicker = false
         sheet = Sheet.None
-        if (destination != VoiceDestination.RunPlanner) runPlanner = null
         when (destination) {
-            VoiceDestination.Home -> tab = HomeTab.Weather
-            VoiceDestination.Plans -> tab = HomeTab.Plans
-            VoiceDestination.Chat -> tab = HomeTab.HavaCan
-            VoiceDestination.Wardrobe -> tab = HomeTab.Wardrobe
-            VoiceDestination.Profile -> tab = HomeTab.Profile
-            VoiceDestination.RunPlanner -> runPlanner = RunPlannerRequest(System.currentTimeMillis())
+            VoiceDestination.Home -> openTab(HomeTab.Weather)
+            VoiceDestination.Plans -> openTab(HomeTab.Plans)
+            VoiceDestination.Chat -> openTab(HomeTab.HavaCan)
+            VoiceDestination.Wardrobe -> openTab(HomeTab.Wardrobe)
+            VoiceDestination.Profile -> openTab(HomeTab.Profile)
+            VoiceDestination.RunPlanner -> nav.navigate(HavaRoutes.run())
         }
     }
     LaunchedEffect(voice) { voice.navigation.collect { go(it) } }
@@ -158,9 +180,9 @@ fun HavaApp(
     val openSalla = {
         sallaSignal++
         outfitRequest++
-        tab = HomeTab.Wardrobe
+        openTab(HomeTab.Wardrobe)
     }
-    ShakeEffect(enabled = tab == HomeTab.Weather && !showCityPicker && sheet == Sheet.None && runPlanner == null, onShake = openSalla)
+    ShakeEffect(enabled = route == HavaRoutes.WEATHER && sheet == Sheet.None, onShake = openSalla)
 
     // Every screen's header is painted with the home city's sky right now
     val now = state.forecast?.current
@@ -169,156 +191,162 @@ fun HavaApp(
     val palette = if (isSystemInDarkTheme()) DarkPalette else LightPalette
     CompositionLocalProvider(LocalSky provides sky, LocalPalette provides palette) {
         Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
-            when (tab) {
-                HomeTab.Weather -> HomeScreen(
-                    state = state,
-                    motion = motion,
-                    clock = clock,
-                    reduceMotion = reduceMotion,
-                    sallaSignal = sallaSignal,
-                    actions = HomeActions(
-                        onCityClick = { showCityPicker = true },
-                        onBellClick = { sheet = Sheet.Notifications },
-                        onPlanRun = { advice ->
-                            val start = (advice as? RunningAdvice.BestWindow)?.window?.hours?.firstOrNull()?.hour?.time
-                            runPlanner = RunPlannerRequest(System.currentTimeMillis(), start = start)
-                        },
-                        onSalla = openSalla
-                    ),
-                    onToggleRunner = viewModel::toggleRunnerMode,
-                    onHourSelected = { viewModel.onHourSelected(it.time) },
-                    onRetry = viewModel::retry
-                )
-                HomeTab.Plans -> PlansRoute(
-                    clock = clock,
-                    openPlanId = openPlanId,
-                    onOpenPlanHandled = onOpenPlanHandled,
-                    onCityClick = {
-                        cityPickTarget = null
-                        showCityPicker = true
-                    },
-                    onBellClick = { sheet = Sheet.Notifications },
-                    onPickPlanCity = { onPicked ->
-                        cityPickTarget = onPicked
-                        showCityPicker = true
-                    },
-                    onShowBottomBar = { showBottomBar = it },
-                    onOpenRunPlan = { id -> runPlanner = RunPlannerRequest(System.currentTimeMillis(), planId = id) },
-                    runNotice = runNotice,
-                    onRunNoticeShown = { runNotice = null }
-                )
-                HomeTab.Wardrobe -> WardrobeRoute(
-                    clock = clock,
-                    outfitRequest = outfitRequest,
-                    onShowBottomBar = { showBottomBar = it }
-                )
-                HomeTab.HavaCan -> ChatScreen(
-                    state = voiceState,
-                    messages = messages,
-                    clock = clock,
-                    userName = profilePrefs.name,
-                    actions = ChatActions(
-                        onSend = voice::submitTyped,
-                        onMic = tapMicrophone,
-                        onHeadset = {
-                            when {
-                                !voiceState.settings.guideEnabled -> tab = HomeTab.Profile
-                                voiceState.sessionActive -> voice.stopSession()
-                                else -> startGuide()
-                            }
-                        },
-                        onBell = { sheet = Sheet.Notifications },
-                        onSpeak = voice::speakMessage,
-                        onOpen = go,
-                        onDismissNotice = voice::dismissNotice
+            NavHost(
+                navController = nav,
+                startDestination = HavaRoutes.WEATHER,
+                enterTransition = { fadeIn(tween(220)) },
+                exitTransition = { fadeOut(tween(160)) },
+                popEnterTransition = { fadeIn(tween(220)) },
+                popExitTransition = { fadeOut(tween(160)) }
+            ) {
+                composable(HavaRoutes.WEATHER) {
+                    HomeScreen(
+                        state = state,
+                        motion = motion,
+                        clock = clock,
+                        reduceMotion = reduceMotion,
+                        sallaSignal = sallaSignal,
+                        actions = HomeActions(
+                            onCityClick = { null.openCityPicker() },
+                            onBellClick = { sheet = Sheet.Notifications },
+                            onPlanRun = { advice ->
+                                val start = (advice as? RunningAdvice.BestWindow)?.window?.hours?.firstOrNull()?.hour?.time
+                                nav.navigate(HavaRoutes.run(start = start))
+                            },
+                            onSalla = openSalla
+                        ),
+                        onToggleRunner = viewModel::toggleRunnerMode,
+                        onHourSelected = { viewModel.onHourSelected(it.time) },
+                        onRetry = viewModel::retry
                     )
-                )
-                HomeTab.Profile -> ProfileRoute(
-                    hooks = ProfileHooks(
-                        cityName = state.city.name,
-                        voice = voiceState,
-                        onPickCity = {
-                            cityPickTarget = null
-                            showCityPicker = true
+                }
+                composable(HavaRoutes.PLANS) {
+                    PlansRoute(
+                        clock = clock,
+                        openPlanId = openPlanId,
+                        onOpenPlanHandled = onOpenPlanHandled,
+                        onCityClick = { null.openCityPicker() },
+                        onBellClick = { sheet = Sheet.Notifications },
+                        onPickPlanCity = { onPicked -> onPicked.openCityPicker() },
+                        onShowBottomBar = { showBottomBar = it },
+                        onOpenRunPlan = { id -> nav.navigate(HavaRoutes.run(planId = id)) },
+                        runNotice = runNotice,
+                        onRunNoticeShown = { runNotice = null }
+                    )
+                }
+                composable(HavaRoutes.WARDROBE) {
+                    WardrobeRoute(
+                        clock = clock,
+                        outfitRequest = outfitRequest,
+                        onShowBottomBar = { showBottomBar = it }
+                    )
+                }
+                composable(HavaRoutes.CHAT) {
+                    ChatScreen(
+                        state = voiceState,
+                        messages = messages,
+                        clock = clock,
+                        userName = profilePrefs.name,
+                        actions = ChatActions(
+                            onSend = voice::submitTyped,
+                            onMic = tapMicrophone,
+                            onHeadset = {
+                                when {
+                                    !voiceState.settings.guideEnabled -> openTab(HomeTab.Profile)
+                                    voiceState.sessionActive -> voice.stopSession()
+                                    else -> startGuide()
+                                }
+                            },
+                            onBell = { sheet = Sheet.Notifications },
+                            onSpeak = voice::speakMessage,
+                            onOpen = go,
+                            onDismissNotice = voice::dismissNotice
+                        )
+                    )
+                }
+                composable(HavaRoutes.PROFILE) {
+                    ProfileRoute(
+                        hooks = ProfileHooks(
+                            cityName = state.city.name,
+                            voice = voiceState,
+                            onPickCity = { null.openCityPicker() },
+                            onStartVoice = if (voiceState.settings.guideEnabled) startGuide else enableAndStartGuide,
+                            onStopVoice = { voice.stopSession() },
+                            onGuideChange = { on -> if (on) enableGuide() else voice.setGuideEnabled(false) },
+                            onSpeakTypedChange = voice::setSpeakTypedReplies,
+                            onClearChat = voice::clearMessages
+                        ),
+                        clock = clock
+                    )
+                }
+                composable(
+                    HavaRoutes.RUN,
+                    arguments = listOf(
+                        navArgument(HavaRoutes.ARG_PLAN_ID) {
+                            type = NavType.StringType
+                            nullable = true
+                            defaultValue = null
                         },
-                        onStartVoice = if (voiceState.settings.guideEnabled) startGuide else enableAndStartGuide,
-                        onStopVoice = { voice.stopSession() },
-                        onGuideChange = { on -> if (on) enableGuide() else voice.setGuideEnabled(false) },
-                        onSpeakTypedChange = voice::setSpeakTypedReplies,
-                        onClearChat = voice::clearMessages
+                        navArgument(HavaRoutes.ARG_START) {
+                            type = NavType.StringType
+                            nullable = true
+                            defaultValue = null
+                        }
                     ),
-                    clock = clock
-                )
+                    enterTransition = { slideInHorizontally(tween(380)) { it / 2 } + fadeIn(tween(250)) },
+                    popExitTransition = { slideOutHorizontally(tween(280)) { it / 2 } + fadeOut(tween(200)) }
+                ) {
+                    RunPlannerRoute(
+                        clock = clock,
+                        reduceMotion = reduceMotion,
+                        onPickCity = { onPicked -> onPicked.openCityPicker() },
+                        onClose = { nav.popBackStack() },
+                        onSaved = { saved ->
+                            runNotice = saved
+                            nav.popBackStack()
+                            openTab(HomeTab.Plans)
+                        },
+                        onDeleted = {
+                            nav.popBackStack()
+                            openTab(HomeTab.Plans)
+                        }
+                    )
+                }
+                composable(
+                    HavaRoutes.CITY,
+                    enterTransition = { slideInVertically(tween(350)) { it / 3 } + fadeIn(tween(250)) },
+                    popExitTransition = { slideOutVertically(tween(250)) { it / 3 } + fadeOut(tween(200)) }
+                ) {
+                    CityRoute(
+                        onBack = { nav.popBackStack() },
+                        clock = clock,
+                        reduceMotion = reduceMotion,
+                        onCityClick = { city ->
+                            Log.d(TAG, "Tıklandı: ${city.name}")
+                            val target = cityPickTarget
+                            if (target != null) target(city) else viewModel.onCityChosen(city)
+                            cityPickTarget = null
+                            nav.popBackStack()
+                        }
+                    )
+                }
             }
 
-            // Plan sub-screens (editor, Plan B) hide the bar; every other tab always shows it
-            if ((tab != HomeTab.Plans && tab != HomeTab.Wardrobe) || showBottomBar) {
+            // Plan and wardrobe sub-screens (editor, Plan B, outfit) hide the bar; full-screen routes too
+            if (onTab && ((tab != HomeTab.Plans && tab != HomeTab.Wardrobe) || showBottomBar)) {
                 HavaCanBottomNavigation(
                     selected = tab,
                     havaCanPulse = havaCanPulse,
                     onSelect = { selected ->
                         if (selected == HomeTab.HavaCan) havaCanPulse++
-                        tab = selected
+                        openTab(selected)
                     },
                     modifier = Modifier.align(Alignment.BottomCenter)
                 )
             }
 
-            AnimatedVisibility(
-                visible = runPlanner != null,
-                enter = slideInHorizontally(tween(380)) { it / 2 } + fadeIn(tween(250)),
-                exit = slideOutHorizontally(tween(280)) { it / 2 } + fadeOut(tween(200))
-            ) {
-                val request = runPlanner ?: lastRunRequest
-                if (request != null) {
-                    Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
-                        RunPlannerRoute(
-                            request = request,
-                            clock = clock,
-                            reduceMotion = reduceMotion,
-                            onPickCity = { onPicked ->
-                                cityPickTarget = onPicked
-                                showCityPicker = true
-                            },
-                            onClose = { runPlanner = null },
-                            onSaved = { saved ->
-                                if (runPlanner != null) {
-                                    runPlanner = null
-                                    runNotice = saved
-                                    tab = HomeTab.Plans
-                                }
-                            },
-                            onDeleted = {
-                                runPlanner = null
-                                tab = HomeTab.Plans
-                            }
-                        )
-                    }
-                }
-            }
-
-            AnimatedVisibility(
-                visible = showCityPicker,
-                enter = slideInVertically(tween(350)) { it / 3 } + fadeIn(tween(250)),
-                exit = slideOutVertically(tween(250)) { it / 3 } + fadeOut(tween(200))
-            ) {
-                BackHandler { showCityPicker = false }
-                CityRoute(
-                    onBack = { showCityPicker = false },
-                    clock = clock,
-                    reduceMotion = reduceMotion,
-                    onCityClick = { city ->
-                        Log.d(TAG, "Tıklandı: ${city.name}")
-                        val target = cityPickTarget
-                        if (target != null) target(city) else viewModel.onCityChosen(city)
-                        cityPickTarget = null
-                        showCityPicker = false
-                    }
-                )
-            }
-
             // The chat has its own microphone; everywhere else the voice guide floats above the bottom bar
-            if (tab != HomeTab.HavaCan && (voiceState.settings.guideEnabled || voiceState.sessionActive)) {
+            if (route != HavaRoutes.CHAT && (voiceState.settings.guideEnabled || voiceState.sessionActive)) {
                 VoiceGuideBar(
                     state = voiceState,
                     onMic = tapMicrophone,
@@ -362,15 +390,6 @@ private fun InfoContent(title: String, body: String) {
     Text(title, style = MaterialTheme.typography.headlineSmall, color = Hava.ink)
     Text(body, style = MaterialTheme.typography.bodyLarge, color = Hava.inkSoft)
 }
-
-private val RunRequestSaver = androidx.compose.runtime.saveable.Saver<RunPlannerRequest?, String>(
-    save = { r -> r?.let { "${it.token}|${it.planId.orEmpty()}|${it.start.orEmpty()}" } ?: "" },
-    restore = { raw ->
-        raw.split('|').takeIf { it.size == 3 }?.let { (token, id, start) ->
-            RunPlannerRequest(token.toLong(), id.ifEmpty { null }, start.ifEmpty { null })
-        }
-    }
-)
 
 /**
  * Ties the voice guide to the system: stops it the moment the app leaves the screen, tells it

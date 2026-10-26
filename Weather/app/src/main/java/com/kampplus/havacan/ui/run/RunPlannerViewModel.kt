@@ -27,6 +27,7 @@ import com.kampplus.havacan.model.RunDetails
 import com.kampplus.havacan.ui.common.LoadState
 import com.kampplus.havacan.ui.common.toErrorReason
 import com.kampplus.havacan.ui.home.HomeViewModel
+import com.kampplus.havacan.ui.navigation.HavaRoutes
 import com.kampplus.havacan.ui.plans.PlanNotifications
 import com.kampplus.havacan.ui.plans.WorkPlanScheduler
 import java.time.LocalDate
@@ -319,8 +320,8 @@ class RunPlannerViewModel(
 
         fun title(goal: RunGoal): String = goal.distanceKm?.let { "$it km koşu" } ?: "Serbest koşu"
 
-        const val KEY_PLAN_ID = "planId"
-        const val KEY_START = "start"
+        const val KEY_PLAN_ID = HavaRoutes.ARG_PLAN_ID
+        const val KEY_START = HavaRoutes.ARG_START
 
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
