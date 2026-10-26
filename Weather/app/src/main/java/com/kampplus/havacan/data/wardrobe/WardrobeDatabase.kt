@@ -10,30 +10,31 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverter
 import androidx.room.TypeConverters
 import androidx.room.Upsert
+import com.kampplus.havacan.model.Season
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface WardrobeDao {
     @Query("SELECT * FROM clothing ORDER BY createdAt DESC")
-    fun observeItems(): Flow<List<ClothingItem>>
+    fun observeItems(): Flow<List<ClothingEntity>>
 
     @Query("SELECT * FROM clothing ORDER BY createdAt DESC")
-    suspend fun items(): List<ClothingItem>
+    suspend fun items(): List<ClothingEntity>
 
     @Query("SELECT * FROM clothing WHERE id = :id")
-    suspend fun item(id: String): ClothingItem?
+    suspend fun item(id: String): ClothingEntity?
 
     @Upsert
-    suspend fun upsert(item: ClothingItem)
+    suspend fun upsert(item: ClothingEntity)
 
     @Delete
-    suspend fun delete(item: ClothingItem)
+    suspend fun delete(item: ClothingEntity)
 
     @Query("SELECT * FROM saved_outfits ORDER BY createdAt DESC")
-    fun observeOutfits(): Flow<List<SavedOutfit>>
+    fun observeOutfits(): Flow<List<SavedOutfitEntity>>
 
     @Upsert
-    suspend fun upsert(outfit: SavedOutfit)
+    suspend fun upsert(outfit: SavedOutfitEntity)
 
     @Query("DELETE FROM saved_outfits WHERE id = :id")
     suspend fun deleteOutfit(id: String)
@@ -54,7 +55,7 @@ class WardrobeConverters {
     fun stringToIds(value: String): List<String> = value.split(',').filter { it.isNotBlank() }
 }
 
-@Database(entities = [ClothingItem::class, SavedOutfit::class], version = 1, exportSchema = false)
+@Database(entities = [ClothingEntity::class, SavedOutfitEntity::class], version = 1, exportSchema = false)
 @TypeConverters(WardrobeConverters::class)
 abstract class WardrobeDatabase : RoomDatabase() {
     abstract fun wardrobe(): WardrobeDao

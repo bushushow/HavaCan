@@ -1,9 +1,8 @@
 package com.kampplus.havacan.domain.wardrobe
 
-import com.kampplus.havacan.data.wardrobe.ClothingCategory
-import com.kampplus.havacan.data.wardrobe.ClothingColors
-import com.kampplus.havacan.data.wardrobe.ClothingItem
-import com.kampplus.havacan.data.wardrobe.Season
+import com.kampplus.havacan.model.ClothingCategory
+import com.kampplus.havacan.model.ClothingItem
+import com.kampplus.havacan.model.Season
 import com.kampplus.havacan.model.deg
 import kotlin.math.roundToInt
 import kotlin.random.Random

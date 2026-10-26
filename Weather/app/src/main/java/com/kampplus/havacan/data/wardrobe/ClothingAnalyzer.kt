@@ -3,6 +3,9 @@ package com.kampplus.havacan.data.wardrobe
 import android.util.Base64
 import com.google.gson.Gson
 import com.google.gson.JsonParseException
+import com.kampplus.havacan.domain.wardrobe.ClothingColors
+import com.kampplus.havacan.model.ClothingCategory
+import com.kampplus.havacan.model.Season
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.Dispatchers

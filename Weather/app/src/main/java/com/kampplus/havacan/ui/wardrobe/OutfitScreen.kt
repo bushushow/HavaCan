@@ -54,10 +54,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.kampplus.havacan.R
-import com.kampplus.havacan.data.wardrobe.ClothingCategory
-import com.kampplus.havacan.data.wardrobe.ClothingItem
 import com.kampplus.havacan.domain.wardrobe.OutfitResult
 import com.kampplus.havacan.domain.wardrobe.WeatherContext
+import com.kampplus.havacan.model.ClothingCategory
+import com.kampplus.havacan.model.ClothingItem
 import com.kampplus.havacan.model.WeatherCondition
 import com.kampplus.havacan.model.deg
 import com.kampplus.havacan.ui.common.OnSky

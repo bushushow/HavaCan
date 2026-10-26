@@ -1,4 +1,4 @@
-package com.kampplus.havacan.data.wardrobe
+package com.kampplus.havacan.domain.wardrobe
 
 import kotlin.math.sqrt
 

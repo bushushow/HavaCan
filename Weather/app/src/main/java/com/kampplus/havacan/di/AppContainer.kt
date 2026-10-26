@@ -24,6 +24,7 @@ import com.kampplus.havacan.data.WeatherRepository
 import com.kampplus.havacan.data.remote.ApiClient
 import com.kampplus.havacan.data.wardrobe.BackendClothingAnalyzer
 import com.kampplus.havacan.data.wardrobe.PhotoStore
+import com.kampplus.havacan.data.wardrobe.RoomWardrobeRepository
 import com.kampplus.havacan.data.wardrobe.WardrobeDatabase
 import com.kampplus.havacan.data.wardrobe.WardrobeRepository
 import com.kampplus.havacan.ui.plans.WorkPlanScheduler
@@ -54,7 +55,7 @@ class AppContainer private constructor(context: Context) {
     /** Loaded first thing so the unit and display choices apply to workers too. */
     val profile: ProfileStore = PreferencesProfileStore(context)
     private val database = WardrobeDatabase.create(context)
-    val wardrobe = WardrobeRepository(
+    val wardrobe: WardrobeRepository = RoomWardrobeRepository(
         dao = database.wardrobe(),
         photos = PhotoStore(context),
         analyzer = backendUrl?.let(::BackendClothingAnalyzer)

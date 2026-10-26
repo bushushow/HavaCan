@@ -66,9 +66,9 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import com.kampplus.havacan.R
-import com.kampplus.havacan.data.wardrobe.ClothingCategory
-import com.kampplus.havacan.data.wardrobe.ClothingColors
-import com.kampplus.havacan.data.wardrobe.Season
+import com.kampplus.havacan.domain.wardrobe.ClothingColors
+import com.kampplus.havacan.model.ClothingCategory
+import com.kampplus.havacan.model.Season
 import com.kampplus.havacan.ui.common.OnSky
 import com.kampplus.havacan.ui.common.OnSkySoft
 import com.kampplus.havacan.ui.common.SkyHeader

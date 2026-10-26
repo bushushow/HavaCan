@@ -3,13 +3,13 @@ package com.kampplus.havacan.data
 import com.google.gson.Gson
 import com.google.gson.JsonParseException
 import com.google.gson.annotations.SerializedName
-import com.kampplus.havacan.data.wardrobe.ClothingItem
 import com.kampplus.havacan.data.wardrobe.WardrobeRepository
 import com.kampplus.havacan.domain.voice.AiAction
 import com.kampplus.havacan.domain.voice.AiDecision
 import com.kampplus.havacan.domain.voice.AiTurn
 import com.kampplus.havacan.domain.voice.AssistantData
 import com.kampplus.havacan.model.City
+import com.kampplus.havacan.model.ClothingItem
 import com.kampplus.havacan.model.Forecast
 import com.kampplus.havacan.model.Plan
 import java.io.IOException

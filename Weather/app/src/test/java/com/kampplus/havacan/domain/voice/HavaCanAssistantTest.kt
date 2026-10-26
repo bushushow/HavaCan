@@ -1,9 +1,9 @@
 package com.kampplus.havacan.domain.voice
 
 import com.kampplus.havacan.data.provinceCities
-import com.kampplus.havacan.data.wardrobe.ClothingCategory
-import com.kampplus.havacan.data.wardrobe.ClothingItem
 import com.kampplus.havacan.model.City
+import com.kampplus.havacan.model.ClothingCategory
+import com.kampplus.havacan.model.ClothingItem
 import com.kampplus.havacan.model.CurrentWeather
 import com.kampplus.havacan.model.DailySummary
 import com.kampplus.havacan.model.Forecast

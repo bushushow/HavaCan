@@ -41,8 +41,8 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.kampplus.havacan.R
-import com.kampplus.havacan.data.wardrobe.ClothingCategory
-import com.kampplus.havacan.data.wardrobe.ClothingItem
+import com.kampplus.havacan.model.ClothingCategory
+import com.kampplus.havacan.model.ClothingItem
 import com.kampplus.havacan.ui.common.OnSky
 import com.kampplus.havacan.ui.common.OnSkySoft
 import com.kampplus.havacan.ui.common.SkyHeader

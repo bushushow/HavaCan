@@ -1,7 +1,5 @@
 package com.kampplus.havacan.domain.voice
 
-import com.kampplus.havacan.data.wardrobe.ClothingCategory
-import com.kampplus.havacan.data.wardrobe.ClothingItem
 import com.kampplus.havacan.domain.insight.WeatherInsight
 import com.kampplus.havacan.domain.insight.WeatherInsightBuilder
 import com.kampplus.havacan.domain.plans.PlanAdvisor
@@ -12,6 +10,8 @@ import com.kampplus.havacan.domain.wardrobe.OutfitEngine
 import com.kampplus.havacan.domain.wardrobe.OutfitResult
 import com.kampplus.havacan.domain.wardrobe.WeatherContext
 import com.kampplus.havacan.model.City
+import com.kampplus.havacan.model.ClothingCategory
+import com.kampplus.havacan.model.ClothingItem
 import com.kampplus.havacan.model.Forecast
 import com.kampplus.havacan.model.Plan
 import com.kampplus.havacan.model.PlanSource

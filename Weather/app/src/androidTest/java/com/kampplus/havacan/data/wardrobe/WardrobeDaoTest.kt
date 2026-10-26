@@ -3,6 +3,8 @@ package com.kampplus.havacan.data.wardrobe
 import androidx.room.Room
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import com.kampplus.havacan.model.ClothingCategory
+import com.kampplus.havacan.model.Season
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -29,8 +31,8 @@ class WardrobeDaoTest {
 
     @Test
     fun storesAndReturnsItemsNewestFirst() = runBlocking {
-        dao.upsert(ClothingItem("a", "/p/a.jpg", "Krem kazak", ClothingCategory.Top, "Krem", setOf(Season.Autumn, Season.Winter), 1))
-        dao.upsert(ClothingItem("b", "/p/b.jpg", "Mavi jean", ClothingCategory.Bottom, "Kot mavisi", emptySet(), 2))
+        dao.upsert(ClothingEntity("a", "/p/a.jpg", "Krem kazak", ClothingCategory.Top, "Krem", setOf(Season.Autumn, Season.Winter), 1))
+        dao.upsert(ClothingEntity("b", "/p/b.jpg", "Mavi jean", ClothingCategory.Bottom, "Kot mavisi", emptySet(), 2))
 
         val items = dao.observeItems().first()
         assertEquals(listOf("b", "a"), items.map { it.id })
@@ -40,9 +42,9 @@ class WardrobeDaoTest {
 
     @Test
     fun deleteAndOutfits() = runBlocking {
-        val item = ClothingItem("a", "/p/a.jpg", "Kazak", ClothingCategory.Top, "Krem", emptySet(), 1)
+        val item = ClothingEntity("a", "/p/a.jpg", "Kazak", ClothingCategory.Top, "Krem", emptySet(), 1)
         dao.upsert(item)
-        dao.upsert(SavedOutfit("o", listOf("a", "b", "c"), "23° için rahat", 5))
+        dao.upsert(SavedOutfitEntity("o", listOf("a", "b", "c"), "23° için rahat", 5))
         dao.delete(item)
         assertNull(dao.item("a"))
         assertEquals(listOf("a", "b", "c"), dao.observeOutfits().first().single().itemIds)

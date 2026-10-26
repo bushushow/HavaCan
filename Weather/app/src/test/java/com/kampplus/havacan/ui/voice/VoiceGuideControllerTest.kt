@@ -1,13 +1,13 @@
 package com.kampplus.havacan.ui.voice
 
 import com.kampplus.havacan.data.provinceCities
-import com.kampplus.havacan.data.wardrobe.ClothingItem
 import com.kampplus.havacan.domain.voice.AiDecision
 import com.kampplus.havacan.domain.voice.AiTurn
 import com.kampplus.havacan.domain.voice.AssistantData
 import com.kampplus.havacan.domain.voice.HavaCanAssistant
 import com.kampplus.havacan.domain.voice.VoiceDestination
 import com.kampplus.havacan.model.City
+import com.kampplus.havacan.model.ClothingItem
 import com.kampplus.havacan.model.CurrentWeather
 import com.kampplus.havacan.model.Forecast
 import com.kampplus.havacan.model.Plan

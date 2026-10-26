@@ -1,5 +1,7 @@
 package com.kampplus.havacan.data.wardrobe
 
+import com.kampplus.havacan.model.ClothingCategory
+import com.kampplus.havacan.model.Season
 import java.io.IOException
 import java.nio.file.Files
 import org.junit.Assert.assertEquals
