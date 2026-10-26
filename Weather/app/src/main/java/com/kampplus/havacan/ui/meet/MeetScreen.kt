@@ -74,7 +74,6 @@ import com.kampplus.havacan.domain.meet.PersonWeather
 import com.kampplus.havacan.model.City
 import com.kampplus.havacan.model.MeetPerson
 import com.kampplus.havacan.model.MeetWindow
-import com.kampplus.havacan.model.deg
 import com.kampplus.havacan.ui.common.DayStrip
 import com.kampplus.havacan.ui.common.OnSky
 import com.kampplus.havacan.ui.common.OnSkySoft
@@ -94,6 +93,7 @@ import com.kampplus.havacan.ui.theme.RiskRed
 import com.kampplus.havacan.ui.theme.SkyTint
 import com.kampplus.havacan.ui.theme.Sun
 import com.kampplus.havacan.ui.theme.SunLight
+import com.kampplus.havacan.ui.theme.deg
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset

@@ -41,13 +41,13 @@ import com.kampplus.havacan.R
 import com.kampplus.havacan.domain.insight.WeatherInsight
 import com.kampplus.havacan.domain.running.RunningAdvice
 import com.kampplus.havacan.model.HourlyWeather
-import com.kampplus.havacan.model.deg
 import com.kampplus.havacan.ui.theme.Hava
 import com.kampplus.havacan.ui.theme.HavaBlue
 import com.kampplus.havacan.ui.theme.Navy
 import com.kampplus.havacan.ui.theme.NavySoft
 import com.kampplus.havacan.ui.theme.SkyTint
 import com.kampplus.havacan.ui.theme.SunLight
+import com.kampplus.havacan.ui.theme.deg
 import kotlin.math.roundToInt
 import kotlin.math.sin
 

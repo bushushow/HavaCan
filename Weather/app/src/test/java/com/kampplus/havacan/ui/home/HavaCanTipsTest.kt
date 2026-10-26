@@ -5,6 +5,7 @@ import com.kampplus.havacan.domain.insight.WeatherInsightBuilder
 import com.kampplus.havacan.model.CurrentWeather
 import com.kampplus.havacan.model.Forecast
 import com.kampplus.havacan.model.HourlyWeather
+import com.kampplus.havacan.model.TemperatureUnit
 import com.kampplus.havacan.model.WeatherCondition
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -39,14 +40,14 @@ class HavaCanTipsTest {
     fun rainComingIsTheFirstTip() {
         val s = state(listOf(hour(10, 5), hour(11, 5), hour(15, 70)))
         assertTrue(s.hasRainNews())
-        assertEquals("Saat 15.00 gibi yağmur bekleniyor (%70).", havaCanTips(s).first())
+        assertEquals("Saat 15.00 gibi yağmur bekleniyor (%70).", havaCanTips(s, TemperatureUnit.Celsius).first())
     }
 
     @Test
     fun dryDayNamesTheCoolestHourAndColdGetsAdvice() {
         val s = state(listOf(hour(10, 5, feels = 3.0), hour(11, 5)))
         assertFalse(s.hasRainNews())
-        val tips = havaCanTips(s)
+        val tips = havaCanTips(s, TemperatureUnit.Celsius)
         assertTrue(tips.first().startsWith("Yağmur yok!"))
         assertTrue(tips.any { it.contains("Bere ve eldiven") })
     }

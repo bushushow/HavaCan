@@ -38,7 +38,6 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kampplus.havacan.R
-import com.kampplus.havacan.model.deg
 import com.kampplus.havacan.ui.city.ErrorReason
 import com.kampplus.havacan.ui.home.HomeUiState
 import com.kampplus.havacan.ui.home.WeatherLoadState
@@ -47,6 +46,7 @@ import com.kampplus.havacan.ui.theme.HavaBlueLight
 import com.kampplus.havacan.ui.theme.Navy
 import com.kampplus.havacan.ui.theme.NavySoft
 import com.kampplus.havacan.ui.theme.Sun
+import com.kampplus.havacan.ui.theme.deg
 import kotlin.math.roundToInt
 
 /** Big temperature and the facts around it, for "now" or the hour picked in the strip. */

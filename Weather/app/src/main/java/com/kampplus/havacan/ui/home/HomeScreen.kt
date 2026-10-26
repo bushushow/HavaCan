@@ -74,6 +74,7 @@ import com.kampplus.havacan.ui.home.scene.SceneLook
 import com.kampplus.havacan.ui.home.scene.WeatherScene
 import com.kampplus.havacan.ui.home.scene.segment
 import com.kampplus.havacan.ui.theme.Hava
+import com.kampplus.havacan.ui.theme.LocalDisplaySettings
 import kotlinx.coroutines.delay
 
 /** Callbacks the home screen sends up; the app decides what each one opens. */
@@ -104,6 +105,7 @@ fun HomeScreen(
     modifier: Modifier = Modifier
 ) {
     val haptics = LocalHapticFeedback.current
+    val unit = LocalDisplaySettings.current.unit
     val runner = state.mode == HomeMode.Runner
 
     // --- Intro: content first, then the island rises and HavaCan drops in, cards settle last
@@ -135,7 +137,7 @@ fun HomeScreen(
     LaunchedEffect(rainNews, state.city.id) {
         if (rainNews) {
             delay(2600)
-            say(havaCanTips(state).first())
+            say(havaCanTips(state, unit).first())
         }
     }
 
@@ -243,7 +245,7 @@ fun HomeScreen(
                     onCharacterTap = {
                         haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                         motion.send(HavaCanEvent.Tapped, runner, clock())
-                        val tips = havaCanTips(state)
+                        val tips = havaCanTips(state, unit)
                         say(tips[tipIndex % tips.size])
                         tipIndex++
                     },
@@ -343,7 +345,7 @@ fun rememberReduceMotion(): Boolean {
         Settings.Global.getFloat(context.contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f) == 0f
     }
     // Android's setting, or Profil > Erişilebilirlik > Animasyonları azalt
-    return system || com.kampplus.havacan.ui.theme.DisplayPrefs.reduceMotion
+    return system || LocalDisplaySettings.current.reduceMotion
 }
 
 /** Listens to the accelerometer only while the screen is resumed and [enabled]. */

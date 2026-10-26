@@ -97,7 +97,6 @@ import com.kampplus.havacan.R
 import com.kampplus.havacan.domain.running.RunDayOutlook
 import com.kampplus.havacan.domain.running.RunSlot
 import com.kampplus.havacan.model.WeatherCondition
-import com.kampplus.havacan.model.deg
 import com.kampplus.havacan.ui.common.DayStrip
 import com.kampplus.havacan.ui.home.components.SoftCard
 import com.kampplus.havacan.ui.home.components.WeatherIcon
@@ -113,6 +112,7 @@ import com.kampplus.havacan.ui.theme.RiskRed
 import com.kampplus.havacan.ui.theme.SkyTint
 import com.kampplus.havacan.ui.theme.Sun
 import com.kampplus.havacan.ui.theme.SunDeep
+import com.kampplus.havacan.ui.theme.deg
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime

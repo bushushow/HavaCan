@@ -10,14 +10,17 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import com.kampplus.havacan.di.AppContainer
 import com.kampplus.havacan.ui.HavaApp
 import com.kampplus.havacan.ui.plans.EXTRA_PLAN_ID
-import com.kampplus.havacan.ui.theme.DisplayPrefs
+import com.kampplus.havacan.ui.theme.DisplaySettings
+import com.kampplus.havacan.ui.theme.LocalDisplaySettings
 import com.kampplus.havacan.ui.theme.WeatherTheme
 import java.util.Locale
 import kotlinx.coroutines.launch
@@ -28,17 +31,18 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        AppContainer.get(this) // loads Profil choices (unit, text size) before the first frame
         lifecycleScope.launch { AppContainer.get(applicationContext).workScheduler.migrateWorkOnce() }
         openPlanId.value = intent.getStringExtra(EXTRA_PLAN_ID)
         // Dark status bar icons on the ivory background (light icons in dark theme)
         enableEdgeToEdge(statusBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT))
         setContent {
+            val prefs by AppContainer.get(this).profile.prefs.collectAsStateWithLifecycle()
+            val settings = DisplaySettings(prefs.unit, prefs.largeText, prefs.highContrast, prefs.reduceMotion)
             WeatherTheme {
                 // Profil > Erişilebilirlik > Büyük yazı: 20 % on top of Android's own font size
                 val density = LocalDensity.current
-                val scaled = if (DisplayPrefs.largeText) Density(density.density, density.fontScale * 1.2f) else density
-                CompositionLocalProvider(LocalDensity provides scaled) {
+                val scaled = if (settings.largeText) Density(density.density, density.fontScale * 1.2f) else density
+                CompositionLocalProvider(LocalDensity provides scaled, LocalDisplaySettings provides settings) {
                     HavaApp(
                         openPlanId = openPlanId.value,
                         onOpenPlanHandled = { openPlanId.value = null }

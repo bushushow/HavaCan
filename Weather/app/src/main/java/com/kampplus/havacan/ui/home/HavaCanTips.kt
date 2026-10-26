@@ -2,6 +2,7 @@ package com.kampplus.havacan.ui.home
 
 import com.kampplus.havacan.domain.insight.WeatherInsight
 import com.kampplus.havacan.domain.running.RunningAdvice
+import com.kampplus.havacan.model.TemperatureUnit
 import com.kampplus.havacan.model.deg
 import kotlin.math.roundToInt
 
@@ -10,7 +11,7 @@ import kotlin.math.roundToInt
  * tip is the most useful one (rain beats everything), so it's also what HavaCan says on its own
  * when the screen opens with rain on the way.
  */
-internal fun havaCanTips(state: HomeUiState): List<String> {
+internal fun havaCanTips(state: HomeUiState, unit: TemperatureUnit): List<String> {
     val hour = state.selectedHour ?: return listOf("Hava bilgisi gelince sana ipuçları vereceğim!")
     val tips = mutableListOf<String>()
 
@@ -27,14 +28,16 @@ internal fun havaCanTips(state: HomeUiState): List<String> {
         is WeatherInsight.RainComing ->
             tips += "Saat ${insight.hour.hourLabel} gibi yağmur bekleniyor" +
                 (insight.hour.precipitationProbability?.let { " (%$it)." } ?: ".")
-        is WeatherInsight.Dry -> tips += "Yağmur yok! En serin saat ${insight.coolest.hourLabel}, ${insight.coolest.temperature.deg()}°."
+        is WeatherInsight.Dry ->
+            tips +=
+                "Yağmur yok! En serin saat ${insight.coolest.hourLabel}, ${insight.coolest.temperature.deg(unit)}°."
         null -> Unit
     }
     val feels = hour.apparentTemperature
     when {
-        feels <= 5 -> tips += "Hissedilen ${feels.deg()}°. Bere ve eldiven iyi olur 🧤"
-        feels >= 30 -> tips += "Hissedilen ${feels.deg()}°. Bol su iç, gölgede kal 💧"
-        hour.temperature - feels >= 3 -> tips += "Rüzgar yüzünden ${feels.deg()}° gibi hissettiriyor; üstüne bir şey al."
+        feels <= 5 -> tips += "Hissedilen ${feels.deg(unit)}°. Bere ve eldiven iyi olur 🧤"
+        feels >= 30 -> tips += "Hissedilen ${feels.deg(unit)}°. Bol su iç, gölgede kal 💧"
+        hour.temperature - feels >= 3 -> tips += "Rüzgar yüzünden ${feels.deg(unit)}° gibi hissettiriyor; üstüne bir şey al."
     }
     hour.uvIndex?.takeIf { it >= 6 }?.let { tips += "UV yüksek (${it.roundToInt()}). Güneş kremini unutma 😎" }
     hour.windSpeed?.takeIf { it >= 30 }?.let { tips += "Rüzgar sert: ${it.roundToInt()} km/sa. Şemsiye yerine mont!" }

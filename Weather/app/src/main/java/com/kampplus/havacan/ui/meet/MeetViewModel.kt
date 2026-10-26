@@ -23,6 +23,7 @@ import com.kampplus.havacan.model.MeetWindow
 import com.kampplus.havacan.model.Plan
 import com.kampplus.havacan.model.PlanType
 import com.kampplus.havacan.model.Reminder
+import com.kampplus.havacan.model.TemperatureUnit
 import com.kampplus.havacan.model.deg
 import com.kampplus.havacan.ui.home.HomeViewModel
 import com.kampplus.havacan.ui.plans.WorkPlanScheduler
@@ -200,14 +201,14 @@ class MeetViewModel(
             "Buluşma: " + people.drop(1).joinToString(", ") { it.name }.ifBlank { people.firstOrNull()?.name.orEmpty() }
 
         /** A ready-to-send invitation with the real forecast for the chosen time and place. */
-        fun inviteText(title: String, option: MeetOption): String {
+        fun inviteText(title: String, option: MeetOption, unit: TemperatureUnit): String {
             val h = option.hour
             val rain = h.precipitationProbability?.let { ", yağış ihtimali %$it" }.orEmpty()
             return buildString {
                 appendLine("☀️ $title")
                 appendLine("📅 ${option.time.format(InviteDate)}, ${"%02d.00".format(option.time.hour)}")
                 appendLine("📍 ${option.place.name}")
-                appendLine("🌤 ${h.condition.label}, ${h.temperature.deg()}°$rain")
+                appendLine("🌤 ${h.condition.label}, ${h.temperature.deg(unit)}°$rain")
                 append("HavaCan ile planlandı.")
             }
         }

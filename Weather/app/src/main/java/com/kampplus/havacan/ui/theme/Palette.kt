@@ -73,7 +73,7 @@ object Hava {
         get() = LocalPalette.current.ink
     val inkSoft: Color
         @Composable @ReadOnlyComposable
-        get() = LocalPalette.current.inkSoft
+        get() = if (LocalDisplaySettings.current.highContrast) LocalPalette.current.ink else LocalPalette.current.inkSoft
     val card: Color
         @Composable @ReadOnlyComposable
         get() = LocalPalette.current.card

@@ -17,7 +17,7 @@ import com.kampplus.havacan.model.Plan
 import com.kampplus.havacan.model.PlanSource
 import com.kampplus.havacan.model.PlanType
 import com.kampplus.havacan.model.Reminder
-import com.kampplus.havacan.model.Units
+import com.kampplus.havacan.model.TemperatureUnit
 import com.kampplus.havacan.model.deg
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -35,6 +35,9 @@ interface AssistantData {
     suspend fun savePlan(plan: Plan)
     suspend fun deletePlan(plan: Plan)
     suspend fun wardrobe(): List<ClothingItem>
+
+    /** The unit the user reads temperatures in (Profil). */
+    fun temperatureUnit(): TemperatureUnit = TemperatureUnit.Celsius
 
     /**
      * A sentence the rules didn't understand, for the AI backend. It answers with text or picks one
@@ -88,6 +91,9 @@ class HavaCanAssistant(
     private val newId: () -> String = { java.util.UUID.randomUUID().toString() },
     private val random: Random = Random.Default
 ) {
+    /** Temperatures in the user's unit. */
+    private fun Double.deg(): Int = deg(data.temperatureUnit())
+
     private sealed interface Pending {
         data class Create(val draft: PlanDraft, val asking: Slot?) : Pending
         data class Delete(val plan: Plan) : Pending
@@ -292,7 +298,7 @@ class HavaCanAssistant(
         val forecast = loadForecast(city).getOrNull()
         val weather = forecast?.let { weatherContext(it, date, city.name) }
         val dayWord = TurkishText.dayPhrase(date, today)
-        return when (val result = OutfitEngine.build(items, weather, date.monthValue, random)) {
+        return when (val result = OutfitEngine.build(items, weather, date.monthValue, random, unit = data.temperatureUnit())) {
             is OutfitResult.Missing -> AssistantReply(
                 "Kombin için dolabında yeterli parça yok.",
                 "Eksik: ${result.categories.joinToString(", ") {
@@ -422,9 +428,9 @@ class HavaCanAssistant(
         val forecast = loadForecast(city).getOrNull()
         val weather = forecast?.let { f ->
             val days = f.daily.take(4).joinToString("; ") {
-                "${it.date}: ${it.condition.label}, ${it.temperatureMin.deg()}-${it.temperatureMax.deg()}${Units.temperature.symbol}, yağış %${it.precipitationProbabilityMax ?: 0}"
+                "${it.date}: ${it.condition.label}, ${it.temperatureMin.deg()}-${it.temperatureMax.deg()}${data.temperatureUnit().symbol}, yağış %${it.precipitationProbabilityMax ?: 0}"
             }
-            "Şu an ${f.current.temperature.deg()}${Units.temperature.symbol}, ${f.current.condition.label}. Günler: $days."
+            "Şu an ${f.current.temperature.deg()}${data.temperatureUnit().symbol}, ${f.current.condition.label}. Günler: $days."
         } ?: "Hava verisi şu an yok."
         val plans = runCatching { upcomingPlans() }.getOrDefault(emptyList()).take(12).joinToString("\n") {
             "- id=${it.id} | ${it.title} | ${it.date} ${it.time} | ${it.city.name} | ${if (it.type == PlanType.Indoor) "kapalı" else "açık hava"}" +

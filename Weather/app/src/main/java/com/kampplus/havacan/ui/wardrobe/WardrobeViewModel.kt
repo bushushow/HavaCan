@@ -21,6 +21,7 @@ import com.kampplus.havacan.model.ClothingCategory
 import com.kampplus.havacan.model.ClothingItem
 import com.kampplus.havacan.model.SavedOutfit
 import com.kampplus.havacan.model.Season
+import com.kampplus.havacan.model.TemperatureUnit
 import com.kampplus.havacan.ui.home.HomeViewModel
 import java.io.File
 import java.time.LocalDate
@@ -72,7 +73,8 @@ class WardrobeViewModel(
     private val weather: WeatherRepository,
     private val location: LocationStore,
     private val today: () -> LocalDate = LocalDate::now,
-    private val random: Random = Random.Default
+    private val random: Random = Random.Default,
+    private val unit: () -> TemperatureUnit = { TemperatureUnit.Celsius }
 ) : ViewModel() {
 
     private val filter = MutableStateFlow<ClothingCategory?>(null)
@@ -137,7 +139,7 @@ class WardrobeViewModel(
         viewModelScope.launch {
             val items = repository.allItems()
             val previous = (_outfit.value.result as? OutfitResult.Ready)?.items?.map { it.id }.orEmpty().toSet()
-            val result = OutfitEngine.build(items, _weatherContext.value, today().monthValue, random, avoid = previous)
+            val result = OutfitEngine.build(items, _weatherContext.value, today().monthValue, random, avoid = previous, unit = unit())
             _outfit.update { OutfitState(result, it.generation + 1, saved = false) }
         }
     }
@@ -276,7 +278,7 @@ class WardrobeViewModel(
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
                 val graph = AppContainer.get(this[APPLICATION_KEY]!!)
-                WardrobeViewModel(graph.wardrobe, graph.weather, graph.location)
+                WardrobeViewModel(graph.wardrobe, graph.weather, graph.location, unit = { graph.profile.prefs.value.unit })
             }
         }
     }

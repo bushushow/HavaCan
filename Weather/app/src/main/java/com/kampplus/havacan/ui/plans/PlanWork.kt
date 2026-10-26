@@ -28,6 +28,7 @@ import com.kampplus.havacan.di.AppContainer
 import com.kampplus.havacan.domain.plans.PlanAdvisor
 import com.kampplus.havacan.domain.plans.PlanOutlook
 import com.kampplus.havacan.model.Plan
+import com.kampplus.havacan.model.TemperatureUnit
 import com.kampplus.havacan.model.deg
 import java.time.Duration
 import java.time.LocalDateTime
@@ -99,6 +100,7 @@ class WorkPlanScheduler(private val context: Context) : PlanScheduler {
 class PlanReminderWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
     override suspend fun doWork(): Result {
         val graph = AppContainer.get(applicationContext)
+        val unit = graph.profile.prefs.value.unit
         val plan = graph.plans.get(inputData.getString(KEY_PLAN_ID) ?: return Result.success()) ?: return Result.success()
         // Profil > Bildirimler: runs and other plans can be silenced separately
         val prefs = graph.profile.prefs.value
@@ -109,7 +111,7 @@ class PlanReminderWorker(context: Context, params: WorkerParameters) : Coroutine
             applicationContext,
             plan,
             title = "${plan.title} · ${plan.timeLabel}",
-            text = outlook.summary(),
+            text = outlook.summary(unit),
             kind = PlanNotifications.Kind.Reminder
         )
         return Result.success()
@@ -120,6 +122,7 @@ class PlanReminderWorker(context: Context, params: WorkerParameters) : Coroutine
 class PlanWatchWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
     override suspend fun doWork(): Result {
         val graph = AppContainer.get(applicationContext)
+        val unit = graph.profile.prefs.value.unit
         graph.plans.load()
         val now = LocalDateTime.now()
         val prefs = graph.profile.prefs.value
@@ -144,13 +147,18 @@ class PlanWatchWorker(context: Context, params: WorkerParameters) : CoroutineWor
                     } else {
                         null
                     }
-                    PlanNotifications.show(applicationContext, plan, "Planın riskte: ${plan.title}", outlook.summary() + planB.orEmpty())
+                    PlanNotifications.show(
+                        applicationContext,
+                        plan,
+                        "Planın riskte: ${plan.title}",
+                        outlook.summary(unit) + planB.orEmpty()
+                    )
                 }
                 plan.lastNotified != null -> PlanNotifications.show(
                     applicationContext,
                     plan,
                     "Hava düzeldi: ${plan.title}",
-                    outlook.summary()
+                    outlook.summary(unit)
                 )
             }
             graph.plans.upsert(plan.copy(lastNotified = state))
@@ -196,12 +204,12 @@ object PlanNotifications {
 }
 
 /** One line describing a plan's weather, shared by the screen and notifications. */
-fun PlanOutlook.summary(): String = when (this) {
+fun PlanOutlook.summary(unit: TemperatureUnit): String = when (this) {
     is PlanOutlook.Risk -> {
         val chance = hour.precipitationProbability?.let { " · yağış ihtimali %$it" }.orEmpty()
         "${reason.label}$chance"
     }
-    is PlanOutlook.Fine -> "Hava uygun · ${hour.temperature.deg()}°, ${hour.condition.label}"
+    is PlanOutlook.Fine -> "Hava uygun · ${hour.temperature.deg(unit)}°, ${hour.condition.label}"
     is PlanOutlook.NoForecastYet -> "Tahmin ${daysUntil - 15} gün sonra gelecek"
     PlanOutlook.Unknown -> "Hava bilgisi şu an alınamadı"
     PlanOutlook.Past -> "Geçti"

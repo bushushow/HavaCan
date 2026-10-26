@@ -7,10 +7,9 @@ import com.kampplus.havacan.data.Region
 val Ivory = Color(0xFFFBF7EE)
 val IvoryDeep = Color(0xFFF3EEE2)
 val Navy = Color(0xFF0B1B3F)
-private val NavySoftBase = Color(0xFF4A5675)
 
-/** Secondary text; full navy when Yüksek kontrast is on. */
-val NavySoft: Color get() = if (DisplayPrefs.highContrast) Navy else NavySoftBase
+/** Secondary text. With Yüksek kontrast, screens use the main ink instead (see Hava.inkSoft). */
+val NavySoft = Color(0xFF4A5675)
 val HavaBlue = Color(0xFF1D63F0)
 val HavaBlueDeep = Color(0xFF0F47C2)
 val HavaBlueLight = Color(0xFFE6EEFF)

@@ -80,6 +80,7 @@ import com.kampplus.havacan.R
 import com.kampplus.havacan.model.DailySummary
 import com.kampplus.havacan.model.Forecast
 import com.kampplus.havacan.model.HourlyWeather
+import com.kampplus.havacan.model.TemperatureUnit
 import com.kampplus.havacan.model.WeatherCondition
 import com.kampplus.havacan.model.deg
 import com.kampplus.havacan.ui.theme.GoodGreen
@@ -87,10 +88,12 @@ import com.kampplus.havacan.ui.theme.Hava
 import com.kampplus.havacan.ui.theme.HavaBlue
 import com.kampplus.havacan.ui.theme.HavaBlueDeep
 import com.kampplus.havacan.ui.theme.HavaBlueLight
+import com.kampplus.havacan.ui.theme.LocalDisplaySettings
 import com.kampplus.havacan.ui.theme.Navy
 import com.kampplus.havacan.ui.theme.NavySoft
 import com.kampplus.havacan.ui.theme.SkyTint
 import com.kampplus.havacan.ui.theme.Sun
+import com.kampplus.havacan.ui.theme.deg
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
@@ -302,16 +305,16 @@ private val Wind = Color(0xFF6C5CE7)
 /** Text-safe shade of a metric colour (yellow is too light for words on white). */
 private fun Color.darker() = if (this == Sun) Color(0xFFC77800) else this
 
-private fun HourlyWeather.value(m: ForecastMetric, score: RunScore?): Float = when (m) {
+private fun HourlyWeather.value(m: ForecastMetric, score: RunScore?, unit: TemperatureUnit): Float = when (m) {
     ForecastMetric.Run -> (score?.invoke(this) ?: 0).toFloat()
-    ForecastMetric.Temperature -> temperature.deg().toFloat()
+    ForecastMetric.Temperature -> temperature.deg(unit).toFloat()
     ForecastMetric.Rain -> (precipitationProbability ?: 0).toFloat()
     ForecastMetric.Wind -> (windSpeed ?: 0.0).toFloat()
 }
 
-private fun HourlyWeather.label(m: ForecastMetric, score: RunScore?): String = when (m) {
+private fun HourlyWeather.label(m: ForecastMetric, score: RunScore?, unit: TemperatureUnit): String = when (m) {
     ForecastMetric.Run -> "${score?.invoke(this) ?: 0}"
-    ForecastMetric.Temperature -> "${temperature.deg()}°"
+    ForecastMetric.Temperature -> "${temperature.deg(unit)}°"
     ForecastMetric.Rain -> "%${precipitationProbability ?: 0}"
     ForecastMetric.Wind -> "${(windSpeed ?: 0.0).roundToInt()}"
 }
@@ -337,11 +340,12 @@ private fun ForecastChart(
     val reveal = remember(metric, hours.first().time) { Animatable(if (reduceMotion) 1f else 0f) }
     LaunchedEffect(reveal) { reveal.animateTo(1f, tween(700, easing = FastOutSlowInEasing)) }
     val palette = Hava.p
+    val unit = LocalDisplaySettings.current.unit
     val valueStyle = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Bold, color = palette.ink)
     val bubbleStyle = TextStyle(fontSize = 13.sp, fontWeight = FontWeight.ExtraBold, color = Color.White)
     val description =
         "${if (metric == ForecastMetric.Run) "Koşu puanı" else metric.label}: " +
-            hours.filterIndexed { i, _ -> i % 3 == 0 }.joinToString(", ") { "${it.hourLabel} ${it.label(metric, score)}" }
+            hours.filterIndexed { i, _ -> i % 3 == 0 }.joinToString(", ") { "${it.hourLabel} ${it.label(metric, score, unit)}" }
 
     BoxWithConstraints(Modifier.fillMaxWidth().padding(horizontal = 6.dp)) {
         val density = LocalDensity.current
@@ -364,7 +368,7 @@ private fun ForecastChart(
             ) {
                 val top = 34.dp.toPx()
                 val bottom = size.height - 8.dp.toPx()
-                val values = hours.map { it.value(metric, score) }
+                val values = hours.map { it.value(metric, score, unit) }
                 val min = if (metric == ForecastMetric.Temperature) values.min() - 2f else 0f
                 val max = when (metric) {
                     ForecastMetric.Temperature -> values.max() + 2f
@@ -411,7 +415,7 @@ private fun ForecastChart(
                         drawCircle(palette.card, 4.dp.toPx(), Offset(x(i), y(values[i])))
                         drawCircle(color.darker(), 2.5.dp.toPx(), Offset(x(i), y(values[i])))
                         if (h.time == selectedTime) return@forEachIndexed
-                        val v = measurer.measure(h.label(metric, score), valueStyle)
+                        val v = measurer.measure(h.label(metric, score, unit), valueStyle)
                         drawText(
                             v,
                             topLeft = Offset(
@@ -434,7 +438,7 @@ private fun ForecastChart(
                     drawCircle(color.copy(alpha = 0.25f), 11.dp.toPx(), p)
                     drawCircle(palette.card, 6.dp.toPx(), p)
                     drawCircle(color.darker(), 4.dp.toPx(), p)
-                    val t = measurer.measure(hours[i].label(metric, score), bubbleStyle)
+                    val t = measurer.measure(hours[i].label(metric, score, unit), bubbleStyle)
                     val bw = t.size.width + 16.dp.toPx()
                     val bh = t.size.height + 8.dp.toPx()
                     val bx = (p.x - bw / 2).coerceIn(0f, size.width - bw)

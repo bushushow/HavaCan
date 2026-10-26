@@ -372,7 +372,7 @@ class VoiceGuideController(
                 val c = AppContainer.get(app)
                 VoiceGuideController(
                     assistant = HavaCanAssistant(
-                        AppAssistantData(c.location, c.weather, c.plans, c.wardrobe, c.scheduler, c.assistantBackend)
+                        AppAssistantData(c.location, c.weather, c.plans, c.wardrobe, c.scheduler, c.profile, c.assistantBackend)
                     ),
                     input = AndroidSpeechInput(app),
                     output = AndroidSpeechOutput(app),

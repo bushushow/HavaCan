@@ -59,7 +59,6 @@ import com.kampplus.havacan.domain.wardrobe.WeatherContext
 import com.kampplus.havacan.model.ClothingCategory
 import com.kampplus.havacan.model.ClothingItem
 import com.kampplus.havacan.model.WeatherCondition
-import com.kampplus.havacan.model.deg
 import com.kampplus.havacan.ui.common.OnSky
 import com.kampplus.havacan.ui.common.OnSkySoft
 import com.kampplus.havacan.ui.common.SkyHeader
@@ -74,6 +73,7 @@ import com.kampplus.havacan.ui.theme.HavaBlueLight
 import com.kampplus.havacan.ui.theme.Navy
 import com.kampplus.havacan.ui.theme.NavySoft
 import com.kampplus.havacan.ui.theme.Sun
+import com.kampplus.havacan.ui.theme.deg
 import kotlin.math.roundToInt
 
 /**

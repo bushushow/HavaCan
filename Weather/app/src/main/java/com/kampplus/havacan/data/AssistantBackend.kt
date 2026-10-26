@@ -97,8 +97,11 @@ class AppAssistantData(
     private val plansStore: PlanRepository,
     private val wardrobeRepo: WardrobeRepository,
     private val scheduler: PlanScheduler,
+    private val profile: ProfileStore,
     private val ai: BackendAssistant?
 ) : AssistantData {
+    override fun temperatureUnit() = profile.prefs.value.unit
+
     override fun homeCity(): City = location.load() ?: DEFAULT_CITY
 
     override suspend fun forecast(city: City): Forecast? = weather.forecast(city.latitude, city.longitude)

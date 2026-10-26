@@ -3,6 +3,7 @@ package com.kampplus.havacan.domain.wardrobe
 import com.kampplus.havacan.model.ClothingCategory
 import com.kampplus.havacan.model.ClothingItem
 import com.kampplus.havacan.model.Season
+import com.kampplus.havacan.model.TemperatureUnit
 import com.kampplus.havacan.model.deg
 import kotlin.math.roundToInt
 import kotlin.random.Random
@@ -38,7 +39,8 @@ object OutfitEngine {
         weather: WeatherContext?,
         month: Int,
         random: Random,
-        avoid: Set<String> = emptySet()
+        avoid: Set<String> = emptySet(),
+        unit: TemperatureUnit = TemperatureUnit.Celsius
     ): OutfitResult {
         val season = Season.ofMonth(month)
         val byCategory = items.groupBy { it.category }
@@ -85,7 +87,7 @@ object OutfitEngine {
             offSeason -> "Bu mevsime işaretli parça yetmedi; diğer mevsimlerden tamamladım."
             else -> null
         }
-        return OutfitResult.Ready(best, reason(weather, season, best), note)
+        return OutfitResult.Ready(best, reason(weather, season, best, unit), note)
     }
 
     private fun pickAvoiding(pool: List<ClothingItem>, avoid: Set<String>, random: Random): ClothingItem {
@@ -103,10 +105,15 @@ object OutfitEngine {
         return score
     }
 
-    internal fun reason(weather: WeatherContext?, season: Season, outfit: List<ClothingItem>): String {
+    internal fun reason(
+        weather: WeatherContext?,
+        season: Season,
+        outfit: List<ClothingItem>,
+        unit: TemperatureUnit = TemperatureUnit.Celsius
+    ): String {
         if (weather == null) return "Hava bilgisi alınamadı; ${season.label.lowercase()} mevsimine göre seçtim."
         val feels = weather.feelsLike.roundToInt()
-        val shown = weather.feelsLike.deg()
+        val shown = weather.feelsLike.deg(unit)
         val outer = outfit.firstOrNull { it.category == ClothingCategory.Outerwear }
         val wind = when {
             weather.windKmh >= 30 -> "rüzgarlı hava"

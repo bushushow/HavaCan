@@ -2,8 +2,6 @@ package com.kampplus.havacan.data
 
 import android.content.Context
 import com.kampplus.havacan.model.TemperatureUnit
-import com.kampplus.havacan.model.Units
-import com.kampplus.havacan.ui.theme.DisplayPrefs
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -52,8 +50,8 @@ interface ProfileStore {
 
 /**
  * Profil choices in SharedPreferences, like the city (LocationStore) and voice settings already
- * are; Room keeps only the wardrobe. Every change is also pushed to [Units] and [DisplayPrefs],
- * which the screens, workers and HavaCan read.
+ * are; Room keeps only the wardrobe. Screens read the choices through LocalDisplaySettings,
+ * workers and HavaCan through [prefs].
  */
 class PreferencesProfileStore(context: Context) : ProfileStore {
     private val prefs0 = context.getSharedPreferences("havacan_profile", Context.MODE_PRIVATE)
@@ -61,7 +59,6 @@ class PreferencesProfileStore(context: Context) : ProfileStore {
     override val prefs: StateFlow<ProfilePrefs> = state.asStateFlow()
 
     init {
-        apply(state.value)
     }
 
     override fun update(change: (ProfilePrefs) -> ProfilePrefs) {
@@ -80,13 +77,11 @@ class PreferencesProfileStore(context: Context) : ProfileStore {
             .putBoolean(K_MOTION, next.reduceMotion)
             .apply()
         state.value = next.copy(name = next.name.trim().take(MAX_NAME))
-        apply(state.value)
     }
 
     override fun reset() {
         prefs0.edit().clear().apply()
         state.value = ProfilePrefs()
-        apply(state.value)
     }
 
     private fun read() = ProfilePrefs(
@@ -104,13 +99,6 @@ class PreferencesProfileStore(context: Context) : ProfileStore {
         highContrast = prefs0.getBoolean(K_CONTRAST, false),
         reduceMotion = prefs0.getBoolean(K_MOTION, false)
     )
-
-    private fun apply(p: ProfilePrefs) {
-        Units.temperature = p.unit
-        DisplayPrefs.largeText = p.largeText
-        DisplayPrefs.highContrast = p.highContrast
-        DisplayPrefs.reduceMotion = p.reduceMotion
-    }
 
     private companion object {
         const val MAX_NAME = 30
