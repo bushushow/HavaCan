@@ -9,10 +9,12 @@ import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-import com.kampplus.havacan.data.AppGraph
+import com.kampplus.havacan.data.DEFAULT_CITY
 import com.kampplus.havacan.data.LocationStore
 import com.kampplus.havacan.data.PlanRepository
+import com.kampplus.havacan.data.PlanScheduler
 import com.kampplus.havacan.data.WeatherRepository
+import com.kampplus.havacan.di.AppContainer
 import com.kampplus.havacan.domain.running.RunDayOutlook
 import com.kampplus.havacan.domain.running.RunSlot
 import com.kampplus.havacan.domain.running.RunSlotPlanner
@@ -24,7 +26,6 @@ import com.kampplus.havacan.model.Reminder
 import com.kampplus.havacan.model.RunDetails
 import com.kampplus.havacan.ui.home.HomeViewModel
 import com.kampplus.havacan.ui.plans.PlanNotifications
-import com.kampplus.havacan.ui.plans.PlanScheduler
 import com.kampplus.havacan.ui.plans.WorkPlanScheduler
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -125,7 +126,7 @@ class RunPlannerViewModel(
                 today = today,
                 // Open on the day the home screen suggested, otherwise tomorrow morning's run
                 date = suggested?.toLocalDate() ?: today.plusDays(1),
-                city = location.load() ?: HomeViewModel.DEFAULT_CITY,
+                city = location.load() ?: DEFAULT_CITY,
                 start = suggested?.toLocalTime(),
                 isEditing = planId != null
             )
@@ -324,13 +325,13 @@ class RunPlannerViewModel(
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
                 val app = this[APPLICATION_KEY]!!
-                val graph = AppGraph.get(app)
+                val graph = AppContainer.get(app)
                 val handle: SavedStateHandle = createSavedStateHandle()
                 RunPlannerViewModel(
                     plans = graph.plans,
                     weather = graph.weather,
                     location = graph.location,
-                    scheduler = WorkPlanScheduler(app),
+                    scheduler = graph.scheduler,
                     canNotify = { PlanNotifications.canNotify(app) && NotificationManagerCompat.from(app).areNotificationsEnabled() },
                     planId = handle.get<String>(KEY_PLAN_ID),
                     initialStart = handle.get<String>(KEY_START)

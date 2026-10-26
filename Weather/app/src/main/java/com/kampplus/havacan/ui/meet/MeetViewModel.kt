@@ -6,10 +6,12 @@ import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.AP
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-import com.kampplus.havacan.data.AppGraph
+import com.kampplus.havacan.data.DEFAULT_CITY
 import com.kampplus.havacan.data.LocationStore
 import com.kampplus.havacan.data.PlanRepository
+import com.kampplus.havacan.data.PlanScheduler
 import com.kampplus.havacan.data.WeatherRepository
+import com.kampplus.havacan.di.AppContainer
 import com.kampplus.havacan.domain.meet.MeetOption
 import com.kampplus.havacan.domain.meet.MeetOutcome
 import com.kampplus.havacan.domain.meet.MeetPlanner
@@ -23,7 +25,6 @@ import com.kampplus.havacan.model.PlanType
 import com.kampplus.havacan.model.Reminder
 import com.kampplus.havacan.model.deg
 import com.kampplus.havacan.ui.home.HomeViewModel
-import com.kampplus.havacan.ui.plans.PlanScheduler
 import com.kampplus.havacan.ui.plans.WorkPlanScheduler
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -78,7 +79,7 @@ class MeetViewModel(
 
     init {
         val today = now().toLocalDate()
-        val me = MeetPerson(myName.ifBlank { "Sen" }, location.load() ?: HomeViewModel.DEFAULT_CITY)
+        val me = MeetPerson(myName.ifBlank { "Sen" }, location.load() ?: DEFAULT_CITY)
         _uiState = MutableStateFlow(MeetUiState(today = today, people = listOf(me), date = today.plusDays(1)))
         uiState = _uiState.asStateFlow()
         loadForecasts()
@@ -214,13 +215,13 @@ class MeetViewModel(
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
                 val app = this[APPLICATION_KEY]!!
-                val graph = AppGraph.get(app)
+                val graph = AppContainer.get(app)
                 MeetViewModel(
                     plans = graph.plans,
                     weather = graph.weather,
                     location = graph.location,
                     myName = graph.profile.prefs.value.name,
-                    scheduler = WorkPlanScheduler(app)
+                    scheduler = graph.scheduler
                 )
             }
         }

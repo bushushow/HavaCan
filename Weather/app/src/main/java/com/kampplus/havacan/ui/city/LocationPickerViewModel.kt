@@ -12,16 +12,13 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.google.gson.JsonParseException
-import com.kampplus.havacan.data.AndroidDeviceLocator
-import com.kampplus.havacan.data.AssetDistrictSource
 import com.kampplus.havacan.data.CityRepository
 import com.kampplus.havacan.data.DeviceLocator
 import com.kampplus.havacan.data.Fix
 import com.kampplus.havacan.data.PlaceDirectory
 import com.kampplus.havacan.data.PlaceItem
-import com.kampplus.havacan.data.PreferencesRecentPlaces
 import com.kampplus.havacan.data.RecentPlaces
-import com.kampplus.havacan.data.remote.ApiClient
+import com.kampplus.havacan.di.AppContainer
 import com.kampplus.havacan.model.City
 import java.io.IOException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -265,12 +262,12 @@ class LocationPickerViewModel(
     companion object {
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
-                val app = this[APPLICATION_KEY]!!
+                val container = AppContainer.get(this[APPLICATION_KEY]!!)
                 LocationPickerViewModel(
-                    directory = PlaceDirectory(AssetDistrictSource(app)),
-                    repository = CityRepository(ApiClient.cityApi),
-                    recents = PreferencesRecentPlaces(app),
-                    locator = AndroidDeviceLocator(app),
+                    directory = container.places,
+                    repository = container.cities,
+                    recents = container.recentPlaces,
+                    locator = container.deviceLocator,
                     savedStateHandle = createSavedStateHandle()
                 )
             }

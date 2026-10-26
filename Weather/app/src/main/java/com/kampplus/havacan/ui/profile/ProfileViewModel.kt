@@ -6,10 +6,10 @@ import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.AP
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-import com.kampplus.havacan.data.AppGraph
+import com.kampplus.havacan.data.PlanScheduler
 import com.kampplus.havacan.data.ProfilePrefs
 import com.kampplus.havacan.data.ProfileStore
-import com.kampplus.havacan.ui.plans.PlanScheduler
+import com.kampplus.havacan.di.AppContainer
 import com.kampplus.havacan.ui.plans.WorkPlanScheduler
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -33,7 +33,7 @@ sealed interface CalendarStatus {
 data class LocalStats(val plans: Int = 0, val clothes: Int = 0, val outfits: Int = 0)
 
 class ProfileViewModel(
-    private val graph: AppGraph,
+    private val graph: AppContainer,
     private val store: ProfileStore,
     private val scheduler: PlanScheduler
 ) : ViewModel() {
@@ -111,8 +111,8 @@ class ProfileViewModel(
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
                 val app = this[APPLICATION_KEY]!!
-                val graph = AppGraph.get(app)
-                ProfileViewModel(graph, graph.profile, WorkPlanScheduler(app))
+                val graph = AppContainer.get(app)
+                ProfileViewModel(graph, graph.profile, graph.scheduler)
             }
         }
     }

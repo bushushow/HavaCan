@@ -4,6 +4,7 @@ import com.google.gson.Gson
 import com.google.gson.JsonParseException
 import com.google.gson.annotations.SerializedName
 import com.kampplus.havacan.data.wardrobe.ClothingItem
+import com.kampplus.havacan.data.wardrobe.WardrobeRepository
 import com.kampplus.havacan.domain.voice.AiAction
 import com.kampplus.havacan.domain.voice.AiDecision
 import com.kampplus.havacan.domain.voice.AiTurn
@@ -11,8 +12,6 @@ import com.kampplus.havacan.domain.voice.AssistantData
 import com.kampplus.havacan.model.City
 import com.kampplus.havacan.model.Forecast
 import com.kampplus.havacan.model.Plan
-import com.kampplus.havacan.ui.home.HomeViewModel
-import com.kampplus.havacan.ui.plans.PlanScheduler
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.Dispatchers
@@ -93,30 +92,33 @@ class BackendAssistant(private val baseUrl: String) {
 
 /** The assistant's window onto the app: the same repositories the screens use, nothing separate. */
 class AppAssistantData(
-    private val graph: AppGraph,
+    private val location: LocationStore,
+    private val weather: WeatherRepository,
+    private val plansStore: PlanRepository,
+    private val wardrobeRepo: WardrobeRepository,
     private val scheduler: PlanScheduler,
     private val ai: BackendAssistant?
 ) : AssistantData {
-    override fun homeCity(): City = graph.location.load() ?: HomeViewModel.DEFAULT_CITY
+    override fun homeCity(): City = location.load() ?: DEFAULT_CITY
 
-    override suspend fun forecast(city: City): Forecast? = graph.weather.forecast(city.latitude, city.longitude)
+    override suspend fun forecast(city: City): Forecast? = weather.forecast(city.latitude, city.longitude)
 
     override suspend fun plans(): List<Plan> {
-        graph.plans.load()
-        return graph.plans.plans.value
+        plansStore.load()
+        return plansStore.plans.value
     }
 
     override suspend fun savePlan(plan: Plan) {
-        graph.plans.upsert(plan)
+        plansStore.upsert(plan)
         scheduler.schedule(plan)
     }
 
     override suspend fun deletePlan(plan: Plan) {
-        graph.plans.delete(plan.id)
+        plansStore.delete(plan.id)
         scheduler.cancel(plan.id)
     }
 
-    override suspend fun wardrobe(): List<ClothingItem> = graph.wardrobe.allItems()
+    override suspend fun wardrobe(): List<ClothingItem> = wardrobeRepo.allItems()
 
     override suspend fun askAi(message: String, context: String, history: List<AiTurn>): AiDecision? = ai?.decide(message, context, history)
 }

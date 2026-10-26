@@ -54,7 +54,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kampplus.havacan.R
-import com.kampplus.havacan.data.AppGraph
+import com.kampplus.havacan.di.AppContainer
 import com.kampplus.havacan.domain.running.RunningAdvice
 import com.kampplus.havacan.domain.voice.VoiceDestination
 import com.kampplus.havacan.model.City
@@ -153,7 +153,7 @@ fun HavaApp(
         voice.setGuideEnabled(true, welcome = false)
         voice.startSession(continuous = true)
     }
-    val profilePrefs by AppGraph.get(LocalContext.current).profile.prefs.collectAsStateWithLifecycle()
+    val profilePrefs by AppContainer.get(LocalContext.current).profile.prefs.collectAsStateWithLifecycle()
 
     val openSalla = {
         sallaSignal++

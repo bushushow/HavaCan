@@ -23,7 +23,8 @@ import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import com.kampplus.havacan.MainActivity
 import com.kampplus.havacan.R
-import com.kampplus.havacan.data.AppGraph
+import com.kampplus.havacan.data.PlanScheduler
+import com.kampplus.havacan.di.AppContainer
 import com.kampplus.havacan.domain.plans.PlanAdvisor
 import com.kampplus.havacan.domain.plans.PlanOutlook
 import com.kampplus.havacan.model.Plan
@@ -81,7 +82,7 @@ class WorkPlanScheduler(private val context: Context) : PlanScheduler {
         val prefs = context.getSharedPreferences("havacan", Context.MODE_PRIVATE)
         if (prefs.getInt(KEY_WORK_VERSION, 0) >= WORK_VERSION) return
         work.cancelUniqueWork(WATCH_WORK)
-        val plans = AppGraph.get(context).plans
+        val plans = AppContainer.get(context).plans
         plans.load()
         plans.plans.value.forEach(::schedule)
         prefs.edit().putInt(KEY_WORK_VERSION, WORK_VERSION).apply()
@@ -97,7 +98,7 @@ class WorkPlanScheduler(private val context: Context) : PlanScheduler {
 
 class PlanReminderWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
     override suspend fun doWork(): Result {
-        val graph = AppGraph.get(applicationContext)
+        val graph = AppContainer.get(applicationContext)
         val plan = graph.plans.get(inputData.getString(KEY_PLAN_ID) ?: return Result.success()) ?: return Result.success()
         // Profil > Bildirimler: runs and other plans can be silenced separately
         val prefs = graph.profile.prefs.value
@@ -118,7 +119,7 @@ class PlanReminderWorker(context: Context, params: WorkerParameters) : Coroutine
 /** Re-checks followed plans and speaks up only when the risk state changes. */
 class PlanWatchWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
     override suspend fun doWork(): Result {
-        val graph = AppGraph.get(applicationContext)
+        val graph = AppContainer.get(applicationContext)
         graph.plans.load()
         val now = LocalDateTime.now()
         val prefs = graph.profile.prefs.value

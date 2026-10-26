@@ -3,6 +3,7 @@ package com.kampplus.havacan.ui.plans
 import com.kampplus.havacan.data.CalendarEvent
 import com.kampplus.havacan.data.FilePlanStore
 import com.kampplus.havacan.data.LocationStore
+import com.kampplus.havacan.data.PlanScheduler
 import com.kampplus.havacan.data.WeatherRepository
 import com.kampplus.havacan.data.provinceCities
 import com.kampplus.havacan.data.remote.CurrentDto

@@ -9,11 +9,10 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.google.gson.JsonParseException
+import com.kampplus.havacan.data.DEFAULT_CITY
 import com.kampplus.havacan.data.LocationStore
-import com.kampplus.havacan.data.PreferencesLocationStore
 import com.kampplus.havacan.data.WeatherRepository
-import com.kampplus.havacan.data.provinceCities
-import com.kampplus.havacan.data.remote.ApiClient
+import com.kampplus.havacan.di.AppContainer
 import com.kampplus.havacan.domain.insight.WeatherInsightBuilder
 import com.kampplus.havacan.domain.running.RunningSuitabilityCalculator
 import com.kampplus.havacan.model.City
@@ -104,13 +103,12 @@ class HomeViewModel(
     }
 
     companion object {
-        val DEFAULT_CITY: City = provinceCities.first { it.name == "Ankara" }
-
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
+                val container = AppContainer.get(this[APPLICATION_KEY]!!)
                 HomeViewModel(
-                    repository = WeatherRepository(ApiClient.forecastApi),
-                    locationStore = PreferencesLocationStore(this[APPLICATION_KEY]!!),
+                    repository = container.weather,
+                    locationStore = container.location,
                     savedStateHandle = createSavedStateHandle()
                 )
             }

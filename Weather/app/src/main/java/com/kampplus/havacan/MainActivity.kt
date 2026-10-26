@@ -14,10 +14,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import androidx.lifecycle.lifecycleScope
-import com.kampplus.havacan.data.AppGraph
+import com.kampplus.havacan.di.AppContainer
 import com.kampplus.havacan.ui.HavaApp
 import com.kampplus.havacan.ui.plans.EXTRA_PLAN_ID
-import com.kampplus.havacan.ui.plans.WorkPlanScheduler
 import com.kampplus.havacan.ui.theme.DisplayPrefs
 import com.kampplus.havacan.ui.theme.WeatherTheme
 import java.util.Locale
@@ -29,8 +28,8 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        AppGraph.get(this) // loads Profil choices (unit, text size) before the first frame
-        lifecycleScope.launch { WorkPlanScheduler(applicationContext).migrateWorkOnce() }
+        AppContainer.get(this) // loads Profil choices (unit, text size) before the first frame
+        lifecycleScope.launch { AppContainer.get(applicationContext).workScheduler.migrateWorkOnce() }
         openPlanId.value = intent.getStringExtra(EXTRA_PLAN_ID)
         // Dark status bar icons on the ivory background (light icons in dark theme)
         enableEdgeToEdge(statusBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT))

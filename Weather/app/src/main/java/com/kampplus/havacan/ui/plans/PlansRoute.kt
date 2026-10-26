@@ -36,7 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kampplus.havacan.R
-import com.kampplus.havacan.data.AppGraph
+import com.kampplus.havacan.di.AppContainer
 import com.kampplus.havacan.model.City
 import com.kampplus.havacan.model.Plan
 import com.kampplus.havacan.model.PlanSource
@@ -115,7 +115,7 @@ fun PlansRoute(
             duration = SnackbarDuration.Long
         )
         if (result == SnackbarResult.ActionPerformed) {
-            runCatching { context.startActivity(AppGraph.get(context).calendar.insertIntent(notice.plan)) }
+            runCatching { context.startActivity(AppContainer.get(context).calendar.insertIntent(notice.plan)) }
                 .onFailure {
                     if (it is ActivityNotFoundException) Toast.makeText(context, "Takvim uygulaması bulunamadı", Toast.LENGTH_SHORT).show()
                 }
@@ -176,7 +176,7 @@ fun PlansRoute(
                                 notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
                             }
                             if (addToCalendar) {
-                                runCatching { context.startActivity(AppGraph.get(context).calendar.insertIntent(plan)) }
+                                runCatching { context.startActivity(AppContainer.get(context).calendar.insertIntent(plan)) }
                                     .onFailure {
                                         if (it is ActivityNotFoundException) {
                                             Toast.makeText(
@@ -215,7 +215,7 @@ fun PlansRoute(
                                         viewModel.moveTo(item.plan, hour)
                                         val eventId = item.plan.calendarEventId
                                         if (item.plan.source == PlanSource.Calendar && eventId != null) {
-                                            runCatching { context.startActivity(AppGraph.get(context).calendar.editIntent(eventId)) }
+                                            runCatching { context.startActivity(AppContainer.get(context).calendar.editIntent(eventId)) }
                                         }
                                     }
                                     PlanBChoice.Indoor -> viewModel.moveIndoors(item.plan)

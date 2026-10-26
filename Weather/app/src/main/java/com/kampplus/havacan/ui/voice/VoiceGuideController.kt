@@ -8,8 +8,8 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.kampplus.havacan.BuildConfig
 import com.kampplus.havacan.data.AppAssistantData
-import com.kampplus.havacan.data.AppGraph
 import com.kampplus.havacan.data.BackendAssistant
+import com.kampplus.havacan.di.AppContainer
 import com.kampplus.havacan.domain.voice.AssistantCard
 import com.kampplus.havacan.domain.voice.AssistantReply
 import com.kampplus.havacan.domain.voice.HavaCanAssistant
@@ -369,10 +369,11 @@ class VoiceGuideController(
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
                 val app = this[APPLICATION_KEY]!!
-                val graph = AppGraph.get(app)
-                val ai = BuildConfig.HAVACAN_API_URL.takeIf { it.isNotBlank() }?.let(::BackendAssistant)
+                val c = AppContainer.get(app)
                 VoiceGuideController(
-                    assistant = HavaCanAssistant(AppAssistantData(graph, WorkPlanScheduler(app), ai)),
+                    assistant = HavaCanAssistant(
+                        AppAssistantData(c.location, c.weather, c.plans, c.wardrobe, c.scheduler, c.assistantBackend)
+                    ),
                     input = AndroidSpeechInput(app),
                     output = AndroidSpeechOutput(app),
                     settingsStore = PreferencesVoiceSettingsStore(app)

@@ -8,7 +8,7 @@ import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.AP
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-import com.kampplus.havacan.data.AppGraph
+import com.kampplus.havacan.data.DEFAULT_CITY
 import com.kampplus.havacan.data.LocationStore
 import com.kampplus.havacan.data.WeatherRepository
 import com.kampplus.havacan.data.wardrobe.AnalysisResult
@@ -17,6 +17,7 @@ import com.kampplus.havacan.data.wardrobe.ClothingItem
 import com.kampplus.havacan.data.wardrobe.SavedOutfit
 import com.kampplus.havacan.data.wardrobe.Season
 import com.kampplus.havacan.data.wardrobe.WardrobeRepository
+import com.kampplus.havacan.di.AppContainer
 import com.kampplus.havacan.domain.wardrobe.OutfitEngine
 import com.kampplus.havacan.domain.wardrobe.OutfitResult
 import com.kampplus.havacan.domain.wardrobe.WeatherContext
@@ -116,7 +117,7 @@ class WardrobeViewModel(
 
     fun refreshWeather() {
         viewModelScope.launch {
-            val city = location.load() ?: HomeViewModel.DEFAULT_CITY
+            val city = location.load() ?: DEFAULT_CITY
             val forecast = runCatching { weather.forecast(city.latitude, city.longitude) }.getOrNull()
             _weatherContext.value = forecast?.let { f ->
                 val nextHours = f.upcoming.take(6)
@@ -274,7 +275,7 @@ class WardrobeViewModel(
     companion object {
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
-                val graph = AppGraph.get(this[APPLICATION_KEY]!!)
+                val graph = AppContainer.get(this[APPLICATION_KEY]!!)
                 WardrobeViewModel(graph.wardrobe, graph.weather, graph.location)
             }
         }

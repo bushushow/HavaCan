@@ -2,6 +2,7 @@ package com.kampplus.havacan.ui.run
 
 import com.kampplus.havacan.data.FilePlanStore
 import com.kampplus.havacan.data.LocationStore
+import com.kampplus.havacan.data.PlanScheduler
 import com.kampplus.havacan.data.WeatherRepository
 import com.kampplus.havacan.data.provinceCities
 import com.kampplus.havacan.data.remote.CurrentDto
@@ -13,7 +14,6 @@ import com.kampplus.havacan.model.City
 import com.kampplus.havacan.model.Plan
 import com.kampplus.havacan.model.Reminder
 import com.kampplus.havacan.model.RunDetails
-import com.kampplus.havacan.ui.plans.PlanScheduler
 import java.io.File
 import java.io.IOException
 import java.time.LocalDate

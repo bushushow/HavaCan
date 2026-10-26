@@ -6,12 +6,14 @@ import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.AP
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-import com.kampplus.havacan.data.AppGraph
 import com.kampplus.havacan.data.CalendarEvent
 import com.kampplus.havacan.data.CalendarGateway
+import com.kampplus.havacan.data.DEFAULT_CITY
 import com.kampplus.havacan.data.LocationStore
 import com.kampplus.havacan.data.PlanRepository
+import com.kampplus.havacan.data.PlanScheduler
 import com.kampplus.havacan.data.WeatherRepository
+import com.kampplus.havacan.di.AppContainer
 import com.kampplus.havacan.domain.plans.PlanAdvisor
 import com.kampplus.havacan.domain.plans.PlanOutlook
 import com.kampplus.havacan.model.City
@@ -50,12 +52,7 @@ data class PlansUiState(
     val hasAnyPlans: Boolean = false
 )
 
-/** Things the screen can't do itself: schedule work, and read the phone calendar. */
-interface PlanScheduler {
-    fun schedule(plan: Plan)
-    fun cancel(planId: String)
-}
-
+/** What the screen needs from the phone calendar. */
 interface CalendarSource {
     fun hasPermission(): Boolean
     suspend fun upcomingEvents(): List<CalendarEvent>
@@ -70,7 +67,7 @@ class PlansViewModel(
     private val now: () -> LocalDateTime = LocalDateTime::now
 ) : ViewModel() {
 
-    private val homeCity = MutableStateFlow(location.load() ?: HomeViewModel.DEFAULT_CITY)
+    private val homeCity = MutableStateFlow(location.load() ?: DEFAULT_CITY)
     private val forecasts = MutableStateFlow<Map<String, Forecast>>(emptyMap())
     private val selectedDate = MutableStateFlow<LocalDate?>(null)
     private val calendarConnected = MutableStateFlow(calendar.hasPermission())
@@ -89,7 +86,7 @@ class PlansViewModel(
 
     /** Called when the tab is shown: the home city may have changed, the calendar may have new events. */
     fun refresh() {
-        homeCity.value = location.load() ?: HomeViewModel.DEFAULT_CITY
+        homeCity.value = location.load() ?: DEFAULT_CITY
         calendarConnected.value = calendar.hasPermission()
         viewModelScope.launch {
             if (calendarConnected.value) importCalendar()
@@ -197,7 +194,7 @@ class PlansViewModel(
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
                 val app = this[APPLICATION_KEY]!!
-                val graph = AppGraph.get(app)
+                val graph = AppContainer.get(app)
                 PlansViewModel(
                     plans = graph.plans,
                     weather = graph.weather,
@@ -206,7 +203,7 @@ class PlansViewModel(
                         override fun hasPermission() = graph.calendar.hasReadPermission()
                         override suspend fun upcomingEvents() = graph.calendar.upcomingEvents()
                     },
-                    scheduler = WorkPlanScheduler(app)
+                    scheduler = graph.scheduler
                 )
             }
         }
