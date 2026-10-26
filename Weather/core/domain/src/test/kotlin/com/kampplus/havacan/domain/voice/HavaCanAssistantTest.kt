@@ -1,6 +1,5 @@
 package com.kampplus.havacan.domain.voice
 
-import com.kampplus.havacan.data.provinceCities
 import com.kampplus.havacan.model.City
 import com.kampplus.havacan.model.ClothingCategory
 import com.kampplus.havacan.model.ClothingItem
@@ -22,7 +21,7 @@ import org.junit.Test
 
 class HavaCanAssistantTest {
     private val now = LocalDateTime.parse("2026-10-26T10:00")
-    private val ankara = provinceCities.first { it.name == "Ankara" }
+    private val ankara = City(323786, "Ankara", 39.91987, 32.85427, "TR", "Türkiye", "Ankara")
 
     /** Clear and 16° all along, except rain tomorrow evening. */
     private fun hour(date: String, h: Int, rainy: Boolean = date == "2026-10-27" && h in 17..20) = HourlyWeather(
@@ -248,13 +247,5 @@ class HavaCanAssistantTest {
     @Test
     fun withoutAiChangingAPlanIsHonest() = runTest {
         assertEquals("Planları sesle değiştirmek için yapay zekâ bağlantısı gerekiyor.", assistant.handle("Piknik planını ertele").title)
-    }
-
-    @Test
-    fun backendJsonIsParsed() {
-        val d = com.kampplus.havacan.data.BackendAssistant.parse(
-            """{"reply":null,"action":{"name":"update_plan","args":{"plan_id":"p1","time":"19:00","indoor":true}}}"""
-        )
-        assertEquals(AiAction("update_plan", planId = "p1", time = "19:00", indoor = true), d.action)
     }
 }

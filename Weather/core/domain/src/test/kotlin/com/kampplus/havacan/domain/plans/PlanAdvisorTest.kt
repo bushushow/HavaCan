@@ -1,6 +1,6 @@
 package com.kampplus.havacan.domain.plans
 
-import com.kampplus.havacan.data.provinceCities
+import com.kampplus.havacan.model.City
 import com.kampplus.havacan.model.CurrentWeather
 import com.kampplus.havacan.model.Forecast
 import com.kampplus.havacan.model.HourlyWeather
@@ -14,7 +14,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class PlanAdvisorTest {
-    private val ankara = provinceCities.first { it.name == "Ankara" }
+    private val ankara = City(323786, "Ankara", 39.91987, 32.85427, "TR", "Türkiye", "Ankara")
     private val now = LocalDateTime.parse("2026-10-25T10:00")
 
     private fun hour(h: Int, rain: Int = 0, condition: WeatherCondition = WeatherCondition.Clear, day: Boolean = h in 7..17) =

@@ -32,7 +32,7 @@ jobs:
         run: ./gradlew spotlessCheck
 
       - name: Unit tests
-        run: ./gradlew testDebugUnitTest
+        run: ./gradlew :core:domain:test testDebugUnitTest
 
       - name: Assemble debug
         run: ./gradlew assembleDebug

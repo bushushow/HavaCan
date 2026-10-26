@@ -35,7 +35,7 @@ Her push ve PR'da `.github/workflows/android.yml` çalışır:
 Yerelde aynısı:
 
 ```bash
-cd Weather && ./gradlew spotlessCheck testDebugUnitTest assembleDebug
+cd Weather && ./gradlew spotlessCheck :core:domain:test testDebugUnitTest assembleDebug
 ```
 
 ## Sıralı geçmiş
