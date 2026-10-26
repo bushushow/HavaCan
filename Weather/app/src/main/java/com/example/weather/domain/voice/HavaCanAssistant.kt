@@ -17,6 +17,8 @@ import com.example.weather.model.Plan
 import com.example.weather.model.PlanSource
 import com.example.weather.model.PlanType
 import com.example.weather.model.Reminder
+import com.example.weather.model.Units
+import com.example.weather.model.deg
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -207,11 +209,11 @@ class HavaCanAssistant(
                 is WeatherInsight.Dry -> "Önümüzdeki saatlerde yağmur beklenmiyor."
                 null -> null
             }
-            val range = todaySummary?.let { "Bugün en yüksek ${it.temperatureMax.roundToInt()}°, en düşük ${it.temperatureMin.roundToInt()}°." }
+            val range = todaySummary?.let { "Bugün en yüksek ${it.temperatureMax.deg()}°, en düşük ${it.temperatureMin.deg()}°." }
             return AssistantReply(
-                title = "${TurkishText.locative(city.name)} şu an ${c.temperature.roundToInt()}°, ${c.condition.label.lowercase(TurkishText.TR)}.",
-                body = listOfNotNull("Hissedilen ${c.apparentTemperature.roundToInt()}°.", range, rain).joinToString(" "),
-                card = card("${c.temperature.roundToInt()}° · ${c.condition.label}"),
+                title = "${TurkishText.locative(city.name)} şu an ${c.temperature.deg()}°, ${c.condition.label.lowercase(TurkishText.TR)}.",
+                body = listOfNotNull("Hissedilen ${c.apparentTemperature.deg()}°.", range, rain).joinToString(" "),
+                card = card("${c.temperature.deg()}° · ${c.condition.label}"),
             )
         }
         val day = forecast.daily.firstOrNull { it.date == date.toString() }
@@ -221,11 +223,11 @@ class HavaCanAssistant(
         return AssistantReply(
             title = "${TurkishText.capitalize(TurkishText.dayPhrase(date, today))} ${TurkishText.locative(city.name)} hava ${day.condition.label.lowercase(TurkishText.TR)}.",
             body = listOfNotNull(
-                "En yüksek ${day.temperatureMax.roundToInt()}°, en düşük ${day.temperatureMin.roundToInt()}°.",
+                "En yüksek ${day.temperatureMax.deg()}°, en düşük ${day.temperatureMin.deg()}°.",
                 chance?.let { "Yağış ihtimali en fazla %$it." },
                 umbrella,
             ).joinToString(" "),
-            card = card("${day.temperatureMax.roundToInt()}° / ${day.temperatureMin.roundToInt()}° · ${day.condition.label}"),
+            card = card("${day.temperatureMax.deg()}° / ${day.temperatureMin.deg()}° · ${day.condition.label}"),
         )
     }
 
@@ -269,7 +271,7 @@ class HavaCanAssistant(
 
     private fun outlookPhrase(outlook: PlanOutlook): String = when (outlook) {
         is PlanOutlook.Risk -> outlook.reason.label.lowercase(TurkishText.TR)
-        is PlanOutlook.Fine -> "hava uygun, ${outlook.hour.temperature.roundToInt()}°"
+        is PlanOutlook.Fine -> "hava uygun, ${outlook.hour.temperature.deg()}°"
         is PlanOutlook.NoForecastYet -> "tahmin henüz yok"
         PlanOutlook.Unknown -> "hava bilgisi alınamadı"
         PlanOutlook.Past -> "geçti"
@@ -364,11 +366,11 @@ class HavaCanAssistant(
                 AssistantReply(
                     title = "$dayWord ${"%02d:%02d".format(best.start.hour, best.start.minute)} en uygun saat!",
                     body = (if (movedToTomorrow) "Bugün için saat kalmadı, yarına baktım. " else "") +
-                        "Hava ${h.temperature.roundToInt()}° ve ${h.condition.label.lowercase(TurkishText.TR)}, koşu için $quality bir zaman.",
+                        "Hava ${h.temperature.deg()}° ve ${h.condition.label.lowercase(TurkishText.TR)}, koşu için $quality bir zaman.",
                     card = AssistantCard(
                         CardKind.Run,
                         if (best.score >= 70) "Koşu için ideal hava" else "Koşu için en iyi saat",
-                        listOfNotNull("${h.temperature.roundToInt()}°", h.condition.label, wind).joinToString(" · "),
+                        listOfNotNull("${h.temperature.deg()}°", h.condition.label, wind).joinToString(" · "),
                         VoiceDestination.RunPlanner,
                     ),
                 )
@@ -405,9 +407,9 @@ class HavaCanAssistant(
         val forecast = loadForecast(city).getOrNull()
         val weather = forecast?.let { f ->
             val days = f.daily.take(4).joinToString("; ") {
-                "${it.date}: ${it.condition.label}, ${it.temperatureMin.roundToInt()}-${it.temperatureMax.roundToInt()}°C, yağış %${it.precipitationProbabilityMax ?: 0}"
+                "${it.date}: ${it.condition.label}, ${it.temperatureMin.deg()}-${it.temperatureMax.deg()}${Units.temperature.symbol}, yağış %${it.precipitationProbabilityMax ?: 0}"
             }
-            "Şu an ${f.current.temperature.roundToInt()}°C, ${f.current.condition.label}. Günler: $days."
+            "Şu an ${f.current.temperature.deg()}${Units.temperature.symbol}, ${f.current.condition.label}. Günler: $days."
         } ?: "Hava verisi şu an yok."
         val plans = runCatching { upcomingPlans() }.getOrDefault(emptyList()).take(12).joinToString("\n") {
             "- id=${it.id} | ${it.title} | ${it.date} ${it.time} | ${it.city.name} | ${if (it.type == PlanType.Indoor) "kapalı" else "açık hava"}" +
@@ -520,8 +522,8 @@ class HavaCanAssistant(
         val plan = toPlan(draft)
         val forecast = loadForecast(plan.city).getOrNull()
         val weather = when (val o = PlanAdvisor.outlook(plan, forecast, now())) {
-            is PlanOutlook.Risk -> "Dikkat: ${o.reason.label.lowercase(TurkishText.TR)}, ${o.hour.temperature.roundToInt()}°."
-            is PlanOutlook.Fine -> "Hava uygun görünüyor, ${o.hour.temperature.roundToInt()}°."
+            is PlanOutlook.Risk -> "Dikkat: ${o.reason.label.lowercase(TurkishText.TR)}, ${o.hour.temperature.deg()}°."
+            is PlanOutlook.Fine -> "Hava uygun görünüyor, ${o.hour.temperature.deg()}°."
             is PlanOutlook.NoForecastYet -> "O gün için tahmin henüz yok; yaklaşınca takip edeceğim."
             else -> "Hava bilgisini şu an alamadım."
         }

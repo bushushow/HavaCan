@@ -1,5 +1,6 @@
 package com.example.weather.ui.plans
 
+import com.example.weather.model.deg
 import android.Manifest
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -78,6 +79,9 @@ class PlanReminderWorker(context: Context, params: WorkerParameters) : Coroutine
     override suspend fun doWork(): Result {
         val graph = AppGraph.get(applicationContext)
         val plan = graph.plans.get(inputData.getString(KEY_PLAN_ID) ?: return Result.success()) ?: return Result.success()
+        // Profil > Bildirimler: runs and other plans can be silenced separately
+        val prefs = graph.profile.prefs.value
+        if (if (plan.isRun) !prefs.notifyRuns else !prefs.notifyPlans) return Result.success()
         val forecast = runCatching { graph.weather.forecast(plan.city.latitude, plan.city.longitude) }.getOrNull()
         val outlook = PlanAdvisor.outlook(plan, forecast, LocalDateTime.now())
         PlanNotifications.show(
@@ -97,6 +101,7 @@ class PlanWatchWorker(context: Context, params: WorkerParameters) : CoroutineWor
         val graph = AppGraph.get(applicationContext)
         graph.plans.load()
         val now = LocalDateTime.now()
+        val prefs = graph.profile.prefs.value
         for (plan in graph.plans.plans.value.filter { it.follow }) {
             val forecast = runCatching { graph.weather.forecast(plan.city.latitude, plan.city.longitude, forceRefresh = true) }
                 .getOrNull() ?: continue
@@ -108,9 +113,12 @@ class PlanWatchWorker(context: Context, params: WorkerParameters) : CoroutineWor
             }
             if (state == plan.lastNotified) continue
             when {
-                outlook is PlanOutlook.Risk -> PlanNotifications.show(
-                    applicationContext, plan, "Planın riskte: ${plan.title}", outlook.summary(),
-                )
+                !prefs.notifyWeather -> Unit // Profil > Bildirimler: weather alerts off, state still tracked
+                outlook is PlanOutlook.Risk -> {
+                    // Plan B suggestion only when wanted; the alert itself still opens Plan B
+                    val planB = if (prefs.notifyPlanB) PlanAdvisor.alternative(plan, forecast, now)?.let { " · Plan B: ${it.hourLabel} daha uygun" } else null
+                    PlanNotifications.show(applicationContext, plan, "Planın riskte: ${plan.title}", outlook.summary() + planB.orEmpty())
+                }
                 plan.lastNotified != null -> PlanNotifications.show(
                     applicationContext, plan, "Hava düzeldi: ${plan.title}", outlook.summary(),
                 )
@@ -164,7 +172,7 @@ fun PlanOutlook.summary(): String = when (this) {
         val chance = hour.precipitationProbability?.let { " · yağış ihtimali %$it" }.orEmpty()
         "${reason.label}$chance"
     }
-    is PlanOutlook.Fine -> "Hava uygun · ${hour.temperature.roundToInt()}°, ${hour.condition.label}"
+    is PlanOutlook.Fine -> "Hava uygun · ${hour.temperature.deg()}°, ${hour.condition.label}"
     is PlanOutlook.NoForecastYet -> "Tahmin ${daysUntil - 15} gün sonra gelecek"
     PlanOutlook.Unknown -> "Hava bilgisi şu an alınamadı"
     PlanOutlook.Past -> "Geçti"

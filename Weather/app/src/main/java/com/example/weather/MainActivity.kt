@@ -14,6 +14,11 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.example.weather.ui.HavaApp
 import com.example.weather.ui.theme.WeatherTheme
+import com.example.weather.ui.theme.DisplayPrefs
+import com.example.weather.data.AppGraph
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
 
 class MainActivity : ComponentActivity() {
     /** Plan to open when the app was launched from a plan notification. */
@@ -21,15 +26,21 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        AppGraph.get(this) // loads Profil choices (unit, text size) before the first frame
         openPlanId.value = intent.getStringExtra(EXTRA_PLAN_ID)
         // Dark status bar icons on the ivory background (light icons in dark theme)
         enableEdgeToEdge(statusBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT))
         setContent {
             WeatherTheme {
-                HavaApp(
-                    openPlanId = openPlanId.value,
-                    onOpenPlanHandled = { openPlanId.value = null },
-                )
+                // Profil > Erişilebilirlik > Büyük yazı: 20 % on top of Android's own font size
+                val density = LocalDensity.current
+                val scaled = if (DisplayPrefs.largeText) Density(density.density, density.fontScale * 1.2f) else density
+                CompositionLocalProvider(LocalDensity provides scaled) {
+                    HavaApp(
+                        openPlanId = openPlanId.value,
+                        onOpenPlanHandled = { openPlanId.value = null },
+                    )
+                }
             }
         }
     }

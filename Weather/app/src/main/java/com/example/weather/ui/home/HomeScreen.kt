@@ -303,9 +303,11 @@ private fun animatedLook(target: SceneLook, reduceMotion: Boolean): SceneLook {
 @Composable
 fun rememberReduceMotion(): Boolean {
     val context = LocalContext.current
-    return remember {
+    val system = remember {
         Settings.Global.getFloat(context.contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f) == 0f
     }
+    // Android's setting, or Profil > Erişilebilirlik > Animasyonları azalt
+    return system || com.example.weather.ui.theme.DisplayPrefs.reduceMotion
 }
 
 /** Listens to the accelerometer only while the screen is resumed and [enabled]. */

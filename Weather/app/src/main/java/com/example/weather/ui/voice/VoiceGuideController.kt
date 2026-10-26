@@ -108,13 +108,19 @@ class VoiceGuideController(
 
     // region Settings
 
-    fun setGuideEnabled(enabled: Boolean) {
+    fun setGuideEnabled(enabled: Boolean, welcome: Boolean = true) {
         settingsStore.update { it.copy(guideEnabled = enabled) }
-        if (enabled) {
+        if (enabled && welcome) {
             say("Sesli rehber açık. Ekrandaki mikrofon düğmesine dokunup konuşabilirsin. Kapatmak için sesli rehberi kapat demen yeterli.")
-        } else {
+        } else if (!enabled) {
             stopSession(goodbye = false)
         }
+    }
+
+    /** Gizlilik ve veriler > Sohbeti temizle. */
+    fun clearMessages() {
+        _messages.value = emptyList()
+        assistant.resetDialog()
     }
 
     fun setSpeakTypedReplies(enabled: Boolean) = settingsStore.update { it.copy(speakTypedReplies = enabled) }

@@ -1,5 +1,6 @@
 package com.example.weather.ui.home.components
 
+import com.example.weather.model.deg
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -84,7 +85,7 @@ fun WeatherHero(state: HomeUiState, onRetry: () -> Unit, modifier: Modifier = Mo
                     }
                 }
                 AnimatedContent(
-                    targetState = temperature.roundToInt(),
+                    targetState = temperature.deg(),
                     transitionSpec = {
                         val up = targetState > initialState
                         (slideInVertically { if (up) it / 2 else -it / 2 } + fadeIn()) togetherWith
@@ -104,14 +105,14 @@ fun WeatherHero(state: HomeUiState, onRetry: () -> Unit, modifier: Modifier = Mo
                     Text(label, style = MaterialTheme.typography.headlineSmall, color = Navy, maxLines = 2)
                 }
                 Text(
-                    stringResource(R.string.feels_like, feels.roundToInt()),
+                    stringResource(R.string.feels_like, feels.deg()),
                     style = MaterialTheme.typography.bodyLarge,
                     color = NavySoft,
                 )
                 forecast.today?.let { today ->
                     Spacer(Modifier.height(2.dp))
                     Text(
-                        stringResource(R.string.high_low, today.temperatureMax.roundToInt(), today.temperatureMin.roundToInt()),
+                        stringResource(R.string.high_low, today.temperatureMax.deg(), today.temperatureMin.deg()),
                         style = MaterialTheme.typography.titleLarge,
                         color = Navy,
                     )

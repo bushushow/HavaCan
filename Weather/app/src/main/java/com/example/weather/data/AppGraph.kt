@@ -18,6 +18,8 @@ class AppGraph private constructor(context: Context) {
     val plans: PlanRepository = FilePlanStore(File(context.filesDir, "plans.json"))
     val location: LocationStore = PreferencesLocationStore(context)
     val calendar = CalendarGateway(context)
+    /** Loaded first thing so the unit and display choices apply to workers too. */
+    val profile: ProfileStore = PreferencesProfileStore(context)
     private val database = WardrobeDatabase.create(context)
     val wardrobe = WardrobeRepository(
         dao = database.wardrobe(),

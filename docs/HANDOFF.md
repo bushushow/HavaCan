@@ -58,6 +58,8 @@ cd /c/Users/bsroz/turkcell_camp/Weather && JAVA_HOME="/c/Program Files/Android/A
 | Dolabım (Salla Kombin) | Bitti, push edildi (`dd48cb7`) | Galeri/kamera, Room, cihazda renk bulma, sallama ve butonla kombin, eksik kategori uyarısı |
 | Koşu Planla | Kodlandı, push edildi (`cd538ee`); son tur cihazda görülmedi | Ayrıntılar aşağıda |
 | HavaCan Asistan (sohbet) + Sesli Rehber + Profil + OpenRouter | Yerelde commit edildi, **push edilmedi**; kullanıcı cihazda denedi, çalışıyor | Ayrıntılar aşağıda |
+| Profilim (ad, °C/°F, aktivite/kombin tercihleri, bildirim, erişilebilirlik, gizlilik) | Yerelde commit edildi, push edilmedi; cihazda tam denenmedi | `ui/profile/`, tercihler `data/ProfileStore.kt` (SharedPreferences); birim `model/Units.kt` tüm sıcaklık gösterimlerinde; Google Takvim kartı OAuth değil, telefon takvimi izni |
+| Konum seç + il/ilçe ekranı | Yerelde commit edildi, push edilmedi | `ui/city/LocationPicker*`; arama internetsiz (`data/PlaceDirectory.kt`), yurt dışı için Open-Meteo; son konumlar gerçek seçimlerden; "Mevcut konumumu kullan" LocationManager + en yakın ilçe (emülatörde varsayılan konum Mountain View) |
 
 ### HavaCan Asistan ve Sesli Rehber (son çalışma)
 

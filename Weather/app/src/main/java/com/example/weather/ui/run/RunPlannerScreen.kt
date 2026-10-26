@@ -1,5 +1,6 @@
 package com.example.weather.ui.run
 
+import com.example.weather.model.deg
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Animatable
@@ -488,7 +489,7 @@ private fun SlotRow(slot: RunSlot, durationMinutes: Int, manual: Boolean, select
                 Text(blocker.message, style = MaterialTheme.typography.bodyMedium, color = RiskRed)
             } else {
                 Text(
-                    "Hissedilen ${hours.map { it.apparentTemperature }.average().roundToInt()}° · " +
+                    "Hissedilen ${hours.map { it.apparentTemperature }.average().deg()}° · " +
                         (hours.mapNotNull { it.windSpeed }.maxOrNull()?.let { "Rüzgar ${it.roundToInt()} km/sa" } ?: ""),
                     style = MaterialTheme.typography.bodySmall,
                     color = NavySoft,
@@ -508,7 +509,7 @@ private fun SlotRow(slot: RunSlot, durationMinutes: Int, manual: Boolean, select
         }
         WeatherIcon(first.condition, first.isDay, size = 34.dp)
         Spacer(Modifier.width(6.dp))
-        Text("${first.temperature.roundToInt()}°", style = MaterialTheme.typography.titleLarge, color = Navy, modifier = Modifier.width(44.dp))
+        Text("${first.temperature.deg()}°", style = MaterialTheme.typography.titleLarge, color = Navy, modifier = Modifier.width(44.dp))
         Box(
             Modifier.size(22.dp).clip(CircleShape).background(if (selected) HavaBlue else Color.Transparent)
                 .border(1.5.dp, if (selected) HavaBlue else NavySoft.copy(alpha = 0.35f), CircleShape),

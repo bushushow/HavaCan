@@ -4,6 +4,7 @@ import com.example.weather.data.wardrobe.ClothingCategory
 import com.example.weather.data.wardrobe.ClothingColors
 import com.example.weather.data.wardrobe.ClothingItem
 import com.example.weather.data.wardrobe.Season
+import com.example.weather.model.deg
 import kotlin.math.roundToInt
 import kotlin.random.Random
 
@@ -100,6 +101,7 @@ object OutfitEngine {
     internal fun reason(weather: WeatherContext?, season: Season, outfit: List<ClothingItem>): String {
         if (weather == null) return "Hava bilgisi alınamadı; ${season.label.lowercase()} mevsimine göre seçtim."
         val feels = weather.feelsLike.roundToInt()
+        val shown = weather.feelsLike.deg()
         val outer = outfit.firstOrNull { it.category == ClothingCategory.Outerwear }
         val wind = when {
             weather.windKmh >= 30 -> "rüzgarlı hava"
@@ -107,11 +109,11 @@ object OutfitEngine {
             else -> "sakin hava"
         }
         return when {
-            weather.rainLikely && outer != null -> "$feels° ve yağmur ihtimali için ${outer.name.lowercase()} ekledim."
-            weather.rainLikely -> "$feels° ve yağmur ihtimali var; şemsiyeni unutma."
-            outer != null -> "$feels° ve $wind için ${outer.name.lowercase()} ile katmanlı bir tercih."
-            feels >= 26 -> "$feels° için hafif ve serin bir tercih."
-            else -> "$feels° ve $wind için rahat bir tercih."
+            weather.rainLikely && outer != null -> "$shown° ve yağmur ihtimali için ${outer.name.lowercase()} ekledim."
+            weather.rainLikely -> "$shown° ve yağmur ihtimali var; şemsiyeni unutma."
+            outer != null -> "$shown° ve $wind için ${outer.name.lowercase()} ile katmanlı bir tercih."
+            feels >= 26 -> "$shown° için hafif ve serin bir tercih."
+            else -> "$shown° ve $wind için rahat bir tercih."
         }
     }
 }

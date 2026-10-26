@@ -1,5 +1,6 @@
 package com.example.weather.ui.wardrobe
 
+import com.example.weather.model.deg
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
@@ -186,7 +187,7 @@ private fun WeatherChip(weather: WeatherContext?) {
         if (weather != null) {
             WeatherIcon(if (weather.rainLikely) WeatherCondition.Rain else WeatherCondition.Clear, true, size = 22.dp)
             Spacer(Modifier.width(6.dp))
-            Text("${weather.placeName} · ${weather.feelsLike.roundToInt()}°", style = MaterialTheme.typography.labelLarge, color = Navy)
+            Text("${weather.placeName} · ${weather.feelsLike.deg()}°", style = MaterialTheme.typography.labelLarge, color = Navy)
         } else {
             Text(stringResource(R.string.no_weather), style = MaterialTheme.typography.labelLarge, color = NavySoft)
         }

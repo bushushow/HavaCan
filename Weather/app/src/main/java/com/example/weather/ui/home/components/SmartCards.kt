@@ -1,5 +1,6 @@
 package com.example.weather.ui.home.components
 
+import com.example.weather.model.deg
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Canvas
@@ -70,7 +71,7 @@ fun WeatherInsightCard(insight: WeatherInsight, clock: () -> Float, onShowHour: 
         is WeatherInsight.Dry -> Quad(
             stringResource(R.string.insight_dry),
             "${insight.coolest.hourLabel} · ${insight.coolest.condition.label}",
-            stringResource(R.string.insight_lowest, insight.coolest.temperature.roundToInt()),
+            stringResource(R.string.insight_lowest, insight.coolest.temperature.deg()),
             insight.coolest,
         )
     }

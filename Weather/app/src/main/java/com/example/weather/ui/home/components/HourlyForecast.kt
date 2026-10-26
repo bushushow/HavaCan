@@ -1,5 +1,6 @@
 package com.example.weather.ui.home.components
 
+import com.example.weather.model.deg
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
@@ -101,7 +102,7 @@ private fun HourPill(label: String, hour: HourlyWeather, selected: Boolean, onCl
         Text(label, style = MaterialTheme.typography.labelLarge, color = content, maxLines = 1)
         WeatherIcon(hour.condition, hour.isDay, size = 36.dp)
         Text(
-            stringResource(R.string.temperature, hour.temperature.roundToInt()),
+            stringResource(R.string.temperature, hour.temperature.deg()),
             style = MaterialTheme.typography.titleLarge,
             color = content,
         )
@@ -151,7 +152,7 @@ fun RunnerHourlyStrip(
                         Text(hour.hourLabel, style = MaterialTheme.typography.titleSmall, color = Navy)
                         WeatherIcon(hour.condition, hour.isDay, size = 38.dp)
                         Text(
-                            stringResource(R.string.temperature, hour.temperature.roundToInt()),
+                            stringResource(R.string.temperature, hour.temperature.deg()),
                             style = MaterialTheme.typography.headlineSmall,
                             color = Navy,
                             textAlign = TextAlign.Center,

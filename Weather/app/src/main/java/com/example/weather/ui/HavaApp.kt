@@ -74,7 +74,9 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.example.weather.domain.voice.VoiceDestination
 import com.example.weather.ui.chat.ChatActions
 import com.example.weather.ui.chat.ChatScreen
-import com.example.weather.ui.profile.ProfileScreen
+import com.example.weather.ui.profile.ProfileHooks
+import com.example.weather.ui.profile.ProfileRoute
+import com.example.weather.data.AppGraph
 import com.example.weather.ui.voice.VoiceGuideBar
 import com.example.weather.ui.voice.VoiceGuideController
 import com.example.weather.ui.voice.rememberMicrophoneAccess
@@ -138,6 +140,12 @@ fun HavaApp(
     val tapMicrophone = rememberMicrophoneAccess { voice.tapMicrophone() }
     val startGuide = rememberMicrophoneAccess { voice.startSession(continuous = true) }
     val enableGuide = rememberMicrophoneAccess { voice.setGuideEnabled(true) }
+    // Profil's "Başlat": turns the guide on (no welcome speech, the session talks at once) and starts it
+    val enableAndStartGuide = rememberMicrophoneAccess {
+        voice.setGuideEnabled(true, welcome = false)
+        voice.startSession(continuous = true)
+    }
+    val profilePrefs by AppGraph.get(LocalContext.current).profile.prefs.collectAsStateWithLifecycle()
 
     val openSalla = {
         sallaSignal++
@@ -188,6 +196,7 @@ fun HavaApp(
                 state = voiceState,
                 messages = messages,
                 clock = clock,
+                userName = profilePrefs.name,
                 actions = ChatActions(
                     onSend = voice::submitTyped,
                     onMic = tapMicrophone,
@@ -204,11 +213,18 @@ fun HavaApp(
                     onDismissNotice = voice::dismissNotice,
                 ),
             )
-            HomeTab.Profile -> ProfileScreen(
-                state = voiceState,
-                onGuideChange = { on -> if (on) enableGuide() else voice.setGuideEnabled(false) },
-                onSpeakTypedChange = voice::setSpeakTypedReplies,
-                onTryGuide = startGuide,
+            HomeTab.Profile -> ProfileRoute(
+                hooks = ProfileHooks(
+                    cityName = state.city.name,
+                    voice = voiceState,
+                    onPickCity = { cityPickTarget = null; showCityPicker = true },
+                    onStartVoice = if (voiceState.settings.guideEnabled) startGuide else enableAndStartGuide,
+                    onStopVoice = { voice.stopSession() },
+                    onGuideChange = { on -> if (on) enableGuide() else voice.setGuideEnabled(false) },
+                    onSpeakTypedChange = voice::setSpeakTypedReplies,
+                    onClearChat = voice::clearMessages,
+                ),
+                clock = clock,
             )
         }
 
@@ -260,6 +276,9 @@ fun HavaApp(
         ) {
             BackHandler { showCityPicker = false }
             CityRoute(
+                onBack = { showCityPicker = false },
+                clock = clock,
+                reduceMotion = reduceMotion,
                 onCityClick = { city ->
                     Log.d(TAG, "Tıklandı: ${city.name}")
                     val target = cityPickTarget

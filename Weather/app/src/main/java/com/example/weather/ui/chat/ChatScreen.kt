@@ -116,6 +116,7 @@ fun ChatScreen(
     messages: List<ChatMessage>,
     clock: () -> Float,
     actions: ChatActions,
+    userName: String = "",
 ) {
     var draft by rememberSaveable { mutableStateOf("") }
     val list = rememberLazyListState()
@@ -146,7 +147,7 @@ fun ChatScreen(
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
             item(key = "hero") { AssistantHero(state, clock, Modifier.fillMaxWidth().height(230.dp)) }
-            item(key = "greeting") { Greeting() }
+            item(key = "greeting") { Greeting(userName) }
             items(messages, key = { it.id }) { message ->
                 if (message.fromUser) UserBubble(message) else HavaCanBubbleRow(message, actions)
             }
@@ -218,7 +219,7 @@ private fun ChatHeader(state: VoiceGuideState, actions: ChatActions) {
 }
 
 @Composable
-private fun Greeting() {
+private fun Greeting(name: String) {
     Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
         Surface(
             shape = RoundedCornerShape(topStart = 8.dp, topEnd = 28.dp, bottomStart = 28.dp, bottomEnd = 28.dp),
@@ -227,7 +228,7 @@ private fun Greeting() {
             modifier = Modifier.widthIn(max = 340.dp).semantics(mergeDescendants = true) {},
         ) {
             Column(Modifier.padding(horizontal = 24.dp, vertical = 16.dp)) {
-                Text(stringResource(R.string.chat_hello), style = MaterialTheme.typography.titleLarge, color = Navy, fontWeight = FontWeight.ExtraBold)
+                Text(if (name.isBlank()) stringResource(R.string.chat_hello) else "Merhaba, $name!", style = MaterialTheme.typography.titleLarge, color = Navy, fontWeight = FontWeight.ExtraBold)
                 Text(stringResource(R.string.chat_hello_sub), style = MaterialTheme.typography.titleMedium, color = NavySoft)
             }
         }
