@@ -51,10 +51,14 @@ import androidx.compose.ui.unit.dp
 import com.kampplus.havacan.R
 import com.kampplus.havacan.domain.plans.PlanOutlook
 import com.kampplus.havacan.model.PlanSource
+import com.kampplus.havacan.ui.common.OnSky
+import com.kampplus.havacan.ui.common.OnSkySoft
+import com.kampplus.havacan.ui.common.SkyHeader
 import com.kampplus.havacan.ui.home.character.HavaCanArt
 import com.kampplus.havacan.ui.home.character.HavaCanPoseStyle
 import com.kampplus.havacan.ui.home.components.SoftCard
 import com.kampplus.havacan.ui.home.components.WeatherIcon
+import com.kampplus.havacan.ui.theme.Hava
 import com.kampplus.havacan.ui.theme.HavaBlue
 import com.kampplus.havacan.ui.theme.HavaBlueLight
 import com.kampplus.havacan.ui.theme.Navy
@@ -81,37 +85,40 @@ fun PlanBScreen(item: PlanItem, clock: () -> Float, onApply: (PlanBChoice) -> Un
     Column(
         Modifier
             .fillMaxSize()
-            .statusBarsPadding()
             .verticalScroll(rememberScrollState())
             .navigationBarsPadding()
             .padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 4.dp)) {
-            IconButton(onClick = onBack) { Icon(painterResource(R.drawable.ic_arrow_back), stringResource(R.string.back), tint = Navy) }
-            Text(stringResource(R.string.plan_b_crumb), style = MaterialTheme.typography.titleMedium, color = HavaBlue)
+        SkyHeader(bleed = 16.dp) {
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 4.dp)) {
+                IconButton(onClick = onBack) {
+                    Icon(painterResource(R.drawable.ic_arrow_back), stringResource(R.string.back), tint = OnSky)
+                }
+                Text(stringResource(R.string.plan_b_crumb), style = MaterialTheme.typography.titleMedium, color = HavaBlue)
+            }
+            Column(Modifier.padding(start = 4.dp)) {
+                Text(
+                    stringResource(R.string.plan_b_title),
+                    style = MaterialTheme.typography.displaySmall,
+                    color = OnSky,
+                    modifier = Modifier.semantics { heading() }
+                )
+                Text(
+                    stringResource(R.string.plan_b_sub, risk?.reason?.noun ?: "Hava"),
+                    style = MaterialTheme.typography.titleLarge,
+                    color = OnSkySoft
+                )
+            }
         }
-        Column(Modifier.padding(start = 4.dp)) {
-            Text(
-                stringResource(R.string.plan_b_title),
-                style = MaterialTheme.typography.displaySmall,
-                color = Navy,
-                modifier = Modifier.semantics { heading() }
-            )
-            Text(
-                stringResource(R.string.plan_b_sub, risk?.reason?.noun ?: "Hava"),
-                style = MaterialTheme.typography.titleLarge,
-                color = NavySoft
-            )
-        }
-        SoftCard(background = Brush.horizontalGradient(listOf(HavaBlueLight, Color(0xFFF4F8FF)))) {
+        SoftCard(background = Hava.p.highlight) {
             Row(Modifier.heightIn(min = 96.dp).padding(start = 16.dp), verticalAlignment = Alignment.CenterVertically) {
                 Icon(painterResource(R.drawable.ic_lightbulb), null, tint = HavaBlue)
                 Spacer(Modifier.width(12.dp))
                 Text(
                     stringResource(R.string.plan_b_info),
                     style = MaterialTheme.typography.bodyLarge,
-                    color = Navy,
+                    color = Hava.ink,
                     modifier = Modifier.weight(1f)
                 )
                 HavaCanArt(HavaCanPoseStyle.Umbrella, clock, Modifier.size(120.dp))
@@ -119,19 +126,19 @@ fun PlanBScreen(item: PlanItem, clock: () -> Float, onApply: (PlanBChoice) -> Un
         }
         SoftCard {
             Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text(plan.title, style = MaterialTheme.typography.headlineSmall, color = Navy)
+                Text(plan.title, style = MaterialTheme.typography.headlineSmall, color = Hava.ink)
                 Text(
                     "${plan.localDate.format(PlanDate).capitalizeTr()} • ${plan.timeLabel}",
                     style = MaterialTheme.typography.bodyLarge,
-                    color = NavySoft
+                    color = Hava.inkSoft
                 )
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(painterResource(R.drawable.ic_place), null, tint = NavySoft, modifier = Modifier.size(18.dp))
+                    Icon(painterResource(R.drawable.ic_place), null, tint = Hava.inkSoft, modifier = Modifier.size(18.dp))
                     Spacer(Modifier.width(6.dp))
                     Text(
                         listOfNotNull(plan.placeName, plan.city.name).joinToString(", "),
                         style = MaterialTheme.typography.bodyLarge,
-                        color = NavySoft
+                        color = Hava.inkSoft
                     )
                 }
                 OutlookChip(item)
@@ -141,12 +148,12 @@ fun PlanBScreen(item: PlanItem, clock: () -> Float, onApply: (PlanBChoice) -> Un
             Text(
                 stringResource(R.string.plan_b_question),
                 style = MaterialTheme.typography.headlineSmall,
-                color = Navy,
+                color = Hava.ink,
                 modifier = Modifier.semantics {
                     heading()
                 }
             )
-            Text(stringResource(R.string.plan_b_question_sub), style = MaterialTheme.typography.bodyLarge, color = NavySoft)
+            Text(stringResource(R.string.plan_b_question_sub), style = MaterialTheme.typography.bodyLarge, color = Hava.inkSoft)
         }
         Column(Modifier.selectableGroup(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             OptionCard(
@@ -157,7 +164,7 @@ fun PlanBScreen(item: PlanItem, clock: () -> Float, onApply: (PlanBChoice) -> Un
                     if (alternative != null) {
                         WeatherIcon(alternative.condition, alternative.isDay, size = 40.dp)
                     } else {
-                        Icon(painterResource(R.drawable.ic_schedule), null, tint = NavySoft)
+                        Icon(painterResource(R.drawable.ic_schedule), null, tint = Hava.inkSoft)
                     }
                 },
                 title = stringResource(if (earlier) R.string.option_earlier else R.string.option_later),
@@ -166,35 +173,35 @@ fun PlanBScreen(item: PlanItem, clock: () -> Float, onApply: (PlanBChoice) -> Un
                 if (alternative != null && risk != null) {
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         TimeChip(plan.timeLabel, Color(0xFFFDE8E8))
-                        Icon(painterResource(R.drawable.ic_arrow_forward), null, tint = NavySoft, modifier = Modifier.size(18.dp))
+                        Icon(painterResource(R.drawable.ic_arrow_forward), null, tint = Hava.inkSoft, modifier = Modifier.size(18.dp))
                         TimeChip(alternative.hourLabel, Color(0xFFEAF7E4))
                     }
-                    Text(stringResource(R.string.option_time_body), style = MaterialTheme.typography.bodyMedium, color = NavySoft)
+                    Text(stringResource(R.string.option_time_body), style = MaterialTheme.typography.bodyMedium, color = Hava.inkSoft)
                 } else {
-                    Text(stringResource(R.string.option_no_time), style = MaterialTheme.typography.bodyMedium, color = NavySoft)
+                    Text(stringResource(R.string.option_no_time), style = MaterialTheme.typography.bodyMedium, color = Hava.inkSoft)
                 }
             }
             OptionCard(
                 selected = choice == PlanBChoice.Indoor,
                 onSelect = { choice = PlanBChoice.Indoor },
-                icon = { Icon(painterResource(R.drawable.ic_cafe), null, tint = Navy, modifier = Modifier.size(30.dp)) },
+                icon = { Icon(painterResource(R.drawable.ic_cafe), null, tint = Hava.ink, modifier = Modifier.size(30.dp)) },
                 title = stringResource(R.string.option_indoor)
-            ) { Text(stringResource(R.string.option_indoor_body), style = MaterialTheme.typography.bodyMedium, color = NavySoft) }
+            ) { Text(stringResource(R.string.option_indoor_body), style = MaterialTheme.typography.bodyMedium, color = Hava.inkSoft) }
             OptionCard(
                 selected = choice == PlanBChoice.Keep,
                 onSelect = { choice = PlanBChoice.Keep },
-                icon = { Icon(painterResource(R.drawable.ic_bell), null, tint = Navy, modifier = Modifier.size(30.dp)) },
+                icon = { Icon(painterResource(R.drawable.ic_bell), null, tint = Hava.ink, modifier = Modifier.size(30.dp)) },
                 title = stringResource(R.string.option_keep)
-            ) { Text(stringResource(R.string.option_keep_body), style = MaterialTheme.typography.bodyMedium, color = NavySoft) }
+            ) { Text(stringResource(R.string.option_keep_body), style = MaterialTheme.typography.bodyMedium, color = Hava.inkSoft) }
         }
         if (plan.source == PlanSource.Calendar) {
             Row(
-                Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(SkyTint).padding(12.dp),
+                Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Hava.cardTint).padding(12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(painterResource(R.drawable.ic_shield), null, tint = NavySoft, modifier = Modifier.size(20.dp))
+                Icon(painterResource(R.drawable.ic_shield), null, tint = Hava.inkSoft, modifier = Modifier.size(20.dp))
                 Spacer(Modifier.width(10.dp))
-                Text(stringResource(R.string.calendar_note), style = MaterialTheme.typography.bodyMedium, color = NavySoft)
+                Text(stringResource(R.string.calendar_note), style = MaterialTheme.typography.bodyMedium, color = Hava.inkSoft)
             }
         }
         Button(
@@ -255,25 +262,27 @@ private fun OptionCard(
         Modifier
             .fillMaxWidth()
             .clip(shape)
-            .background(if (selected) HavaBlueLight else Color.White)
-            .border(if (selected) 1.5.dp else 1.dp, if (selected) HavaBlue else Navy.copy(alpha = 0.08f), shape)
+            .background(if (selected) Hava.p.blueTint else Hava.card)
+            .border(if (selected) 1.5.dp else 1.dp, if (selected) HavaBlue else Hava.ink.copy(alpha = 0.08f), shape)
             .selectable(selected = selected, enabled = enabled, role = Role.RadioButton, onClick = onSelect)
             .padding(14.dp)
     ) {
         Row(verticalAlignment = Alignment.Top) {
             RadioButton(selected = selected, onClick = null, enabled = enabled)
             Spacer(Modifier.width(8.dp))
-            Box(Modifier.size(64.dp).clip(RoundedCornerShape(18.dp)).background(SkyTint), contentAlignment = Alignment.Center) { icon() }
+            Box(Modifier.size(64.dp).clip(RoundedCornerShape(18.dp)).background(Hava.cardTint), contentAlignment = Alignment.Center) {
+                icon()
+            }
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(title, style = MaterialTheme.typography.titleMedium, color = if (enabled) Navy else NavySoft)
+                    Text(title, style = MaterialTheme.typography.titleMedium, color = if (enabled) Hava.ink else Hava.inkSoft)
                     if (recommended) {
                         Spacer(Modifier.width(8.dp))
                         Text(
                             stringResource(R.string.recommended),
                             style = MaterialTheme.typography.labelSmall,
-                            color = Navy,
+                            color = Hava.ink,
                             modifier = Modifier.background(Sun, CircleShape).padding(horizontal = 8.dp, vertical = 3.dp)
                         )
                     }
@@ -289,7 +298,7 @@ private fun TimeChip(text: String, background: Color) {
     Text(
         text,
         style = MaterialTheme.typography.titleMedium,
-        color = Navy,
+        color = Hava.ink,
         modifier = Modifier.background(SolidColor(background), CircleShape).padding(horizontal = 14.dp, vertical = 6.dp)
     )
 }

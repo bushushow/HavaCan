@@ -13,6 +13,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,6 +33,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -59,6 +61,8 @@ import com.kampplus.havacan.model.City
 import com.kampplus.havacan.ui.chat.ChatActions
 import com.kampplus.havacan.ui.chat.ChatScreen
 import com.kampplus.havacan.ui.city.CityRoute
+import com.kampplus.havacan.ui.common.LocalSky
+import com.kampplus.havacan.ui.common.skyColors
 import com.kampplus.havacan.ui.home.HomeActions
 import com.kampplus.havacan.ui.home.HomeScreen
 import com.kampplus.havacan.ui.home.HomeViewModel
@@ -74,6 +78,10 @@ import com.kampplus.havacan.ui.profile.ProfileRoute
 import com.kampplus.havacan.ui.run.RunPlannerRequest
 import com.kampplus.havacan.ui.run.RunPlannerRoute
 import com.kampplus.havacan.ui.run.RunSaved
+import com.kampplus.havacan.ui.theme.DarkPalette
+import com.kampplus.havacan.ui.theme.Hava
+import com.kampplus.havacan.ui.theme.LightPalette
+import com.kampplus.havacan.ui.theme.LocalPalette
 import com.kampplus.havacan.ui.theme.Navy
 import com.kampplus.havacan.ui.theme.NavySoft
 import com.kampplus.havacan.ui.voice.VoiceGuideBar
@@ -154,166 +162,173 @@ fun HavaApp(
     }
     ShakeEffect(enabled = tab == HomeTab.Weather && !showCityPicker && sheet == Sheet.None && runPlanner == null, onShake = openSalla)
 
-    Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
-        when (tab) {
-            HomeTab.Weather -> HomeScreen(
-                state = state,
-                motion = motion,
-                clock = clock,
-                reduceMotion = reduceMotion,
-                sallaSignal = sallaSignal,
-                actions = HomeActions(
-                    onCityClick = { showCityPicker = true },
-                    onBellClick = { sheet = Sheet.Notifications },
-                    onPlanRun = { advice ->
-                        val start = (advice as? RunningAdvice.BestWindow)?.window?.hours?.firstOrNull()?.hour?.time
-                        runPlanner = RunPlannerRequest(System.currentTimeMillis(), start = start)
-                    },
-                    onSalla = openSalla
-                ),
-                onToggleRunner = viewModel::toggleRunnerMode,
-                onHourSelected = { viewModel.onHourSelected(it.time) },
-                onRetry = viewModel::retry
-            )
-            HomeTab.Plans -> PlansRoute(
-                clock = clock,
-                openPlanId = openPlanId,
-                onOpenPlanHandled = onOpenPlanHandled,
-                onCityClick = {
-                    cityPickTarget = null
-                    showCityPicker = true
-                },
-                onBellClick = { sheet = Sheet.Notifications },
-                onPickPlanCity = { onPicked ->
-                    cityPickTarget = onPicked
-                    showCityPicker = true
-                },
-                onShowBottomBar = { showBottomBar = it },
-                onOpenRunPlan = { id -> runPlanner = RunPlannerRequest(System.currentTimeMillis(), planId = id) },
-                runNotice = runNotice,
-                onRunNoticeShown = { runNotice = null }
-            )
-            HomeTab.Wardrobe -> WardrobeRoute(
-                clock = clock,
-                outfitRequest = outfitRequest,
-                onShowBottomBar = { showBottomBar = it }
-            )
-            HomeTab.HavaCan -> ChatScreen(
-                state = voiceState,
-                messages = messages,
-                clock = clock,
-                userName = profilePrefs.name,
-                actions = ChatActions(
-                    onSend = voice::submitTyped,
-                    onMic = tapMicrophone,
-                    onHeadset = {
-                        when {
-                            !voiceState.settings.guideEnabled -> tab = HomeTab.Profile
-                            voiceState.sessionActive -> voice.stopSession()
-                            else -> startGuide()
-                        }
-                    },
-                    onBell = { sheet = Sheet.Notifications },
-                    onSpeak = voice::speakMessage,
-                    onOpen = go,
-                    onDismissNotice = voice::dismissNotice
+    // Every screen's header is painted with the home city's sky right now
+    val now = state.forecast?.current
+    val sky = skyColors(now?.condition, now?.isDay ?: true, now?.time?.substringAfter('T')?.take(2)?.toIntOrNull())
+    // Dark mode follows the phone's setting on every screen
+    val palette = if (isSystemInDarkTheme()) DarkPalette else LightPalette
+    CompositionLocalProvider(LocalSky provides sky, LocalPalette provides palette) {
+        Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
+            when (tab) {
+                HomeTab.Weather -> HomeScreen(
+                    state = state,
+                    motion = motion,
+                    clock = clock,
+                    reduceMotion = reduceMotion,
+                    sallaSignal = sallaSignal,
+                    actions = HomeActions(
+                        onCityClick = { showCityPicker = true },
+                        onBellClick = { sheet = Sheet.Notifications },
+                        onPlanRun = { advice ->
+                            val start = (advice as? RunningAdvice.BestWindow)?.window?.hours?.firstOrNull()?.hour?.time
+                            runPlanner = RunPlannerRequest(System.currentTimeMillis(), start = start)
+                        },
+                        onSalla = openSalla
+                    ),
+                    onToggleRunner = viewModel::toggleRunnerMode,
+                    onHourSelected = { viewModel.onHourSelected(it.time) },
+                    onRetry = viewModel::retry
                 )
-            )
-            HomeTab.Profile -> ProfileRoute(
-                hooks = ProfileHooks(
-                    cityName = state.city.name,
-                    voice = voiceState,
-                    onPickCity = {
+                HomeTab.Plans -> PlansRoute(
+                    clock = clock,
+                    openPlanId = openPlanId,
+                    onOpenPlanHandled = onOpenPlanHandled,
+                    onCityClick = {
                         cityPickTarget = null
                         showCityPicker = true
                     },
-                    onStartVoice = if (voiceState.settings.guideEnabled) startGuide else enableAndStartGuide,
-                    onStopVoice = { voice.stopSession() },
-                    onGuideChange = { on -> if (on) enableGuide() else voice.setGuideEnabled(false) },
-                    onSpeakTypedChange = voice::setSpeakTypedReplies,
-                    onClearChat = voice::clearMessages
-                ),
-                clock = clock
-            )
-        }
-
-        // Plan sub-screens (editor, Plan B) hide the bar; every other tab always shows it
-        if ((tab != HomeTab.Plans && tab != HomeTab.Wardrobe) || showBottomBar) {
-            HavaCanBottomNavigation(
-                selected = tab,
-                havaCanPulse = havaCanPulse,
-                onSelect = { selected ->
-                    if (selected == HomeTab.HavaCan) havaCanPulse++
-                    tab = selected
-                },
-                modifier = Modifier.align(Alignment.BottomCenter)
-            )
-        }
-
-        AnimatedVisibility(
-            visible = runPlanner != null,
-            enter = slideInHorizontally(tween(380)) { it / 2 } + fadeIn(tween(250)),
-            exit = slideOutHorizontally(tween(280)) { it / 2 } + fadeOut(tween(200))
-        ) {
-            val request = runPlanner ?: lastRunRequest
-            if (request != null) {
-                Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
-                    RunPlannerRoute(
-                        request = request,
-                        clock = clock,
-                        reduceMotion = reduceMotion,
-                        onPickCity = { onPicked ->
-                            cityPickTarget = onPicked
-                            showCityPicker = true
-                        },
-                        onClose = { runPlanner = null },
-                        onSaved = { saved ->
-                            if (runPlanner != null) {
-                                runPlanner = null
-                                runNotice = saved
-                                tab = HomeTab.Plans
+                    onBellClick = { sheet = Sheet.Notifications },
+                    onPickPlanCity = { onPicked ->
+                        cityPickTarget = onPicked
+                        showCityPicker = true
+                    },
+                    onShowBottomBar = { showBottomBar = it },
+                    onOpenRunPlan = { id -> runPlanner = RunPlannerRequest(System.currentTimeMillis(), planId = id) },
+                    runNotice = runNotice,
+                    onRunNoticeShown = { runNotice = null }
+                )
+                HomeTab.Wardrobe -> WardrobeRoute(
+                    clock = clock,
+                    outfitRequest = outfitRequest,
+                    onShowBottomBar = { showBottomBar = it }
+                )
+                HomeTab.HavaCan -> ChatScreen(
+                    state = voiceState,
+                    messages = messages,
+                    clock = clock,
+                    userName = profilePrefs.name,
+                    actions = ChatActions(
+                        onSend = voice::submitTyped,
+                        onMic = tapMicrophone,
+                        onHeadset = {
+                            when {
+                                !voiceState.settings.guideEnabled -> tab = HomeTab.Profile
+                                voiceState.sessionActive -> voice.stopSession()
+                                else -> startGuide()
                             }
                         },
-                        onDeleted = {
-                            runPlanner = null
-                            tab = HomeTab.Plans
-                        }
+                        onBell = { sheet = Sheet.Notifications },
+                        onSpeak = voice::speakMessage,
+                        onOpen = go,
+                        onDismissNotice = voice::dismissNotice
                     )
+                )
+                HomeTab.Profile -> ProfileRoute(
+                    hooks = ProfileHooks(
+                        cityName = state.city.name,
+                        voice = voiceState,
+                        onPickCity = {
+                            cityPickTarget = null
+                            showCityPicker = true
+                        },
+                        onStartVoice = if (voiceState.settings.guideEnabled) startGuide else enableAndStartGuide,
+                        onStopVoice = { voice.stopSession() },
+                        onGuideChange = { on -> if (on) enableGuide() else voice.setGuideEnabled(false) },
+                        onSpeakTypedChange = voice::setSpeakTypedReplies,
+                        onClearChat = voice::clearMessages
+                    ),
+                    clock = clock
+                )
+            }
+
+            // Plan sub-screens (editor, Plan B) hide the bar; every other tab always shows it
+            if ((tab != HomeTab.Plans && tab != HomeTab.Wardrobe) || showBottomBar) {
+                HavaCanBottomNavigation(
+                    selected = tab,
+                    havaCanPulse = havaCanPulse,
+                    onSelect = { selected ->
+                        if (selected == HomeTab.HavaCan) havaCanPulse++
+                        tab = selected
+                    },
+                    modifier = Modifier.align(Alignment.BottomCenter)
+                )
+            }
+
+            AnimatedVisibility(
+                visible = runPlanner != null,
+                enter = slideInHorizontally(tween(380)) { it / 2 } + fadeIn(tween(250)),
+                exit = slideOutHorizontally(tween(280)) { it / 2 } + fadeOut(tween(200))
+            ) {
+                val request = runPlanner ?: lastRunRequest
+                if (request != null) {
+                    Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
+                        RunPlannerRoute(
+                            request = request,
+                            clock = clock,
+                            reduceMotion = reduceMotion,
+                            onPickCity = { onPicked ->
+                                cityPickTarget = onPicked
+                                showCityPicker = true
+                            },
+                            onClose = { runPlanner = null },
+                            onSaved = { saved ->
+                                if (runPlanner != null) {
+                                    runPlanner = null
+                                    runNotice = saved
+                                    tab = HomeTab.Plans
+                                }
+                            },
+                            onDeleted = {
+                                runPlanner = null
+                                tab = HomeTab.Plans
+                            }
+                        )
+                    }
                 }
             }
-        }
 
-        AnimatedVisibility(
-            visible = showCityPicker,
-            enter = slideInVertically(tween(350)) { it / 3 } + fadeIn(tween(250)),
-            exit = slideOutVertically(tween(250)) { it / 3 } + fadeOut(tween(200))
-        ) {
-            BackHandler { showCityPicker = false }
-            CityRoute(
-                onBack = { showCityPicker = false },
-                clock = clock,
-                reduceMotion = reduceMotion,
-                onCityClick = { city ->
-                    Log.d(TAG, "Tıklandı: ${city.name}")
-                    val target = cityPickTarget
-                    if (target != null) target(city) else viewModel.onCityChosen(city)
-                    cityPickTarget = null
-                    showCityPicker = false
-                }
-            )
-        }
+            AnimatedVisibility(
+                visible = showCityPicker,
+                enter = slideInVertically(tween(350)) { it / 3 } + fadeIn(tween(250)),
+                exit = slideOutVertically(tween(250)) { it / 3 } + fadeOut(tween(200))
+            ) {
+                BackHandler { showCityPicker = false }
+                CityRoute(
+                    onBack = { showCityPicker = false },
+                    clock = clock,
+                    reduceMotion = reduceMotion,
+                    onCityClick = { city ->
+                        Log.d(TAG, "Tıklandı: ${city.name}")
+                        val target = cityPickTarget
+                        if (target != null) target(city) else viewModel.onCityChosen(city)
+                        cityPickTarget = null
+                        showCityPicker = false
+                    }
+                )
+            }
 
-        // The chat has its own microphone; everywhere else the voice guide floats above the bottom bar
-        if (tab != HomeTab.HavaCan && (voiceState.settings.guideEnabled || voiceState.sessionActive)) {
-            VoiceGuideBar(
-                state = voiceState,
-                onMic = tapMicrophone,
-                onStop = { voice.stopSession() },
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .windowInsetsPadding(WindowInsets.navigationBars)
-                    .padding(bottom = 92.dp)
-            )
+            // The chat has its own microphone; everywhere else the voice guide floats above the bottom bar
+            if (tab != HomeTab.HavaCan && (voiceState.settings.guideEnabled || voiceState.sessionActive)) {
+                VoiceGuideBar(
+                    state = voiceState,
+                    onMic = tapMicrophone,
+                    onStop = { voice.stopSession() },
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .windowInsetsPadding(WindowInsets.navigationBars)
+                        .padding(bottom = 92.dp)
+                )
+            }
         }
     }
 
@@ -344,8 +359,8 @@ fun HavaApp(
 
 @Composable
 private fun InfoContent(title: String, body: String) {
-    Text(title, style = MaterialTheme.typography.headlineSmall, color = Navy)
-    Text(body, style = MaterialTheme.typography.bodyLarge, color = NavySoft)
+    Text(title, style = MaterialTheme.typography.headlineSmall, color = Hava.ink)
+    Text(body, style = MaterialTheme.typography.bodyLarge, color = Hava.inkSoft)
 }
 
 private val RunRequestSaver = androidx.compose.runtime.saveable.Saver<RunPlannerRequest?, String>(

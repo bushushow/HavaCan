@@ -103,6 +103,7 @@ import com.kampplus.havacan.ui.home.components.SoftCard
 import com.kampplus.havacan.ui.home.components.WeatherIcon
 import com.kampplus.havacan.ui.plans.capitalizeTr
 import com.kampplus.havacan.ui.theme.GoodGreen
+import com.kampplus.havacan.ui.theme.Hava
 import com.kampplus.havacan.ui.theme.HavaBlue
 import com.kampplus.havacan.ui.theme.HavaBlueLight
 import com.kampplus.havacan.ui.theme.Navy
@@ -204,15 +205,15 @@ fun RunPlannerScreen(state: RunPlannerUiState, clock: () -> Float, reduceMotion:
                         Box(
                             Modifier.size(48.dp).clip(CircleShape).clickable(role = Role.Button, onClick = actions.onBack),
                             contentAlignment = Alignment.Center
-                        ) { Icon(painterResource(R.drawable.ic_arrow_back), stringResource(R.string.back), tint = Navy) }
+                        ) { Icon(painterResource(R.drawable.ic_arrow_back), stringResource(R.string.back), tint = Hava.ink) }
                         Spacer(Modifier.width(8.dp))
-                        Text(stringResource(R.string.run_title), style = MaterialTheme.typography.titleLarge, color = Navy)
+                        Text(stringResource(R.string.run_title), style = MaterialTheme.typography.titleLarge, color = Hava.ink)
                     }
                     Spacer(Modifier.height(20.dp))
                     Text(
                         stringResource(R.string.run_headline),
                         style = MaterialTheme.typography.displaySmall,
-                        color = Navy,
+                        color = Hava.ink,
                         modifier = Modifier.widthIn(max = 230.dp).semantics { heading() }
                     )
                     Spacer(Modifier.height(96.dp))
@@ -275,7 +276,7 @@ private fun SectionTitle(text: String) {
     Text(
         text,
         style = MaterialTheme.typography.titleLarge,
-        color = Navy,
+        color = Hava.ink,
         modifier = Modifier.padding(start = 4.dp, top = 6.dp).semantics {
             heading()
         }
@@ -305,8 +306,8 @@ private fun Pill(
     description: String? = null,
     onClick: () -> Unit
 ) {
-    val background by animateColorAsState(if (selected) HavaBlue else Color.White, tween(220), label = "pill")
-    val content by animateColorAsState(if (selected) Color.White else Navy, tween(220), label = "pillText")
+    val background by animateColorAsState(if (selected) HavaBlue else Hava.card, tween(220), label = "pill")
+    val content by animateColorAsState(if (selected) Color.White else Hava.ink, tween(220), label = "pillText")
     val scale by animateFloatAsState(
         if (selected) 1f else 0.97f,
         spring(dampingRatio = 0.45f, stiffness = Spring.StiffnessMedium),
@@ -317,7 +318,7 @@ private fun Pill(
             .scale(scale)
             .clip(RoundedCornerShape(18.dp))
             .background(background)
-            .border(1.dp, if (selected) Color.Transparent else Navy.copy(alpha = 0.1f), RoundedCornerShape(18.dp))
+            .border(1.dp, if (selected) Color.Transparent else Hava.ink.copy(alpha = 0.1f), RoundedCornerShape(18.dp))
             .selectable(selected = selected, role = Role.RadioButton, onClick = onClick)
             .semantics { if (description != null) contentDescription = description }
             .heightIn(min = 52.dp)
@@ -399,7 +400,7 @@ private fun SuggestedHours(state: RunPlannerUiState, actions: RunPlannerActions,
                 stringResource(R.string.run_your_time, start.label()),
                 style = MaterialTheme.typography.labelLarge,
                 color = HavaBlue,
-                modifier = Modifier.clip(CircleShape).background(HavaBlueLight).padding(horizontal = 12.dp, vertical = 6.dp)
+                modifier = Modifier.clip(CircleShape).background(Hava.p.blueTint).padding(horizontal = 12.dp, vertical = 6.dp)
             )
         }
     }
@@ -407,7 +408,7 @@ private fun SuggestedHours(state: RunPlannerUiState, actions: RunPlannerActions,
         Text(
             stringResource(R.string.run_source, forecast.forecast.current.time.substringAfter('T').replace(':', '.')),
             style = MaterialTheme.typography.labelSmall,
-            color = NavySoft.copy(alpha = 0.75f),
+            color = Hava.inkSoft.copy(alpha = 0.75f),
             modifier = Modifier.padding(start = 6.dp)
         )
     }
@@ -416,7 +417,7 @@ private fun SuggestedHours(state: RunPlannerUiState, actions: RunPlannerActions,
 /** One start time: when, the sky, and the weather facts in a line, selectable like a radio row. */
 @Composable
 private fun SlotRow(slot: RunSlot, durationMinutes: Int, manual: Boolean, selected: Boolean, onClick: () -> Unit) {
-    val background by animateColorAsState(if (selected) HavaBlueLight else Color.Transparent, tween(200), label = "slotBg")
+    val background by animateColorAsState(if (selected) Hava.p.blueTint else Color.Transparent, tween(200), label = "slotBg")
     val scale by animateFloatAsState(
         if (selected) 1f else 0.985f,
         spring(dampingRatio = 0.45f, stiffness = Spring.StiffnessMedium),
@@ -437,11 +438,11 @@ private fun SlotRow(slot: RunSlot, durationMinutes: Int, manual: Boolean, select
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(Modifier.width(76.dp)) {
-            Text(start.label(), style = MaterialTheme.typography.titleLarge, color = Navy)
+            Text(start.label(), style = MaterialTheme.typography.titleLarge, color = Hava.ink)
             Text(
                 if (manual) stringResource(R.string.run_your_pick) else "–" + start.plusMinutes(durationMinutes.toLong()).label(),
                 style = MaterialTheme.typography.labelMedium,
-                color = NavySoft
+                color = Hava.inkSoft
             )
         }
         Column(Modifier.weight(1f).padding(horizontal = 6.dp)) {
@@ -453,7 +454,7 @@ private fun SlotRow(slot: RunSlot, durationMinutes: Int, manual: Boolean, select
                     "Hissedilen ${hours.map { it.apparentTemperature }.average().deg()}° · " +
                         (hours.mapNotNull { it.windSpeed }.maxOrNull()?.let { "Rüzgar ${it.roundToInt()} km/sa" } ?: ""),
                     style = MaterialTheme.typography.bodySmall,
-                    color = NavySoft,
+                    color = Hava.inkSoft,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -463,17 +464,17 @@ private fun SlotRow(slot: RunSlot, durationMinutes: Int, manual: Boolean, select
                         hours.mapNotNull { it.uvIndex }.maxOrNull()?.let { "UV ${it.roundToInt()}" }
                     ).joinToString(" · "),
                     style = MaterialTheme.typography.bodySmall,
-                    color = NavySoft,
+                    color = Hava.inkSoft,
                     maxLines = 1
                 )
             }
         }
         WeatherIcon(first.condition, first.isDay, size = 34.dp)
         Spacer(Modifier.width(6.dp))
-        Text("${first.temperature.deg()}°", style = MaterialTheme.typography.titleLarge, color = Navy, modifier = Modifier.width(44.dp))
+        Text("${first.temperature.deg()}°", style = MaterialTheme.typography.titleLarge, color = Hava.ink, modifier = Modifier.width(44.dp))
         Box(
             Modifier.size(22.dp).clip(CircleShape).background(if (selected) HavaBlue else Color.Transparent)
-                .border(1.5.dp, if (selected) HavaBlue else NavySoft.copy(alpha = 0.35f), CircleShape),
+                .border(1.5.dp, if (selected) HavaBlue else Hava.inkSoft.copy(alpha = 0.35f), CircleShape),
             contentAlignment = Alignment.Center
         ) {
             if (selected) Icon(painterResource(R.drawable.ic_check), null, tint = Color.White, modifier = Modifier.size(14.dp))
@@ -485,13 +486,13 @@ private fun SlotRow(slot: RunSlot, durationMinutes: Int, manual: Boolean, select
 private fun NoticeCard(title: String, body: String, icon: Int, action: Pair<String, () -> Unit>? = null) {
     SoftCard {
         Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-            Box(Modifier.size(44.dp).clip(RoundedCornerShape(14.dp)).background(HavaBlueLight), contentAlignment = Alignment.Center) {
+            Box(Modifier.size(44.dp).clip(RoundedCornerShape(14.dp)).background(Hava.p.blueTint), contentAlignment = Alignment.Center) {
                 Icon(painterResource(icon), null, tint = HavaBlue)
             }
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
-                Text(title, style = MaterialTheme.typography.titleMedium, color = Navy)
-                Text(body, style = MaterialTheme.typography.bodyMedium, color = NavySoft)
+                Text(title, style = MaterialTheme.typography.titleMedium, color = Hava.ink)
+                Text(body, style = MaterialTheme.typography.bodyMedium, color = Hava.inkSoft)
                 if (action != null) {
                     TextButton(onClick = action.second, contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)) {
                         Text(action.first, color = HavaBlue, style = MaterialTheme.typography.titleSmall)
@@ -519,14 +520,14 @@ private fun DurationRow(state: RunPlannerUiState, onDuration: (Int) -> Unit) {
             Icon(painterResource(R.drawable.ic_schedule), null, tint = HavaBlue, modifier = Modifier.size(30.dp))
             Spacer(Modifier.width(16.dp))
             Column(Modifier.weight(1f)) {
-                Text(stringResource(R.string.run_duration), style = MaterialTheme.typography.bodyMedium, color = NavySoft)
+                Text(stringResource(R.string.run_duration), style = MaterialTheme.typography.bodyMedium, color = Hava.inkSoft)
                 Text(
                     stringResource(R.string.run_minutes, state.durationMinutes),
                     style = MaterialTheme.typography.titleMedium,
-                    color = Navy
+                    color = Hava.ink
                 )
                 state.start?.let { s ->
-                    Text("${s.label()}–${state.end?.label()}", style = MaterialTheme.typography.bodySmall, color = NavySoft)
+                    Text("${s.label()}–${state.end?.label()}", style = MaterialTheme.typography.bodySmall, color = Hava.inkSoft)
                 }
             }
             // Scroll the wheels right here; no extra tap needed
@@ -565,10 +566,10 @@ private fun SettingRow(icon: Int, label: String, value: String, chevronRotation:
         Icon(painterResource(icon), null, tint = HavaBlue, modifier = Modifier.size(30.dp))
         Spacer(Modifier.width(16.dp))
         Column(Modifier.weight(1f)) {
-            Text(label, style = MaterialTheme.typography.bodyMedium, color = NavySoft)
-            Text(value, style = MaterialTheme.typography.titleMedium, color = Navy, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(label, style = MaterialTheme.typography.bodyMedium, color = Hava.inkSoft)
+            Text(value, style = MaterialTheme.typography.titleMedium, color = Hava.ink, maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
-        Icon(painterResource(R.drawable.ic_chevron_right), null, tint = Navy, modifier = Modifier.rotate(chevronRotation))
+        Icon(painterResource(R.drawable.ic_chevron_right), null, tint = Hava.ink, modifier = Modifier.rotate(chevronRotation))
     }
 }
 
@@ -594,7 +595,7 @@ private fun ReminderCard(state: RunPlannerUiState, actions: RunPlannerActions) {
                             Text(
                                 stringResource(R.string.run_reminder_on, RunPlannerViewModel.beforeLabel(state.reminderMinutes)),
                                 style = MaterialTheme.typography.titleMedium,
-                                color = Navy
+                                color = Hava.ink
                             )
                             Spacer(Modifier.width(6.dp))
                             Icon(
@@ -612,11 +613,11 @@ private fun ReminderCard(state: RunPlannerUiState, actions: RunPlannerActions) {
                                         at.toLocalTime().label()
                                 ),
                                 style = MaterialTheme.typography.bodySmall,
-                                color = NavySoft
+                                color = Hava.inkSoft
                             )
                         }
                     } else {
-                        Text(stringResource(R.string.run_reminder_off), style = MaterialTheme.typography.titleMedium, color = Navy)
+                        Text(stringResource(R.string.run_reminder_off), style = MaterialTheme.typography.titleMedium, color = Hava.ink)
                     }
                 }
                 Switch(checked = state.reminderOn, onCheckedChange = actions.onReminderOn)
@@ -631,13 +632,13 @@ private fun ReminderCard(state: RunPlannerUiState, actions: RunPlannerActions) {
                     .padding(horizontal = 4.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                val dot by animateColorAsState(if (state.follow) HavaBlue else NavySoft.copy(alpha = 0.35f), label = "followDot")
+                val dot by animateColorAsState(if (state.follow) HavaBlue else Hava.inkSoft.copy(alpha = 0.35f), label = "followDot")
                 Box(Modifier.size(10.dp).clip(CircleShape).background(dot))
                 Spacer(Modifier.width(8.dp))
                 Text(
                     stringResource(if (state.follow) R.string.run_follow_on else R.string.run_follow_off),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = if (state.follow) NavySoft else NavySoft.copy(alpha = 0.7f)
+                    color = if (state.follow) Hava.inkSoft else Hava.inkSoft.copy(alpha = 0.7f)
                 )
             }
         }
@@ -705,14 +706,14 @@ private fun SavedCard(saved: RunSaved, onGo: () -> Unit) {
         ReminderResult.TooLate -> stringResource(R.string.run_reminder_too_late)
         ReminderResult.NotificationsBlocked -> stringResource(R.string.run_reminder_blocked)
     }
-    SoftCard(background = Brush.linearGradient(listOf(Color(0xFFEAF2FF), Color.White))) {
+    SoftCard(background = Hava.p.highlight) {
         Row(Modifier.padding(18.dp), verticalAlignment = Alignment.CenterVertically) {
             Box(Modifier.size(48.dp).clip(CircleShape).background(Sun), contentAlignment = Alignment.Center) {
-                Icon(painterResource(R.drawable.ic_check), null, tint = Navy)
+                Icon(painterResource(R.drawable.ic_check), null, tint = Hava.ink)
             }
             Spacer(Modifier.width(14.dp))
             Column(Modifier.weight(1f)) {
-                Text(stringResource(R.string.run_saved_title), style = MaterialTheme.typography.titleLarge, color = Navy)
+                Text(stringResource(R.string.run_saved_title), style = MaterialTheme.typography.titleLarge, color = Hava.ink)
                 Text(
                     reminderText,
                     style = MaterialTheme.typography.bodyMedium,
@@ -721,7 +722,7 @@ private fun SavedCard(saved: RunSaved, onGo: () -> Unit) {
                     ) {
                         RiskRed
                     } else {
-                        NavySoft
+                        Hava.inkSoft
                     }
                 )
                 if (saved.followBlocked && saved.reminder != ReminderResult.NotificationsBlocked) {
@@ -790,7 +791,7 @@ private fun LocationDialog(state: RunPlannerUiState, actions: RunPlannerActions,
                         overflow = TextOverflow.Ellipsis
                     )
                 }
-                Text(stringResource(R.string.run_location_note), style = MaterialTheme.typography.bodySmall, color = NavySoft)
+                Text(stringResource(R.string.run_location_note), style = MaterialTheme.typography.bodySmall, color = Hava.inkSoft)
             }
         },
         confirmButton = {

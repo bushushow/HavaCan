@@ -60,7 +60,7 @@ fun HomeTopBar(
     BoxWithConstraints(modifier.fillMaxWidth()) {
         val bell = @Composable {
             IconButton(onClick = onBellClick) {
-                Icon(painterResource(R.drawable.ic_bell), stringResource(R.string.cd_notifications), tint = Navy)
+                Icon(painterResource(R.drawable.ic_bell), stringResource(R.string.cd_notifications), tint = Color.White)
             }
         }
         if (maxWidth >= 400.dp) {
@@ -96,7 +96,7 @@ fun HomeTopBar(
 @Composable
 fun HavaCanLogo(modifier: Modifier = Modifier) {
     Row(modifier.semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.Bottom) {
-        Text("Hava", style = MaterialTheme.typography.headlineSmall, color = Navy, maxLines = 1)
+        Text("Hava", style = MaterialTheme.typography.headlineSmall, color = Color.White, maxLines = 1)
         Box(
             Modifier.drawBehind {
                 drawArc(
@@ -110,7 +110,7 @@ fun HavaCanLogo(modifier: Modifier = Modifier) {
                 )
             }
         ) {
-            Text("Can", style = MaterialTheme.typography.headlineSmall, color = Navy, maxLines = 1)
+            Text("Can", style = MaterialTheme.typography.headlineSmall, color = Color.White, maxLines = 1)
         }
     }
 }
@@ -121,7 +121,7 @@ private fun LocationChip(cityName: String, onClick: () -> Unit) {
     Surface(
         onClick = onClick,
         shape = CircleShape,
-        color = Navy.copy(alpha = 0.05f),
+        color = Color.White.copy(alpha = 0.2f),
         modifier = Modifier
             .heightIn(min = 40.dp)
             .semantics { contentDescription = description }
@@ -130,17 +130,17 @@ private fun LocationChip(cityName: String, onClick: () -> Unit) {
             Modifier.padding(start = 10.dp, end = 6.dp, top = 8.dp, bottom = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(painterResource(R.drawable.ic_place), null, tint = HavaBlue, modifier = Modifier.size(18.dp))
+            Icon(painterResource(R.drawable.ic_place), null, tint = Sun, modifier = Modifier.size(18.dp))
             Spacer(Modifier.width(4.dp))
             Text(
                 cityName,
                 style = MaterialTheme.typography.labelLarge,
-                color = Navy,
+                color = Color.White,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.widthIn(max = 96.dp)
             )
-            Icon(painterResource(R.drawable.ic_expand_more), null, tint = Navy, modifier = Modifier.size(18.dp))
+            Icon(painterResource(R.drawable.ic_expand_more), null, tint = Color.White, modifier = Modifier.size(18.dp))
         }
     }
 }
@@ -148,15 +148,15 @@ private fun LocationChip(cityName: String, onClick: () -> Unit) {
 /** Outlined when off, filled blue with a check when on; colours and the check animate. */
 @Composable
 fun RunnerModeToggle(active: Boolean, onToggle: () -> Unit) {
-    val container by animateColorAsState(if (active) HavaBlue else Color.Transparent, spring(), label = "toggleBg")
-    val content by animateColorAsState(if (active) Color.White else HavaBlue, spring(), label = "toggleFg")
+    val container by animateColorAsState(if (active) Sun else Color.White.copy(alpha = 0.18f), spring(), label = "toggleBg")
+    val content by animateColorAsState(if (active) Navy else Color.White, spring(), label = "toggleFg")
     val description = stringResource(if (active) R.string.cd_runner_mode_on else R.string.cd_runner_mode_off)
     Surface(
         onClick = onToggle,
         shape = CircleShape,
         color = container,
         contentColor = content,
-        border = BorderStroke(1.5.dp, HavaBlue),
+        border = BorderStroke(1.5.dp, if (active) Sun else Color.White.copy(alpha = 0.6f)),
         modifier = Modifier
             .heightIn(min = 40.dp)
             .semantics { contentDescription = description }

@@ -66,9 +66,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kampplus.havacan.R
 import com.kampplus.havacan.data.ProfilePrefs
+import com.kampplus.havacan.ui.common.OnSky
+import com.kampplus.havacan.ui.common.OnSkySoft
+import com.kampplus.havacan.ui.common.SkyHeader
 import com.kampplus.havacan.ui.home.character.HavaCanArt
 import com.kampplus.havacan.ui.home.character.HavaCanPoseStyle
 import com.kampplus.havacan.ui.home.components.SoftCard
+import com.kampplus.havacan.ui.theme.Hava
 import com.kampplus.havacan.ui.theme.HavaBlue
 import com.kampplus.havacan.ui.theme.HavaBlueLight
 import com.kampplus.havacan.ui.theme.Navy
@@ -146,25 +150,27 @@ private fun ProfileMain(
 ) {
     var editName by remember { mutableStateOf(false) }
     Column(
-        Modifier.fillMaxSize().statusBarsPadding().verticalScroll(rememberScrollState()).padding(horizontal = 20.dp),
+        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 20.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
-        Row(Modifier.fillMaxWidth().padding(top = 12.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                "Profilim",
-                style = MaterialTheme.typography.displaySmall,
-                color = Navy,
-                modifier = Modifier.weight(1f).semantics {
-                    heading()
-                }
-            )
-            IconButton(onClick = { onOpen(ProfilePage.Accessibility) }, modifier = Modifier.size(52.dp)) {
-                Icon(
-                    painterResource(R.drawable.ic_settings),
-                    "Erişilebilirlik ve ses ayarları",
-                    tint = Navy,
-                    modifier = Modifier.size(32.dp)
+        SkyHeader(bleed = 20.dp) {
+            Row(Modifier.fillMaxWidth().padding(top = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    "Profilim",
+                    style = MaterialTheme.typography.displaySmall,
+                    color = OnSky,
+                    modifier = Modifier.weight(1f).semantics {
+                        heading()
+                    }
                 )
+                IconButton(onClick = { onOpen(ProfilePage.Accessibility) }, modifier = Modifier.size(52.dp)) {
+                    Icon(
+                        painterResource(R.drawable.ic_settings),
+                        "Erişilebilirlik ve ses ayarları",
+                        tint = OnSky,
+                        modifier = Modifier.size(32.dp)
+                    )
+                }
             }
         }
         GreetingCard(prefs.name, hooks.cityName, clock, onEdit = { editName = true })
@@ -261,7 +267,7 @@ private fun GreetingCard(name: String, city: String, clock: () -> Float, onEdit:
         Modifier
             .fillMaxWidth()
             .heightIn(min = 150.dp)
-            .background(Brush.linearGradient(listOf(Color.White, SkyTint, HavaBlueLight)), shape)
+            .background(Brush.linearGradient(listOf(Hava.card, Hava.cardTint, Hava.p.blueTint)), shape)
             .clickable(onClickLabel = "Adını düzenle", role = Role.Button, onClick = onEdit)
             .semantics(mergeDescendants = true) { contentDescription = description }
     ) {
@@ -281,11 +287,11 @@ private fun GreetingCard(name: String, city: String, clock: () -> Float, onEdit:
             Text(
                 if (name.isBlank()) "Merhaba! 👋" else "Merhaba, $name! 👋",
                 style = MaterialTheme.typography.headlineSmall,
-                color = Navy
+                color = Hava.ink
             )
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 Icon(painterResource(R.drawable.ic_place), null, tint = HavaBlue, modifier = Modifier.size(22.dp))
-                Text(city, style = MaterialTheme.typography.titleMedium, color = NavySoft)
+                Text(city, style = MaterialTheme.typography.titleMedium, color = Hava.inkSoft)
             }
             if (name.isBlank()) {
                 Text("Adını ekle", style = MaterialTheme.typography.labelLarge, color = HavaBlue, fontWeight = FontWeight.Bold)
@@ -306,9 +312,14 @@ private fun VoiceGuideCard(hooks: ProfileHooks) {
         active -> "Açık · konuşmak için mikrofona dokun"
         else -> "HavaCan'ı tüm uygulamada sesinle kullan"
     }
-    Box(Modifier.fillMaxWidth().background(Brush.linearGradient(listOf(HavaBlueLight, SkyTint, Color.White)), RoundedCornerShape(30.dp))) {
+    Box(
+        Modifier.fillMaxWidth().background(
+            Brush.linearGradient(listOf(Hava.p.blueTint, Hava.cardTint, Hava.card)),
+            RoundedCornerShape(30.dp)
+        )
+    ) {
         Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-            Box(Modifier.size(76.dp).background(Color.White, CircleShape), contentAlignment = Alignment.Center) {
+            Box(Modifier.size(76.dp).background(Hava.card, CircleShape), contentAlignment = Alignment.Center) {
                 Icon(painterResource(R.drawable.ic_headset), null, tint = HavaBlue, modifier = Modifier.size(44.dp))
                 Canvas(Modifier.size(width = 24.dp, height = 18.dp)) {
                     for (i in 0..3) {
@@ -325,8 +336,8 @@ private fun VoiceGuideCard(hooks: ProfileHooks) {
                 }
             }
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text("Sesli Rehber", style = MaterialTheme.typography.titleLarge, color = Navy, fontWeight = FontWeight.ExtraBold)
-                Text(status, style = MaterialTheme.typography.bodyMedium, color = if (!v.recognitionAvailable) RiskRed else NavySoft)
+                Text("Sesli Rehber", style = MaterialTheme.typography.titleLarge, color = Hava.ink, fontWeight = FontWeight.ExtraBold)
+                Text(status, style = MaterialTheme.typography.bodyMedium, color = if (!v.recognitionAvailable) RiskRed else Hava.inkSoft)
                 v.notice?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = RiskRed) }
             }
             if (v.recognitionAvailable) {
@@ -375,15 +386,15 @@ private fun CalendarCard(status: CalendarStatus, onConnect: () -> Unit) {
     SoftCard {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-                Box(Modifier.size(52.dp).background(HavaBlueLight, RoundedCornerShape(14.dp)), contentAlignment = Alignment.Center) {
+                Box(Modifier.size(52.dp).background(Hava.p.blueTint, RoundedCornerShape(14.dp)), contentAlignment = Alignment.Center) {
                     Icon(painterResource(R.drawable.ic_calendar), null, tint = HavaBlue, modifier = Modifier.size(30.dp))
                 }
                 Column(Modifier.weight(1f).semantics(mergeDescendants = true) {}) {
-                    Text("Google Takvim", style = MaterialTheme.typography.titleMedium, color = Navy, fontWeight = FontWeight.Bold)
+                    Text("Google Takvim", style = MaterialTheme.typography.titleMedium, color = Hava.ink, fontWeight = FontWeight.Bold)
                     Text(
                         line,
                         style = MaterialTheme.typography.bodyMedium,
-                        color = if (status is CalendarStatus.Error) RiskRed else NavySoft
+                        color = if (status is CalendarStatus.Error) RiskRed else Hava.inkSoft
                     )
                 }
                 if (button != null) {
@@ -403,7 +414,7 @@ private fun CalendarCard(status: CalendarStatus, onConnect: () -> Unit) {
             Text(
                 "Telefonundaki takvim hesapları (Google dahil) okunur; planların takvimde görünür. HavaCan takvimde hiçbir etkinliği kendisi değiştirmez.",
                 style = MaterialTheme.typography.bodySmall,
-                color = NavySoft
+                color = Hava.inkSoft
             )
         }
     }
@@ -442,7 +453,7 @@ internal fun SectionTitle(text: String) {
     Text(
         text,
         style = MaterialTheme.typography.titleLarge,
-        color = Navy,
+        color = Hava.ink,
         fontWeight = FontWeight.ExtraBold,
         modifier = Modifier.padding(top = 6.dp).semantics {
             heading()
@@ -464,12 +475,12 @@ internal fun SettingsRow(icon: Int, title: String, detail: String, onClick: () -
     ) {
         Icon(painterResource(icon), null, tint = HavaBlue, modifier = Modifier.size(32.dp))
         Column(Modifier.weight(1f)) {
-            Text(title, style = MaterialTheme.typography.titleMedium, color = Navy, fontWeight = FontWeight.Bold)
-            Text(detail, style = MaterialTheme.typography.bodyMedium, color = NavySoft)
+            Text(title, style = MaterialTheme.typography.titleMedium, color = Hava.ink, fontWeight = FontWeight.Bold)
+            Text(detail, style = MaterialTheme.typography.bodyMedium, color = Hava.inkSoft)
         }
-        Icon(painterResource(R.drawable.ic_chevron_right), null, tint = Navy)
+        Icon(painterResource(R.drawable.ic_chevron_right), null, tint = Hava.ink)
     }
 }
 
 @Composable
-internal fun RowDivider() = HorizontalDivider(Modifier.padding(horizontal = 18.dp), color = Navy.copy(alpha = 0.07f))
+internal fun RowDivider() = HorizontalDivider(Modifier.padding(horizontal = 18.dp), color = Hava.ink.copy(alpha = 0.07f))

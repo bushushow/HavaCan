@@ -77,14 +77,19 @@ import androidx.compose.ui.unit.dp
 import com.kampplus.havacan.R
 import com.kampplus.havacan.domain.voice.CardKind
 import com.kampplus.havacan.domain.voice.VoiceDestination
+import com.kampplus.havacan.ui.common.OnSky
+import com.kampplus.havacan.ui.common.OnSkySoft
+import com.kampplus.havacan.ui.common.SkyHeader
 import com.kampplus.havacan.ui.home.character.drawHavaCanFace
 import com.kampplus.havacan.ui.home.components.HavaCanLogo
+import com.kampplus.havacan.ui.theme.Hava
 import com.kampplus.havacan.ui.theme.HavaBlue
 import com.kampplus.havacan.ui.theme.HavaBlueLight
 import com.kampplus.havacan.ui.theme.Navy
 import com.kampplus.havacan.ui.theme.NavySoft
 import com.kampplus.havacan.ui.theme.RiskRed
 import com.kampplus.havacan.ui.theme.SkyTint
+import com.kampplus.havacan.ui.theme.Sun
 import com.kampplus.havacan.ui.voice.ChatMessage
 import com.kampplus.havacan.ui.voice.VoiceGuideState
 import com.kampplus.havacan.ui.voice.VoicePhase
@@ -130,10 +135,9 @@ fun ChatScreen(state: VoiceGuideState, messages: List<ChatMessage>, clock: () ->
         Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .statusBarsPadding()
             .padding(bottom = bottom)
     ) {
-        ChatHeader(state, actions)
+        SkyHeader { ChatHeader(state, actions) }
         LazyColumn(
             state = list,
             modifier = Modifier.weight(1f).fillMaxWidth(),
@@ -142,22 +146,24 @@ fun ChatScreen(state: VoiceGuideState, messages: List<ChatMessage>, clock: () ->
         ) {
             item(key = "hero") { AssistantHero(state, clock, Modifier.fillMaxWidth().height(230.dp)) }
             item(key = "greeting") { Greeting(userName) }
+            if (messages.none { it.fromUser }) {
+                item(key = "suggestions") {
+                    FlowRow(
+                        Modifier.fillMaxWidth().padding(top = 4.dp, bottom = 8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        val outfit = stringResource(R.string.chat_suggest_outfit)
+                        val plans = stringResource(R.string.chat_suggest_plans)
+                        SuggestionChip(outfit, R.drawable.ic_hanger, Modifier.weight(1f)) { actions.onSend(outfit) }
+                        SuggestionChip(plans, R.drawable.ic_calendar, Modifier.weight(1f)) { actions.onSend(plans) }
+                    }
+                }
+            }
             items(messages, key = { it.id }) { message ->
                 if (message.fromUser) UserBubble(message) else HavaCanBubbleRow(message, actions)
             }
             if (thinking) item(key = "thinking") { ThinkingBubble(clock) }
-            item(key = "suggestions") {
-                FlowRow(
-                    Modifier.fillMaxWidth().padding(top = 4.dp, bottom = 8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    val outfit = stringResource(R.string.chat_suggest_outfit)
-                    val plans = stringResource(R.string.chat_suggest_plans)
-                    SuggestionChip(outfit, R.drawable.ic_hanger, Modifier.weight(1f)) { actions.onSend(outfit) }
-                    SuggestionChip(plans, R.drawable.ic_calendar, Modifier.weight(1f)) { actions.onSend(plans) }
-                }
-            }
         }
         StatusLine(state, actions.onDismissNotice)
         MessageBar(
@@ -185,7 +191,7 @@ private fun ChatHeader(state: VoiceGuideState, actions: ChatActions) {
             Text(
                 " " + stringResource(R.string.chat_title_suffix),
                 style = MaterialTheme.typography.headlineSmall,
-                color = HavaBlue,
+                color = Sun,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
@@ -212,7 +218,7 @@ private fun ChatHeader(state: VoiceGuideState, actions: ChatActions) {
             }
         }
         IconButton(onClick = actions.onBell) {
-            Icon(painterResource(R.drawable.ic_bell), stringResource(R.string.cd_notifications), tint = Navy)
+            Icon(painterResource(R.drawable.ic_bell), stringResource(R.string.cd_notifications), tint = OnSky)
         }
     }
 }
@@ -230,10 +236,10 @@ private fun Greeting(name: String) {
                 Text(
                     if (name.isBlank()) stringResource(R.string.chat_hello) else "Merhaba, $name!",
                     style = MaterialTheme.typography.titleLarge,
-                    color = Navy,
+                    color = Hava.ink,
                     fontWeight = FontWeight.ExtraBold
                 )
-                Text(stringResource(R.string.chat_hello_sub), style = MaterialTheme.typography.titleMedium, color = NavySoft)
+                Text(stringResource(R.string.chat_hello_sub), style = MaterialTheme.typography.titleMedium, color = Hava.inkSoft)
             }
         }
     }
@@ -277,8 +283,8 @@ private fun HavaCanBubbleRow(message: ChatMessage, actions: ChatActions) {
                     Modifier.padding(horizontal = 6.dp, vertical = 4.dp).clearAndSetSemantics { contentDescription = text },
                     verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    Text(message.title, style = MaterialTheme.typography.titleMedium, color = Navy, fontWeight = FontWeight.ExtraBold)
-                    message.body?.let { Text(it, style = MaterialTheme.typography.bodyLarge, color = NavySoft) }
+                    Text(message.title, style = MaterialTheme.typography.titleMedium, color = Hava.ink, fontWeight = FontWeight.ExtraBold)
+                    message.body?.let { Text(it, style = MaterialTheme.typography.bodyLarge, color = Hava.inkSoft) }
                 }
                 val card = message.card
                 if (card != null) {
@@ -320,11 +326,11 @@ private fun ReplyCard(message: ChatMessage, actions: ChatActions) {
         ) {
             Icon(painterResource(card.kind.icon()), null, tint = HavaBlue, modifier = Modifier.size(34.dp))
             Column(Modifier.weight(1f).semantics(mergeDescendants = true) {}) {
-                Text(card.title, style = MaterialTheme.typography.titleSmall, color = Navy, fontWeight = FontWeight.Bold)
-                Text(card.detail, style = MaterialTheme.typography.bodyMedium, color = NavySoft)
+                Text(card.title, style = MaterialTheme.typography.titleSmall, color = Hava.ink, fontWeight = FontWeight.Bold)
+                Text(card.detail, style = MaterialTheme.typography.bodyMedium, color = Hava.inkSoft)
             }
             SpeakButton(message, actions)
-            if (open != null) Icon(painterResource(R.drawable.ic_chevron_right), null, tint = Navy, modifier = Modifier.size(28.dp))
+            if (open != null) Icon(painterResource(R.drawable.ic_chevron_right), null, tint = Hava.ink, modifier = Modifier.size(28.dp))
         }
     }
 }
@@ -343,7 +349,7 @@ private fun SpeakButton(message: ChatMessage, actions: ChatActions) {
     Surface(
         onClick = { actions.onSpeak(message) },
         shape = CircleShape,
-        color = HavaBlueLight,
+        color = Hava.p.blueTint,
         modifier = Modifier.size(48.dp).semantics { contentDescription = description }
     ) {
         Box(contentAlignment = Alignment.Center) {
@@ -443,7 +449,7 @@ private fun StatusLine(state: VoiceGuideState, onDismissNotice: () -> Unit) {
                         }
                     )
                     IconButton(onClick = onDismissNotice) {
-                        Icon(painterResource(R.drawable.ic_clear), stringResource(R.string.close), tint = NavySoft)
+                        Icon(painterResource(R.drawable.ic_clear), stringResource(R.string.close), tint = Hava.inkSoft)
                     }
                 }
             }
@@ -466,8 +472,8 @@ private fun MessageBar(
         Modifier
             .fillMaxWidth()
             .padding(horizontal = 12.dp, vertical = 6.dp)
-            .shadow(10.dp, shape, ambientColor = Navy.copy(alpha = 0.1f), spotColor = Navy.copy(alpha = 0.1f))
-            .background(Color.White, shape)
+            .shadow(10.dp, shape, ambientColor = Hava.ink.copy(alpha = 0.1f), spotColor = Hava.ink.copy(alpha = 0.1f))
+            .background(Hava.card, shape)
             .padding(8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -477,11 +483,11 @@ private fun MessageBar(
             Surface(
                 onClick = { menu = true },
                 shape = CircleShape,
-                color = SkyTint,
+                color = Hava.cardTint,
                 border = BorderStroke(1.dp, HavaBlueLight),
                 modifier = Modifier.size(52.dp).semantics { contentDescription = quickDescription }
             ) {
-                Box(contentAlignment = Alignment.Center) { Icon(painterResource(R.drawable.ic_add), null, tint = Navy) }
+                Box(contentAlignment = Alignment.Center) { Icon(painterResource(R.drawable.ic_add), null, tint = Hava.ink) }
             }
             DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
                 QUICK_QUESTIONS.forEach { res ->
@@ -497,7 +503,7 @@ private fun MessageBar(
         BasicTextField(
             value = text,
             onValueChange = onTextChange,
-            textStyle = MaterialTheme.typography.bodyLarge.merge(TextStyle(color = Navy)),
+            textStyle = MaterialTheme.typography.bodyLarge.merge(TextStyle(color = Hava.ink)),
             cursorBrush = SolidColor(HavaBlue),
             maxLines = 4,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
@@ -507,11 +513,11 @@ private fun MessageBar(
                 Box(
                     Modifier
                         .heightIn(min = 52.dp)
-                        .background(SkyTint, RoundedCornerShape(26.dp))
+                        .background(Hava.cardTint, RoundedCornerShape(26.dp))
                         .padding(horizontal = 18.dp, vertical = 12.dp),
                     contentAlignment = Alignment.CenterStart
                 ) {
-                    if (text.isEmpty()) Text(hint, style = MaterialTheme.typography.bodyLarge, color = NavySoft.copy(alpha = 0.8f))
+                    if (text.isEmpty()) Text(hint, style = MaterialTheme.typography.bodyLarge, color = Hava.inkSoft.copy(alpha = 0.8f))
                     inner()
                 }
             }

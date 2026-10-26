@@ -48,6 +48,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.kampplus.havacan.R
+import com.kampplus.havacan.ui.theme.Hava
 import com.kampplus.havacan.ui.theme.HavaBlueLight
 import com.kampplus.havacan.ui.theme.Navy
 import com.kampplus.havacan.ui.theme.NavySoft
@@ -102,7 +103,7 @@ fun WheelTimeDialog(
                     Icon(
                         painterResource(if (typing) R.drawable.ic_schedule else R.drawable.ic_keyboard),
                         stringResource(if (typing) R.string.time_wheel else R.string.time_type),
-                        tint = NavySoft
+                        tint = Hava.inkSoft
                     )
                 }
             }
@@ -121,13 +122,13 @@ fun WheelTimeDialog(
                     }
                 } else {
                     Box(contentAlignment = Alignment.Center) {
-                        Box(Modifier.fillMaxWidth().height(ItemHeight).clip(RoundedCornerShape(14.dp)).background(HavaBlueLight))
+                        Box(Modifier.fillMaxWidth().height(ItemHeight).clip(RoundedCornerShape(14.dp)).background(Hava.p.blueTint))
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
                             Wheel(count = 24, value = hour, onValue = { hour = it }, description = stringResource(R.string.time_hour))
                             Text(
                                 ":",
                                 style = MaterialTheme.typography.headlineMedium,
-                                color = Navy,
+                                color = Hava.ink,
                                 modifier = Modifier.padding(horizontal = 8.dp)
                             )
                             Wheel(count = 60, value = minute, onValue = { minute = it }, description = stringResource(R.string.time_minute))
@@ -144,7 +145,7 @@ fun WheelTimeDialog(
                         ) {
                             RiskRed
                         } else {
-                            NavySoft
+                            Hava.inkSoft
                         },
                         textAlign = TextAlign.Center
                     )
@@ -168,18 +169,18 @@ fun DurationWheels(minutes: Long, maxHours: Int, visibleCount: Int, onMinutes: (
     val current by rememberUpdatedState(minutes)
     Row(verticalAlignment = Alignment.CenterVertically) {
         Box(contentAlignment = Alignment.Center) {
-            Box(Modifier.width(150.dp).height(ItemHeight).clip(RoundedCornerShape(12.dp)).background(HavaBlueLight))
+            Box(Modifier.width(150.dp).height(ItemHeight).clip(RoundedCornerShape(12.dp)).background(Hava.p.blueTint))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Wheel(count = maxHours + 1, value = hours, onValue = { h ->
                     onMinutes(h * 60L + current % 60)
                 }, description = stringResource(R.string.time_hour), visibleCount = visibleCount, width = 44.dp, loop = false)
-                Text("sa", style = MaterialTheme.typography.labelLarge, color = NavySoft)
+                Text("sa", style = MaterialTheme.typography.labelLarge, color = Hava.inkSoft)
                 Wheel(count = 12, value = step, onValue = { m ->
                     onMinutes(current / 60 * 60 + m * 5L)
                 }, description = stringResource(R.string.time_minute), label = {
                     "%02d".format(it * 5)
                 }, visibleCount = visibleCount, width = 48.dp)
-                Text("dk", style = MaterialTheme.typography.labelLarge, color = NavySoft)
+                Text("dk", style = MaterialTheme.typography.labelLarge, color = Hava.inkSoft)
             }
         }
     }
@@ -217,7 +218,7 @@ fun WheelDurationDialog(
                         ) {
                             RiskRed
                         } else {
-                            NavySoft
+                            Hava.inkSoft
                         },
                         textAlign = TextAlign.Center
                     )
@@ -290,9 +291,9 @@ private fun Wheel(
                     label(index % count),
                     style = if (distance == 0) MaterialTheme.typography.headlineSmall else MaterialTheme.typography.titleMedium,
                     color = when (distance) {
-                        0 -> Navy
-                        1 -> NavySoft
-                        else -> NavySoft.copy(alpha = 0.4f)
+                        0 -> Hava.ink
+                        1 -> Hava.inkSoft
+                        else -> Hava.inkSoft.copy(alpha = 0.4f)
                     }
                 )
             }

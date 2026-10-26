@@ -69,10 +69,14 @@ import com.kampplus.havacan.R
 import com.kampplus.havacan.data.wardrobe.ClothingCategory
 import com.kampplus.havacan.data.wardrobe.ClothingColors
 import com.kampplus.havacan.data.wardrobe.Season
+import com.kampplus.havacan.ui.common.OnSky
+import com.kampplus.havacan.ui.common.OnSkySoft
+import com.kampplus.havacan.ui.common.SkyHeader
 import com.kampplus.havacan.ui.home.character.HavaCanArt
 import com.kampplus.havacan.ui.home.character.HavaCanPoseStyle
 import com.kampplus.havacan.ui.home.components.SoftCard
 import com.kampplus.havacan.ui.theme.GoodGreen
+import com.kampplus.havacan.ui.theme.Hava
 import com.kampplus.havacan.ui.theme.HavaBlue
 import com.kampplus.havacan.ui.theme.HavaBlueLight
 import com.kampplus.havacan.ui.theme.Navy
@@ -101,36 +105,36 @@ fun ClothingEditorScreen(
     Column(
         Modifier
             .fillMaxSize()
-            .statusBarsPadding()
             .navigationBarsPadding()
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Box(Modifier.fillMaxWidth().height(140.dp)) {
-            Row(Modifier.align(Alignment.TopStart).padding(top = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-                BackLink(Navy, NavySoft, onBack)
-                Spacer(Modifier.width(24.dp))
-                Text(
-                    stringResource(if (state.isNew) R.string.add_clothing else R.string.edit_clothing),
-                    style = MaterialTheme.typography.titleLarge,
-                    color = Navy
-                )
-            }
-            HavaCanArt(HavaCanPoseStyle.Cheer, clock, Modifier.align(Alignment.BottomEnd).size(110.dp))
-            Column(Modifier.align(Alignment.BottomStart).padding(start = 4.dp, end = 110.dp)) {
-                Text(
-                    stringResource(R.string.add_clothing_headline),
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = Navy,
-                    modifier = Modifier.semantics {
-                        heading()
-                    }
-                )
-                Text(stringResource(R.string.add_clothing_sub), style = MaterialTheme.typography.bodyMedium, color = NavySoft)
+        SkyHeader(bleed = 16.dp) {
+            Box(Modifier.fillMaxWidth().height(140.dp)) {
+                Row(Modifier.align(Alignment.TopStart).padding(top = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+                    BackLink(OnSky, OnSkySoft, onBack)
+                    Spacer(Modifier.width(24.dp))
+                    Text(
+                        stringResource(if (state.isNew) R.string.add_clothing else R.string.edit_clothing),
+                        style = MaterialTheme.typography.titleLarge,
+                        color = OnSky
+                    )
+                }
+                HavaCanArt(HavaCanPoseStyle.Cheer, clock, Modifier.align(Alignment.BottomEnd).size(110.dp))
+                Column(Modifier.align(Alignment.BottomStart).padding(start = 4.dp, end = 110.dp)) {
+                    Text(
+                        stringResource(R.string.add_clothing_headline),
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = OnSky,
+                        modifier = Modifier.semantics {
+                            heading()
+                        }
+                    )
+                    Text(stringResource(R.string.add_clothing_sub), style = MaterialTheme.typography.bodyMedium, color = OnSkySoft)
+                }
             }
         }
-
         PhotoArea(state, onPickPhoto)
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Button(
@@ -162,10 +166,10 @@ fun ClothingEditorScreen(
                         Text(
                             stringResource(R.string.field_piece_name),
                             style = MaterialTheme.typography.titleSmall,
-                            color = Navy,
+                            color = Hava.ink,
                             modifier = Modifier.weight(1f)
                         )
-                        Text(stringResource(R.string.edit_yourself), style = MaterialTheme.typography.bodySmall, color = NavySoft)
+                        Text(stringResource(R.string.edit_yourself), style = MaterialTheme.typography.bodySmall, color = Hava.inkSoft)
                     }
                     OutlinedTextField(
                         value = state.name,
@@ -185,19 +189,19 @@ fun ClothingEditorScreen(
                     )
                     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                         Column(Modifier.weight(1.1f)) {
-                            Text(stringResource(R.string.field_category), style = MaterialTheme.typography.titleSmall, color = Navy)
+                            Text(stringResource(R.string.field_category), style = MaterialTheme.typography.titleSmall, color = Hava.ink)
                             Spacer(Modifier.height(6.dp))
                             Dropdown(
                                 value = state.category?.label ?: stringResource(R.string.choose),
                                 leading = {
-                                    Icon(painterResource(R.drawable.ic_hanger), null, tint = Navy, modifier = Modifier.size(22.dp))
+                                    Icon(painterResource(R.drawable.ic_hanger), null, tint = Hava.ink, modifier = Modifier.size(22.dp))
                                 },
                                 options = ClothingCategory.entries.map { it.label },
                                 onSelect = { onCategory(ClothingCategory.entries[it]) }
                             )
                         }
                         Column(Modifier.weight(1f)) {
-                            Text(stringResource(R.string.field_color), style = MaterialTheme.typography.titleSmall, color = Navy)
+                            Text(stringResource(R.string.field_color), style = MaterialTheme.typography.titleSmall, color = Hava.ink)
                             Spacer(Modifier.height(6.dp))
                             val swatch = state.colorName?.let { ClothingColors.byName(it) }
                             Dropdown(
@@ -209,15 +213,15 @@ fun ClothingEditorScreen(
                             )
                         }
                     }
-                    Text(stringResource(R.string.field_season), style = MaterialTheme.typography.titleSmall, color = Navy)
+                    Text(stringResource(R.string.field_season), style = MaterialTheme.typography.titleSmall, color = Hava.ink)
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Season.entries.forEach { season ->
                             val on = season in state.seasons
                             Row(
                                 Modifier
                                     .clip(CircleShape)
-                                    .background(if (on) HavaBlueLight else Color.White)
-                                    .border(1.dp, if (on) HavaBlue else Navy.copy(alpha = 0.12f), CircleShape)
+                                    .background(if (on) Hava.p.blueTint else Hava.card)
+                                    .border(1.dp, if (on) HavaBlue else Hava.ink.copy(alpha = 0.12f), CircleShape)
                                     .toggleable(value = on, role = Role.Checkbox) { onToggleSeason(season) }
                                     .heightIn(min = 44.dp)
                                     .padding(horizontal = 14.dp),
@@ -232,11 +236,11 @@ fun ClothingEditorScreen(
                                     )
                                     Spacer(Modifier.width(6.dp))
                                 }
-                                Text(season.label, style = MaterialTheme.typography.labelLarge, color = if (on) HavaBlue else NavySoft)
+                                Text(season.label, style = MaterialTheme.typography.labelLarge, color = if (on) HavaBlue else Hava.inkSoft)
                             }
                         }
                     }
-                    Text(stringResource(R.string.season_hint), style = MaterialTheme.typography.bodySmall, color = NavySoft)
+                    Text(stringResource(R.string.season_hint), style = MaterialTheme.typography.bodySmall, color = Hava.inkSoft)
                 }
             }
         }
@@ -256,7 +260,7 @@ fun ClothingEditorScreen(
             Text(
                 stringResource(R.string.photo_required),
                 style = MaterialTheme.typography.bodySmall,
-                color = NavySoft,
+                color = Hava.inkSoft,
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             )
         }
@@ -272,7 +276,7 @@ fun ClothingEditorScreen(
 @Composable
 private fun PhotoArea(state: EditorState, onPick: () -> Unit) {
     SoftCard {
-        Box(Modifier.fillMaxWidth().height(320.dp).background(SkyTint)) {
+        Box(Modifier.fillMaxWidth().height(320.dp).background(Hava.cardTint)) {
             val path = state.photoPath
             if (path != null) {
                 LocalImage(path, state.name.ifBlank { null }, Modifier.fillMaxSize(), maxSide = 1080)
@@ -286,16 +290,16 @@ private fun PhotoArea(state: EditorState, onPick: () -> Unit) {
                 }
                 IconButton(
                     onClick = onPick,
-                    modifier = Modifier.align(Alignment.TopEnd).padding(10.dp).size(52.dp).clip(CircleShape).background(Color.White)
-                ) { Icon(painterResource(R.drawable.ic_edit), stringResource(R.string.change_photo), tint = Navy) }
+                    modifier = Modifier.align(Alignment.TopEnd).padding(10.dp).size(52.dp).clip(CircleShape).background(Hava.card)
+                ) { Icon(painterResource(R.drawable.ic_edit), stringResource(R.string.change_photo), tint = Hava.ink) }
             } else {
                 Column(
                     Modifier.align(Alignment.Center).clickable(role = Role.Button, onClick = onPick).padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Icon(painterResource(R.drawable.ic_gallery), null, tint = NavySoft, modifier = Modifier.size(48.dp))
+                    Icon(painterResource(R.drawable.ic_gallery), null, tint = Hava.inkSoft, modifier = Modifier.size(48.dp))
                     Spacer(Modifier.height(8.dp))
-                    Text(stringResource(R.string.no_photo_yet), style = MaterialTheme.typography.bodyLarge, color = NavySoft)
+                    Text(stringResource(R.string.no_photo_yet), style = MaterialTheme.typography.bodyLarge, color = Hava.inkSoft)
                 }
             }
             if (state.importing) {
@@ -320,11 +324,11 @@ private fun AnalysisHeader(state: EditorState, aiConfigured: Boolean) {
     ).animateFloat(0.4f, 1f, infiniteRepeatable(tween(600), RepeatMode.Reverse), label = "pulse")
     Row(
         Modifier.fillMaxWidth().background(
-            androidx.compose.ui.graphics.Brush.horizontalGradient(listOf(Color(0xFFEAF1FF), Color(0xFFF6F9FF)))
+            Hava.p.highlight
         ).padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Box(Modifier.size(48.dp).clip(CircleShape).background(Color.White), contentAlignment = Alignment.Center) {
+        Box(Modifier.size(48.dp).clip(CircleShape).background(Hava.card), contentAlignment = Alignment.Center) {
             Icon(
                 painterResource(R.drawable.ic_sparkle),
                 null,
@@ -335,8 +339,8 @@ private fun AnalysisHeader(state: EditorState, aiConfigured: Boolean) {
         Spacer(Modifier.width(12.dp))
         AnimatedContent(targetState = title to body, transitionSpec = { fadeIn() togetherWith fadeOut() }, label = "aiText") { (t, b) ->
             Column {
-                Text(t, style = MaterialTheme.typography.titleMedium, color = Navy)
-                Text(b, style = MaterialTheme.typography.bodyMedium, color = NavySoft)
+                Text(t, style = MaterialTheme.typography.titleMedium, color = Hava.ink)
+                Text(b, style = MaterialTheme.typography.bodyMedium, color = Hava.inkSoft)
             }
         }
     }
@@ -356,7 +360,7 @@ private fun Dropdown(
             Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(14.dp))
-                .border(1.dp, Navy.copy(alpha = 0.15f), RoundedCornerShape(14.dp))
+                .border(1.dp, Hava.ink.copy(alpha = 0.15f), RoundedCornerShape(14.dp))
                 .selectable(selected = open, role = Role.DropdownList) { open = true }
                 .heightIn(min = 56.dp)
                 .padding(horizontal = 12.dp),
@@ -364,8 +368,8 @@ private fun Dropdown(
         ) {
             leading()
             Spacer(Modifier.width(10.dp))
-            Text(value, style = MaterialTheme.typography.bodyLarge, color = Navy, modifier = Modifier.weight(1f), maxLines = 1)
-            Icon(painterResource(R.drawable.ic_expand_more), null, tint = NavySoft)
+            Text(value, style = MaterialTheme.typography.bodyLarge, color = Hava.ink, modifier = Modifier.weight(1f), maxLines = 1)
+            Icon(painterResource(R.drawable.ic_expand_more), null, tint = Hava.inkSoft)
         }
         DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
             options.forEachIndexed { i, label ->
@@ -389,7 +393,7 @@ private fun Swatch(rgb: Int?) {
             .size(24.dp)
             .clip(CircleShape)
             .background(rgb?.let { Color(0xFF000000 or it.toLong()) } ?: Color.Transparent)
-            .border(1.dp, Navy.copy(alpha = 0.15f), CircleShape)
+            .border(1.dp, Hava.ink.copy(alpha = 0.15f), CircleShape)
     )
 }
 

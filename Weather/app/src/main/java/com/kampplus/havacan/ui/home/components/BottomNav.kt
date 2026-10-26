@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import com.kampplus.havacan.R
 import com.kampplus.havacan.model.WeatherCondition
 import com.kampplus.havacan.ui.home.character.drawHavaCanFace
+import com.kampplus.havacan.ui.theme.Hava
 import com.kampplus.havacan.ui.theme.HavaBlue
 import com.kampplus.havacan.ui.theme.Navy
 import com.kampplus.havacan.ui.theme.NavySoft
@@ -57,7 +58,7 @@ fun HavaCanBottomNavigation(selected: HomeTab, havaCanPulse: Int, onSelect: (Hom
             Modifier
                 .fillMaxWidth()
                 .shadow(12.dp, shape, ambientColor = Navy.copy(alpha = 0.12f), spotColor = Navy.copy(alpha = 0.12f))
-                .background(Color.White, shape)
+                .background(Hava.card, shape)
                 .navigationBarsPadding()
                 .padding(top = 8.dp, bottom = 6.dp)
                 .selectableGroup(),
@@ -68,14 +69,14 @@ fun HavaCanBottomNavigation(selected: HomeTab, havaCanPulse: Int, onSelect: (Hom
                 WeatherIcon(WeatherCondition.PartlyCloudy, isDay = true, size = 28.dp)
             }
             NavItem(HomeTab.Plans, selected, R.string.nav_plans, onSelect) { tint ->
-                Icon(painterResource(R.drawable.ic_calendar), null, tint = tint, modifier = Modifier.size(26.dp))
+                PlansNavIcon()
             }
             HavaCanButton(havaCanPulse, selected == HomeTab.HavaCan) { onSelect(HomeTab.HavaCan) }
             NavItem(HomeTab.Wardrobe, selected, R.string.nav_wardrobe, onSelect) { tint ->
-                Icon(painterResource(R.drawable.ic_hanger), null, tint = tint, modifier = Modifier.size(28.dp))
+                WardrobeNavIcon()
             }
             NavItem(HomeTab.Profile, selected, R.string.nav_profile, onSelect) { tint ->
-                Icon(painterResource(R.drawable.ic_person), null, tint = tint, modifier = Modifier.size(28.dp))
+                ProfileNavIcon()
             }
         }
     }
@@ -84,7 +85,7 @@ fun HavaCanBottomNavigation(selected: HomeTab, havaCanPulse: Int, onSelect: (Hom
 @Composable
 private fun NavItem(tab: HomeTab, selected: HomeTab, label: Int, onSelect: (HomeTab) -> Unit, icon: @Composable (Color) -> Unit) {
     val isSelected = tab == selected
-    val tint = if (isSelected) HavaBlue else NavySoft
+    val tint = if (isSelected) HavaBlue else Hava.inkSoft
     Column(
         Modifier
             .heightIn(min = 56.dp)
@@ -127,7 +128,11 @@ private fun HavaCanButton(pulse: Int, isSelected: Boolean, onClick: () -> Unit) 
         ) {
             Canvas(Modifier.size(50.dp)) { drawHavaCanFace(Offset(size.width / 2, size.height / 2), size.minDimension / 2.1f) }
         }
-        Text(stringResource(R.string.nav_havacan), style = MaterialTheme.typography.labelMedium, color = if (isSelected) HavaBlue else Navy)
+        Text(
+            stringResource(R.string.nav_havacan),
+            style = MaterialTheme.typography.labelMedium,
+            color = if (isSelected) HavaBlue else Hava.ink
+        )
         Spacer(Modifier.height(3.dp))
         Box(
             Modifier

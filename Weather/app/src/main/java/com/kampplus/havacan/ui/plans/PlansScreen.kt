@@ -49,16 +49,21 @@ import com.kampplus.havacan.R
 import com.kampplus.havacan.domain.plans.PlanOutlook
 import com.kampplus.havacan.model.HourlyWeather
 import com.kampplus.havacan.model.PlanSource
+import com.kampplus.havacan.ui.common.OnSky
+import com.kampplus.havacan.ui.common.OnSkySoft
+import com.kampplus.havacan.ui.common.SkyHeader
 import com.kampplus.havacan.ui.home.character.HavaCanArt
 import com.kampplus.havacan.ui.home.character.HavaCanPoseStyle
 import com.kampplus.havacan.ui.home.components.HavaCanLogo
 import com.kampplus.havacan.ui.home.components.SoftCard
 import com.kampplus.havacan.ui.home.components.WeatherIcon
 import com.kampplus.havacan.ui.theme.GoodGreen
+import com.kampplus.havacan.ui.theme.Hava
 import com.kampplus.havacan.ui.theme.HavaBlue
 import com.kampplus.havacan.ui.theme.HavaBlueLight
 import com.kampplus.havacan.ui.theme.Navy
 import com.kampplus.havacan.ui.theme.NavySoft
+import com.kampplus.havacan.ui.theme.RiskRed
 import com.kampplus.havacan.ui.theme.SkyTint
 import com.kampplus.havacan.ui.theme.Sun
 import com.kampplus.havacan.ui.theme.SunDeep
@@ -87,27 +92,28 @@ fun PlansScreen(
     Column(
         modifier
             .fillMaxSize()
-            .statusBarsPadding()
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
-        Row(Modifier.fillMaxWidth().padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-            HavaCanLogo(Modifier.padding(start = 4.dp))
-            Spacer(Modifier.weight(1f))
-            CityChip(state.homeCity.name, onCityClick)
-            IconButton(onClick = onBellClick) {
-                Icon(painterResource(R.drawable.ic_bell), stringResource(R.string.cd_notifications), tint = Navy)
+        SkyHeader(bleed = 16.dp) {
+            Row(Modifier.fillMaxWidth().padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                HavaCanLogo(Modifier.padding(start = 4.dp))
+                Spacer(Modifier.weight(1f))
+                CityChip(state.homeCity.name, onCityClick)
+                IconButton(onClick = onBellClick) {
+                    Icon(painterResource(R.drawable.ic_bell), stringResource(R.string.cd_notifications), tint = OnSky)
+                }
             }
-        }
-        Column(Modifier.padding(start = 4.dp)) {
-            Text(state.today.format(DayHeader).capitalizeTr(), style = MaterialTheme.typography.bodyLarge, color = NavySoft)
-            Text(
-                stringResource(R.string.plans_title),
-                style = MaterialTheme.typography.displaySmall,
-                color = Navy,
-                modifier = Modifier.semantics { heading() }
-            )
+            Column(Modifier.padding(start = 4.dp)) {
+                Text(state.today.format(DayHeader).capitalizeTr(), style = MaterialTheme.typography.bodyLarge, color = OnSkySoft)
+                Text(
+                    stringResource(R.string.plans_title),
+                    style = MaterialTheme.typography.displaySmall,
+                    color = OnSky,
+                    modifier = Modifier.semantics { heading() }
+                )
+            }
         }
         if (!state.calendarConnected) CalendarCard(onConnectCalendar) else CalendarConnectedRow()
         WeekStrip(state, onSelectDate)
@@ -124,7 +130,7 @@ fun PlansScreen(
                 stringResource(R.string.plans_for_day, dayLabel(selected, state.today))
             },
             style = MaterialTheme.typography.titleLarge,
-            color = Navy,
+            color = Hava.ink,
             modifier = Modifier.padding(start = 4.dp, top = 4.dp).semantics { heading() }
         )
         when {
@@ -132,7 +138,7 @@ fun PlansScreen(
             state.items.isEmpty() -> Text(
                 stringResource(R.string.no_plans_on_day),
                 style = MaterialTheme.typography.bodyLarge,
-                color = NavySoft,
+                color = Hava.inkSoft,
                 modifier = Modifier.padding(start = 4.dp)
             )
             else -> Timeline(state.items, state.today, onOpenPlan, onPlanB)
@@ -155,16 +161,16 @@ private fun CityChip(name: String, onClick: () -> Unit) {
     Row(
         Modifier
             .clip(CircleShape)
-            .background(Navy.copy(alpha = 0.05f))
+            .background(OnSky.copy(alpha = 0.2f))
             .clickable(role = Role.Button, onClick = onClick)
             .heightIn(min = 40.dp)
             .padding(horizontal = 10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(painterResource(R.drawable.ic_place), null, tint = HavaBlue, modifier = Modifier.size(18.dp))
+        Icon(painterResource(R.drawable.ic_place), null, tint = Sun, modifier = Modifier.size(18.dp))
         Spacer(Modifier.width(4.dp))
-        Text(name, style = MaterialTheme.typography.labelLarge, color = Navy, maxLines = 1, overflow = TextOverflow.Ellipsis)
-        Icon(painterResource(R.drawable.ic_expand_more), null, tint = Navy, modifier = Modifier.size(18.dp))
+        Text(name, style = MaterialTheme.typography.labelLarge, color = OnSky, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Icon(painterResource(R.drawable.ic_expand_more), null, tint = OnSky, modifier = Modifier.size(18.dp))
     }
 }
 
@@ -173,15 +179,15 @@ private fun CalendarCard(onConnect: () -> Unit) {
     SoftCard {
         Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
             Box(
-                Modifier.size(48.dp).clip(RoundedCornerShape(12.dp)).background(HavaBlueLight),
+                Modifier.size(48.dp).clip(RoundedCornerShape(12.dp)).background(Hava.p.blueTint),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(painterResource(R.drawable.ic_calendar), null, tint = HavaBlue)
             }
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
-                Text(stringResource(R.string.calendar_connect_title), style = MaterialTheme.typography.titleMedium, color = Navy)
-                Text(stringResource(R.string.calendar_connect_body), style = MaterialTheme.typography.bodySmall, color = NavySoft)
+                Text(stringResource(R.string.calendar_connect_title), style = MaterialTheme.typography.titleMedium, color = Hava.ink)
+                Text(stringResource(R.string.calendar_connect_body), style = MaterialTheme.typography.bodySmall, color = Hava.inkSoft)
             }
             OutlinedButton(onClick = onConnect, border = BorderStroke(1.5.dp, HavaBlue)) {
                 Text(stringResource(R.string.calendar_connect), color = HavaBlue)
@@ -195,7 +201,7 @@ private fun CalendarConnectedRow() {
     Row(Modifier.padding(start = 4.dp), verticalAlignment = Alignment.CenterVertically) {
         Icon(painterResource(R.drawable.ic_check_circle), null, tint = GoodGreen, modifier = Modifier.size(18.dp))
         Spacer(Modifier.width(6.dp))
-        Text(stringResource(R.string.calendar_connected), style = MaterialTheme.typography.bodyMedium, color = NavySoft)
+        Text(stringResource(R.string.calendar_connected), style = MaterialTheme.typography.bodyMedium, color = Hava.inkSoft)
     }
 }
 
@@ -223,8 +229,8 @@ private fun WeekStrip(state: PlansUiState, onSelect: (LocalDate) -> Unit) {
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(2.dp)
                 ) {
-                    val color = if (selected) Color.White else Navy
-                    Text(day.dayName, style = MaterialTheme.typography.labelMedium, color = if (selected) Color.White else NavySoft)
+                    val color = if (selected) Color.White else Hava.ink
+                    Text(day.dayName, style = MaterialTheme.typography.labelMedium, color = if (selected) Color.White else Hava.inkSoft)
                     Text(day.date.dayOfMonth.toString(), style = MaterialTheme.typography.titleMedium, color = color)
                     if (day.condition != null) {
                         WeatherIcon(day.condition, isDay = true, size = 26.dp)
@@ -242,7 +248,7 @@ private fun SuggestionCard(item: PlanItem, clock: () -> Float, onPlanB: () -> Un
     val alternative = item.alternative ?: return
     val risk = item.outlook as? PlanOutlook.Risk ?: return
     val earlier = alternative.hour < item.plan.localTime.hour
-    SoftCard(background = Brush.linearGradient(listOf(Color(0xFFE8F0FF), Color(0xFFF7FAFF)))) {
+    SoftCard(background = Hava.p.highlight) {
         Box {
             HavaCanArt(
                 HavaCanPoseStyle.Cheer,
@@ -254,18 +260,18 @@ private fun SuggestionCard(item: PlanItem, clock: () -> Float, onPlanB: () -> Un
                 Text(
                     stringResource(if (earlier) R.string.suggestion_earlier else R.string.suggestion_later),
                     style = MaterialTheme.typography.headlineMedium,
-                    color = Navy,
+                    color = Hava.ink,
                     modifier = Modifier.padding(end = 110.dp)
                 )
                 Text(
                     stringResource(R.string.suggestion_reason, item.plan.title, item.plan.timeLabel, risk.reason.label.lowercase(TURKISH)),
                     style = MaterialTheme.typography.bodyLarge,
-                    color = NavySoft,
+                    color = Hava.inkSoft,
                     modifier = Modifier.padding(end = 96.dp)
                 )
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     TimeTile(item.plan.timeLabel, risk.hour, good = false)
-                    Icon(painterResource(R.drawable.ic_arrow_forward), null, tint = NavySoft)
+                    Icon(painterResource(R.drawable.ic_arrow_forward), null, tint = Hava.inkSoft)
                     TimeTile(alternative.hourLabel, alternative, good = true)
                     Spacer(Modifier.weight(1f))
                 }
@@ -288,11 +294,11 @@ fun TimeTile(label: String, hour: HourlyWeather, good: Boolean) {
     Column(
         Modifier
             .clip(RoundedCornerShape(18.dp))
-            .background(if (good) Color(0xFFEAF7E4) else Color(0xFFFDE8E8))
+            .background(if (good) GoodGreen.copy(alpha = 0.18f) else RiskRed.copy(alpha = 0.15f))
             .padding(horizontal = 16.dp, vertical = 8.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(label, style = MaterialTheme.typography.titleMedium, color = Navy)
+        Text(label, style = MaterialTheme.typography.titleMedium, color = Hava.ink)
         WeatherIcon(hour.condition, hour.isDay, size = 34.dp)
     }
 }
@@ -307,7 +313,7 @@ private fun Timeline(items: List<PlanItem>, today: LocalDate, onOpen: (PlanItem)
                 Text(
                     dayLabel(date, today),
                     style = MaterialTheme.typography.titleSmall,
-                    color = NavySoft,
+                    color = Hava.inkSoft,
                     modifier = Modifier.padding(start = 6.dp, top = 4.dp)
                 )
             }
@@ -322,7 +328,7 @@ private fun PlanRow(item: PlanItem, onClick: () -> Unit) {
     val dot = when (item.outlook) {
         is PlanOutlook.Risk -> Sun
         is PlanOutlook.Fine -> HavaBlue
-        else -> NavySoft.copy(alpha = 0.4f)
+        else -> Hava.inkSoft.copy(alpha = 0.4f)
     }
     SoftCard {
         Row(
@@ -344,7 +350,7 @@ private fun PlanRow(item: PlanItem, onClick: () -> Unit) {
                 Text(
                     if (end != null) "${item.plan.timeLabel}–%02d.%02d".format(end.hour, end.minute) else item.plan.timeLabel,
                     style = MaterialTheme.typography.headlineSmall,
-                    color = Navy
+                    color = Hava.ink
                 )
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     if (run != null) {
@@ -356,13 +362,13 @@ private fun PlanRow(item: PlanItem, onClick: () -> Unit) {
                         )
                         Spacer(Modifier.width(6.dp))
                     }
-                    Text(item.plan.title, style = MaterialTheme.typography.titleMedium, color = Navy)
+                    Text(item.plan.title, style = MaterialTheme.typography.titleMedium, color = Hava.ink)
                 }
                 if (run != null) {
                     Text(
                         listOfNotNull(run.distanceKm?.let { "$it km" }, "${run.durationMinutes} dk").joinToString(" · "),
                         style = MaterialTheme.typography.bodyMedium,
-                        color = NavySoft
+                        color = Hava.inkSoft
                     )
                 }
                 item.plan.meet?.let { meet ->
@@ -372,19 +378,19 @@ private fun PlanRow(item: PlanItem, onClick: () -> Unit) {
                         Text(
                             meet.people.joinToString(", ") { it.name },
                             style = MaterialTheme.typography.bodyMedium,
-                            color = NavySoft,
+                            color = Hava.inkSoft,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
                     }
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(painterResource(R.drawable.ic_place), null, tint = NavySoft, modifier = Modifier.size(16.dp))
+                    Icon(painterResource(R.drawable.ic_place), null, tint = Hava.inkSoft, modifier = Modifier.size(16.dp))
                     Spacer(Modifier.width(4.dp))
                     Text(
                         listOfNotNull(item.plan.placeName, item.plan.city.name).joinToString(", "),
                         style = MaterialTheme.typography.bodyMedium,
-                        color = NavySoft,
+                        color = Hava.inkSoft,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -397,13 +403,13 @@ private fun PlanRow(item: PlanItem, onClick: () -> Unit) {
                         Chip(
                             stringResource(if (item.plan.follow) R.string.chip_follow_on else R.string.chip_follow_off),
                             HavaBlueLight,
-                            if (item.plan.follow) HavaBlue else NavySoft,
+                            if (item.plan.follow) HavaBlue else Hava.inkSoft,
                             null
                         )
                     }
                 }
             }
-            Icon(painterResource(R.drawable.ic_chevron_right), null, tint = Navy)
+            Icon(painterResource(R.drawable.ic_chevron_right), null, tint = Hava.ink)
         }
     }
 }
@@ -413,12 +419,12 @@ fun OutlookChip(item: PlanItem) {
     when (val o = item.outlook) {
         is PlanOutlook.Risk -> Chip(o.reason.label, SunLight, Color(0xFF7A5200), R.drawable.ic_warning, SunDeep)
         is PlanOutlook.Fine -> if (item.plan.type == com.kampplus.havacan.model.PlanType.Indoor) {
-            Chip(stringResource(R.string.chip_indoor), SkyTint, NavySoft, R.drawable.ic_home)
+            Chip(stringResource(R.string.chip_indoor), Hava.cardTint, Hava.inkSoft, R.drawable.ic_home)
         } else {
             Chip(stringResource(R.string.chip_fine), Color(0xFFEAF7E4), Color(0xFF2E7D32), R.drawable.ic_check_circle, GoodGreen)
         }
-        is PlanOutlook.NoForecastYet -> Chip(stringResource(R.string.chip_waiting), SkyTint, NavySoft, R.drawable.ic_schedule)
-        PlanOutlook.Unknown -> Chip(stringResource(R.string.chip_unknown), SkyTint, NavySoft, R.drawable.ic_cloud_off)
+        is PlanOutlook.NoForecastYet -> Chip(stringResource(R.string.chip_waiting), Hava.cardTint, Hava.inkSoft, R.drawable.ic_schedule)
+        PlanOutlook.Unknown -> Chip(stringResource(R.string.chip_unknown), Hava.cardTint, Hava.inkSoft, R.drawable.ic_cloud_off)
         PlanOutlook.Past -> Unit
     }
 }
@@ -442,8 +448,8 @@ private fun EmptyPlans(clock: () -> Float) {
     SoftCard {
         Row(Modifier.padding(20.dp), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
-                Text(stringResource(R.string.no_plans_title), style = MaterialTheme.typography.titleLarge, color = Navy)
-                Text(stringResource(R.string.no_plans_body), style = MaterialTheme.typography.bodyLarge, color = NavySoft)
+                Text(stringResource(R.string.no_plans_title), style = MaterialTheme.typography.titleLarge, color = Hava.ink)
+                Text(stringResource(R.string.no_plans_body), style = MaterialTheme.typography.bodyLarge, color = Hava.inkSoft)
             }
             HavaCanArt(HavaCanPoseStyle.Cheer, clock, Modifier.size(90.dp))
         }
@@ -462,20 +468,20 @@ fun String.capitalizeTr() = replaceFirstChar { it.titlecase(TURKISH) }
 /** The way into Weather Meet: plan a meet-up around everyone's weather. */
 @Composable
 private fun MeetEntryCard(onClick: () -> Unit) {
-    SoftCard(background = Brush.linearGradient(listOf(Color(0xFFFFF4CC), Color(0xFFFFFBEE)))) {
+    SoftCard(background = Hava.p.sallaCard) {
         Row(
             Modifier.clickable(role = Role.Button, onClick = onClick).padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(Modifier.size(48.dp).clip(RoundedCornerShape(14.dp)).background(Sun), contentAlignment = Alignment.Center) {
-                Icon(painterResource(R.drawable.ic_group), null, tint = Navy)
+                Icon(painterResource(R.drawable.ic_group), null, tint = Hava.ink)
             }
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
-                Text(stringResource(R.string.meet_title), style = MaterialTheme.typography.titleMedium, color = Navy)
-                Text(stringResource(R.string.meet_entry_body), style = MaterialTheme.typography.bodySmall, color = NavySoft)
+                Text(stringResource(R.string.meet_title), style = MaterialTheme.typography.titleMedium, color = Hava.ink)
+                Text(stringResource(R.string.meet_entry_body), style = MaterialTheme.typography.bodySmall, color = Hava.inkSoft)
             }
-            Icon(painterResource(R.drawable.ic_chevron_right), null, tint = Navy)
+            Icon(painterResource(R.drawable.ic_chevron_right), null, tint = Hava.ink)
         }
     }
 }

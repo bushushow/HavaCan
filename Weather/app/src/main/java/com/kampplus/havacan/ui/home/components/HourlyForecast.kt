@@ -43,6 +43,7 @@ import com.kampplus.havacan.domain.running.RunningAdvice
 import com.kampplus.havacan.model.HourlyWeather
 import com.kampplus.havacan.model.deg
 import com.kampplus.havacan.ui.theme.GoodGreen
+import com.kampplus.havacan.ui.theme.Hava
 import com.kampplus.havacan.ui.theme.HavaBlue
 import com.kampplus.havacan.ui.theme.HavaBlueDeep
 import com.kampplus.havacan.ui.theme.Navy
@@ -225,6 +226,6 @@ fun SoftCard(modifier: Modifier = Modifier, background: Brush? = null, content: 
             .fillMaxWidth()
             .shadow(elevation = 6.dp, shape = shape, ambientColor = Navy.copy(alpha = 0.08f), spotColor = Navy.copy(alpha = 0.08f))
             .clip(shape)
-            .background(background ?: SolidColor(Color.White))
+            .background(background ?: SolidColor(Hava.card))
     ) { content() }
 }

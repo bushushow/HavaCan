@@ -83,6 +83,7 @@ import com.kampplus.havacan.model.HourlyWeather
 import com.kampplus.havacan.model.WeatherCondition
 import com.kampplus.havacan.model.deg
 import com.kampplus.havacan.ui.theme.GoodGreen
+import com.kampplus.havacan.ui.theme.Hava
 import com.kampplus.havacan.ui.theme.HavaBlue
 import com.kampplus.havacan.ui.theme.HavaBlueDeep
 import com.kampplus.havacan.ui.theme.HavaBlueLight
@@ -169,25 +170,25 @@ fun ForecastCard(
 private fun HourHeader(hour: HourlyWeather, today: String, onPickDate: () -> Unit, modifier: Modifier) {
     Row(modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         Column(Modifier.weight(1f)) {
-            Text("Tahmin", style = MaterialTheme.typography.titleLarge, color = Navy, fontWeight = FontWeight.ExtraBold)
+            Text("Tahmin", style = MaterialTheme.typography.titleLarge, color = Hava.ink, fontWeight = FontWeight.ExtraBold)
             Text(
                 "${dayName(hour.date, today, full = true)} · ${hour.hourLabel}",
                 style = MaterialTheme.typography.bodyMedium,
-                color = NavySoft
+                color = Hava.inkSoft
             )
         }
         Row(
-            Modifier.background(SkyTint, CircleShape).padding(start = 6.dp, end = 14.dp, top = 4.dp, bottom = 4.dp),
+            Modifier.background(Hava.cardTint, CircleShape).padding(start = 6.dp, end = 14.dp, top = 4.dp, bottom = 4.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
             WeatherIcon(hour.condition, hour.isDay, size = 28.dp)
-            Text(hour.condition.label, style = MaterialTheme.typography.labelLarge, color = Navy, fontWeight = FontWeight.Bold)
+            Text(hour.condition.label, style = MaterialTheme.typography.labelLarge, color = Hava.ink, fontWeight = FontWeight.Bold)
         }
         Surface(
             onClick = onPickDate,
             shape = CircleShape,
-            color = HavaBlueLight,
+            color = Hava.p.blueTint,
             modifier = Modifier.size(48.dp).semantics { contentDescription = "Tarih seç" }
         ) {
             Box(contentAlignment = Alignment.Center) {
@@ -209,15 +210,15 @@ private fun FactTiles(hour: HourlyWeather, modifier: Modifier) {
         FactTile(
             label = "Nem",
             value = hour.humidity?.let { "%$it" } ?: "—",
-            tint = Color(0xFF2BA59B),
+            tint = Humidity,
             modifier = Modifier.weight(1f)
-        ) { Icon(painterResource(R.drawable.ic_drop), null, tint = Color(0xFF2BA59B), modifier = Modifier.size(16.dp)) }
+        ) { Icon(painterResource(R.drawable.ic_drop), null, tint = Humidity, modifier = Modifier.size(16.dp)) }
         FactTile(
             label = "Rüzgar",
             value = hour.windSpeed?.roundToInt()?.let { "$it km/sa" } ?: "—",
-            tint = Navy,
+            tint = Wind,
             modifier = Modifier.weight(1f)
-        ) { Icon(painterResource(R.drawable.ic_wind), null, tint = NavySoft, modifier = Modifier.size(16.dp)) }
+        ) { Icon(painterResource(R.drawable.ic_wind), null, tint = Wind, modifier = Modifier.size(16.dp)) }
     }
 }
 
@@ -226,7 +227,7 @@ private fun FactTile(label: String, value: String, tint: Color, modifier: Modifi
     Row(
         modifier
             .heightIn(min = 40.dp)
-            .background(SkyTint, CircleShape)
+            .background(if (Hava.p.isDark) tint.copy(alpha = 0.2f) else tint.copy(alpha = 0.12f), CircleShape)
             .padding(horizontal = 10.dp, vertical = 6.dp)
             .clearAndSetSemantics { contentDescription = "$label $value" },
         verticalAlignment = Alignment.CenterVertically,
@@ -234,7 +235,7 @@ private fun FactTile(label: String, value: String, tint: Color, modifier: Modifi
     ) {
         Box(Modifier.size(20.dp), contentAlignment = Alignment.Center) { icon() }
         Text(value, style = MaterialTheme.typography.labelLarge, color = tint, fontWeight = FontWeight.ExtraBold, maxLines = 1)
-        Text(label, style = MaterialTheme.typography.labelSmall, color = NavySoft, maxLines = 1)
+        Text(label, style = MaterialTheme.typography.labelSmall, color = Hava.inkSoft, maxLines = 1)
     }
 }
 
@@ -251,7 +252,7 @@ private fun MetricTabs(
         modifier
             .fillMaxWidth()
             .height(48.dp)
-            .background(SkyTint, CircleShape)
+            .background(Hava.cardTint, CircleShape)
             .padding(4.dp)
     ) {
         val tabWidth = maxWidth / metrics.size
@@ -266,12 +267,12 @@ private fun MetricTabs(
                 .width(tabWidth)
                 .fillMaxHeight()
                 .shadow(3.dp, CircleShape, ambientColor = Navy.copy(alpha = 0.12f), spotColor = Navy.copy(alpha = 0.12f))
-                .background(Color.White, CircleShape)
+                .background(Hava.p.pill, CircleShape)
         )
         Row(Modifier.fillMaxWidth().fillMaxHeight().selectableGroup()) {
             metrics.forEach { m ->
                 val on = m == selected
-                val color by animateColorAsState(if (on) metricColor(m).darker() else NavySoft, label = "tabText")
+                val color by animateColorAsState(if (on) Hava.p.onPill else Hava.inkSoft, label = "tabText")
                 Box(
                     Modifier.weight(1f).fillMaxHeight().selectable(selected = on, role = Role.Tab) { onSelect(m) },
                     contentAlignment = Alignment.Center
@@ -292,8 +293,11 @@ private fun metricColor(m: ForecastMetric) = when (m) {
     ForecastMetric.Run -> GoodGreen
     ForecastMetric.Temperature -> Sun
     ForecastMetric.Rain -> HavaBlue
-    ForecastMetric.Wind -> Color(0xFF2BA59B)
+    ForecastMetric.Wind -> Wind
 }
+
+private val Humidity = Color(0xFF14A37F)
+private val Wind = Color(0xFF6C5CE7)
 
 /** Text-safe shade of a metric colour (yellow is too light for words on white). */
 private fun Color.darker() = if (this == Sun) Color(0xFFC77800) else this
@@ -332,7 +336,8 @@ private fun ForecastChart(
     val color = metricColor(metric)
     val reveal = remember(metric, hours.first().time) { Animatable(if (reduceMotion) 1f else 0f) }
     LaunchedEffect(reveal) { reveal.animateTo(1f, tween(700, easing = FastOutSlowInEasing)) }
-    val valueStyle = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Navy)
+    val palette = Hava.p
+    val valueStyle = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Bold, color = palette.ink)
     val bubbleStyle = TextStyle(fontSize = 13.sp, fontWeight = FontWeight.ExtraBold, color = Color.White)
     val description =
         "${if (metric == ForecastMetric.Run) "Koşu puanı" else metric.label}: " +
@@ -373,7 +378,7 @@ private fun ForecastChart(
                 for (g in 0..2) {
                     val gy = top + (bottom - top) * g / 2f
                     drawLine(
-                        Navy.copy(alpha = 0.06f),
+                        palette.line,
                         Offset(padPx, gy),
                         Offset(size.width - padPx, gy),
                         strokeWidth = 1.dp.toPx(),
@@ -403,7 +408,7 @@ private fun ForecastChart(
                     )
                     hours.forEachIndexed { i, h ->
                         if (i % 3 != 0) return@forEachIndexed
-                        drawCircle(Color.White, 4.dp.toPx(), Offset(x(i), y(values[i])))
+                        drawCircle(palette.card, 4.dp.toPx(), Offset(x(i), y(values[i])))
                         drawCircle(color.darker(), 2.5.dp.toPx(), Offset(x(i), y(values[i])))
                         if (h.time == selectedTime) return@forEachIndexed
                         val v = measurer.measure(h.label(metric, score), valueStyle)
@@ -420,21 +425,21 @@ private fun ForecastChart(
                 hours.indexOfFirst { it.time == selectedTime }.takeIf { it >= 0 }?.let { i ->
                     val p = Offset(x(i), y(values[i]))
                     drawLine(
-                        Navy.copy(alpha = 0.3f),
+                        palette.ink.copy(alpha = 0.3f),
                         Offset(p.x, p.y),
                         Offset(p.x, bottom),
                         strokeWidth = 1.5.dp.toPx(),
                         pathEffect = PathEffect.dashPathEffect(floatArrayOf(8f, 8f))
                     )
                     drawCircle(color.copy(alpha = 0.25f), 11.dp.toPx(), p)
-                    drawCircle(Color.White, 6.dp.toPx(), p)
+                    drawCircle(palette.card, 6.dp.toPx(), p)
                     drawCircle(color.darker(), 4.dp.toPx(), p)
                     val t = measurer.measure(hours[i].label(metric, score), bubbleStyle)
                     val bw = t.size.width + 16.dp.toPx()
                     val bh = t.size.height + 8.dp.toPx()
                     val bx = (p.x - bw / 2).coerceIn(0f, size.width - bw)
                     val by = (p.y - bh - 14.dp.toPx()).coerceAtLeast(0f)
-                    drawRoundRect(Navy, Offset(bx, by), Size(bw, bh), CornerRadius(bh / 2))
+                    drawRoundRect(palette.bubble, Offset(bx, by), Size(bw, bh), CornerRadius(bh / 2))
                     drawText(t, topLeft = Offset(bx + 8.dp.toPx(), by + 4.dp.toPx()))
                 }
             }
@@ -451,7 +456,7 @@ private fun ForecastChart(
                         Text(
                             h.hourLabel,
                             style = MaterialTheme.typography.labelMedium,
-                            color = if (h.time == selectedTime) Navy else NavySoft,
+                            color = if (h.time == selectedTime) palette.ink else palette.inkSoft,
                             fontWeight = if (h.time == selectedTime) FontWeight.ExtraBold else FontWeight.Medium
                         )
                     }
@@ -492,8 +497,9 @@ private fun DayCell(day: DailySummary, today: String, selected: Boolean, low: Do
     val description = "${dayName(day.date, today, full = true)}, ${day.condition.label}, en yüksek ${day.temperatureMax.deg()}°, " +
         "en düşük ${day.temperatureMin.deg()}°" + (day.precipitationProbabilityMax?.let { ", yağış ihtimali yüzde $it" } ?: "")
     val shape = RoundedCornerShape(22.dp)
-    val text = if (selected) Color.White else Navy
-    val soft = if (selected) Color.White.copy(alpha = 0.8f) else NavySoft
+    val palette = Hava.p
+    val text = if (selected) Color.White else palette.ink
+    val soft = if (selected) Color.White.copy(alpha = 0.8f) else palette.inkSoft
     Column(
         Modifier
             .width(72.dp)
@@ -503,7 +509,7 @@ private fun DayCell(day: DailySummary, today: String, selected: Boolean, low: Do
                         .shadow(8.dp, shape, ambientColor = HavaBlue.copy(alpha = 0.4f), spotColor = HavaBlue.copy(alpha = 0.4f))
                         .background(Brush.verticalGradient(listOf(Color(0xFF3D82FF), HavaBlueDeep)), shape)
                 } else {
-                    Modifier.background(SkyTint.copy(alpha = 0.6f), shape)
+                    Modifier.background(palette.cardTint.copy(alpha = 0.6f), shape)
                 }
             )
             .selectable(selected = selected, role = Role.Tab, onClick = onClick)
@@ -515,7 +521,7 @@ private fun DayCell(day: DailySummary, today: String, selected: Boolean, low: Do
     ) {
         Text(name, style = MaterialTheme.typography.titleSmall, color = text, fontWeight = FontWeight.ExtraBold)
         Box(
-            Modifier.size(38.dp).background(if (selected) Color.White.copy(alpha = 0.18f) else Color.White, CircleShape),
+            Modifier.size(38.dp).background(if (selected) Color.White.copy(alpha = 0.18f) else palette.card, CircleShape),
             contentAlignment = Alignment.Center
         ) {
             WeatherIcon(day.condition, isDay = true, size = 30.dp)
@@ -538,7 +544,7 @@ private fun DayCell(day: DailySummary, today: String, selected: Boolean, low: Do
         // Where this day's range sits in the whole period, cool blue to warm yellow
         Canvas(Modifier.width(44.dp).height(5.dp)) {
             val r = size.height / 2
-            drawRoundRect(if (selected) Color.White.copy(alpha = 0.25f) else Navy.copy(alpha = 0.08f), cornerRadius = CornerRadius(r))
+            drawRoundRect(if (selected) Color.White.copy(alpha = 0.25f) else palette.line, cornerRadius = CornerRadius(r))
             val from = ((day.temperatureMin - low) / (high - low)).toFloat().coerceIn(0f, 1f)
             val to = ((day.temperatureMax - low) / (high - low)).toFloat().coerceIn(from, 1f)
             drawRoundRect(
@@ -586,7 +592,7 @@ private fun ForecastDatePicker(forecast: Forecast, selected: String, onDismiss: 
         Text(
             "Tahmin ${dates.size} gün ileriyi gösteriyor; sonraki günler henüz seçilemez.",
             style = MaterialTheme.typography.bodySmall,
-            color = NavySoft,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
         )
     }

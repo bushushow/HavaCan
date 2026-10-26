@@ -64,8 +64,12 @@ import com.kampplus.havacan.data.ActivityInterest
 import com.kampplus.havacan.data.OutfitStyle
 import com.kampplus.havacan.data.ProfilePrefs
 import com.kampplus.havacan.model.TemperatureUnit
+import com.kampplus.havacan.ui.common.OnSky
+import com.kampplus.havacan.ui.common.OnSkySoft
+import com.kampplus.havacan.ui.common.SkyHeader
 import com.kampplus.havacan.ui.home.components.SoftCard
 import com.kampplus.havacan.ui.plans.PlanNotifications
+import com.kampplus.havacan.ui.theme.Hava
 import com.kampplus.havacan.ui.theme.HavaBlue
 import com.kampplus.havacan.ui.theme.HavaBlueLight
 import com.kampplus.havacan.ui.theme.Navy
@@ -77,12 +81,14 @@ import com.kampplus.havacan.ui.voice.hasMicrophonePermission
 @Composable
 private fun SubPage(title: String, onBack: () -> Unit, content: @Composable ColumnScope.() -> Unit) {
     Column(
-        Modifier.fillMaxSize().statusBarsPadding().verticalScroll(rememberScrollState()).padding(horizontal = 20.dp),
+        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 20.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
-        Row(Modifier.padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = onBack) { Icon(painterResource(R.drawable.ic_arrow_back), "Profile dön", tint = Navy) }
-            Text(title, style = MaterialTheme.typography.headlineSmall, color = Navy, modifier = Modifier.semantics { heading() })
+        SkyHeader(bleed = 20.dp) {
+            Row(Modifier.padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                IconButton(onClick = onBack) { Icon(painterResource(R.drawable.ic_arrow_back), "Profile dön", tint = OnSky) }
+                Text(title, style = MaterialTheme.typography.headlineSmall, color = OnSky, modifier = Modifier.semantics { heading() })
+            }
         }
         content()
         Spacer(Modifier.height(110.dp))
@@ -90,7 +96,7 @@ private fun SubPage(title: String, onBack: () -> Unit, content: @Composable Colu
 }
 
 @Composable
-private fun Note(text: String, color: androidx.compose.ui.graphics.Color = NavySoft) {
+private fun Note(text: String, color: androidx.compose.ui.graphics.Color = Hava.inkSoft) {
     Text(text, style = MaterialTheme.typography.bodyMedium, color = color)
 }
 
@@ -107,8 +113,13 @@ private fun SwitchRow(title: String, body: String?, checked: Boolean, enabled: B
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Column(Modifier.weight(1f)) {
-            Text(title, style = MaterialTheme.typography.titleMedium, color = if (enabled) Navy else NavySoft, fontWeight = FontWeight.Bold)
-            body?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = NavySoft) }
+            Text(
+                title,
+                style = MaterialTheme.typography.titleMedium,
+                color = if (enabled) Hava.ink else Hava.inkSoft,
+                fontWeight = FontWeight.Bold
+            )
+            body?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Hava.inkSoft) }
         }
         Switch(checked = checked, onCheckedChange = null, enabled = enabled, colors = SwitchDefaults.colors(checkedTrackColor = HavaBlue))
     }
@@ -146,7 +157,7 @@ internal fun CityUnitsPage(prefs: ProfilePrefs, hooks: ProfileHooks, onBack: () 
                         Text(
                             "${unit.label} (${unit.symbol})",
                             style = MaterialTheme.typography.titleMedium,
-                            color = Navy,
+                            color = Hava.ink,
                             modifier = Modifier.padding(start = 12.dp)
                         )
                     }
@@ -172,7 +183,7 @@ private fun <T> ChipPicker(options: List<T>, selected: Set<T>, label: (T) -> Str
                 onClick = { onToggle(option) },
                 label = { Text(label(option), style = MaterialTheme.typography.titleSmall) },
                 leadingIcon = if (on) ({ Icon(painterResource(R.drawable.ic_check), null) }) else null,
-                colors = FilterChipDefaults.filterChipColors(selectedContainerColor = HavaBlueLight, selectedLabelColor = Navy),
+                colors = FilterChipDefaults.filterChipColors(selectedContainerColor = HavaBlueLight, selectedLabelColor = Hava.ink),
                 modifier = Modifier.heightIn(min = 48.dp)
             )
         }
@@ -310,7 +321,7 @@ internal fun AccessibilityPage(
                 Text(
                     "Ekran okuyucu (TalkBack): ${if (screenReader) "açık" else "kapalı"}",
                     style = MaterialTheme.typography.titleMedium,
-                    color = Navy,
+                    color = Hava.ink,
                     fontWeight = FontWeight.Bold
                 )
                 Note("TalkBack ve Android'in yazı boyutu telefon ayarlarından açılıp kapanır; HavaCan bunları değiştiremez.")
@@ -348,7 +359,7 @@ internal fun AccessibilityPage(
                         Text(
                             stringResource(R.string.voice_howto_title),
                             style = MaterialTheme.typography.titleSmall,
-                            color = Navy,
+                            color = Hava.ink,
                             fontWeight = FontWeight.Bold
                         )
                         Note(stringResource(R.string.voice_howto_body))

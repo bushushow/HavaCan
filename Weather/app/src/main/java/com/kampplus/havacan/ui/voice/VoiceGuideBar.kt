@@ -70,6 +70,7 @@ import androidx.compose.ui.unit.round
 import com.kampplus.havacan.R
 import com.kampplus.havacan.ui.home.character.drawHavaCanFace
 import com.kampplus.havacan.ui.home.rememberReduceMotion
+import com.kampplus.havacan.ui.theme.Hava
 import com.kampplus.havacan.ui.theme.HavaBlue
 import com.kampplus.havacan.ui.theme.Navy
 import com.kampplus.havacan.ui.theme.NavySoft
@@ -247,13 +248,13 @@ private fun SessionBar(state: VoiceGuideState, onMic: () -> Unit, onStop: () -> 
             }
             Column(Modifier.weight(1f)) {
                 // Status for sighted users; TalkBack gets the mic button's state and the spoken answer instead
-                Text(status, style = MaterialTheme.typography.titleSmall, color = Navy, fontWeight = FontWeight.ExtraBold)
+                Text(status, style = MaterialTheme.typography.titleSmall, color = Hava.ink, fontWeight = FontWeight.ExtraBold)
                 val detail = state.notice ?: state.heard.takeIf { it.isNotBlank() }?.let { "“$it”" }
                 if (detail != null) {
                     Text(
                         detail,
                         style = MaterialTheme.typography.bodyMedium,
-                        color = if (state.notice != null) RiskRed else NavySoft,
+                        color = if (state.notice != null) RiskRed else Hava.inkSoft,
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis
                     )

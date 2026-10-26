@@ -68,10 +68,14 @@ import com.kampplus.havacan.model.PlanSource
 import com.kampplus.havacan.model.PlanType
 import com.kampplus.havacan.model.Reminder
 import com.kampplus.havacan.model.WeatherCondition
+import com.kampplus.havacan.ui.common.OnSky
+import com.kampplus.havacan.ui.common.OnSkySoft
+import com.kampplus.havacan.ui.common.SkyHeader
 import com.kampplus.havacan.ui.home.character.HavaCanArt
 import com.kampplus.havacan.ui.home.character.HavaCanPoseStyle
 import com.kampplus.havacan.ui.home.components.SoftCard
 import com.kampplus.havacan.ui.home.components.WeatherIcon
+import com.kampplus.havacan.ui.theme.Hava
 import com.kampplus.havacan.ui.theme.HavaBlue
 import com.kampplus.havacan.ui.theme.HavaBlueLight
 import com.kampplus.havacan.ui.theme.Navy
@@ -122,33 +126,35 @@ fun PlanEditorScreen(
     Column(
         Modifier
             .fillMaxSize()
-            .statusBarsPadding()
             .verticalScroll(rememberScrollState())
             .navigationBarsPadding()
             .padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Box(Modifier.fillMaxWidth().height(96.dp)) {
-            Row(Modifier.align(Alignment.CenterStart), verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = onBack) { Icon(painterResource(R.drawable.ic_arrow_back), stringResource(R.string.back), tint = Navy) }
-                Text(
-                    stringResource(if (isNew) R.string.new_plan else R.string.edit_plan),
-                    style = MaterialTheme.typography.titleLarge,
-                    color = Navy
-                )
+        SkyHeader(bleed = 16.dp) {
+            Box(Modifier.fillMaxWidth().height(96.dp)) {
+                Row(Modifier.align(Alignment.CenterStart), verticalAlignment = Alignment.CenterVertically) {
+                    IconButton(onClick = onBack) {
+                        Icon(painterResource(R.drawable.ic_arrow_back), stringResource(R.string.back), tint = OnSky)
+                    }
+                    Text(
+                        stringResource(if (isNew) R.string.new_plan else R.string.edit_plan),
+                        style = MaterialTheme.typography.titleLarge,
+                        color = OnSky
+                    )
+                }
+                HavaCanArt(HavaCanPoseStyle.Peek, clock, Modifier.align(Alignment.TopEnd).size(110.dp, 90.dp))
             }
-            HavaCanArt(HavaCanPoseStyle.Peek, clock, Modifier.align(Alignment.TopEnd).size(110.dp, 90.dp))
+            Column(Modifier.padding(start = 4.dp)) {
+                Text(
+                    stringResource(R.string.new_plan_headline),
+                    style = MaterialTheme.typography.headlineLarge,
+                    color = OnSky,
+                    modifier = Modifier.semantics { heading() }
+                )
+                Text(stringResource(R.string.new_plan_sub), style = MaterialTheme.typography.bodyLarge, color = OnSkySoft)
+            }
         }
-        Column(Modifier.padding(start = 4.dp)) {
-            Text(
-                stringResource(R.string.new_plan_headline),
-                style = MaterialTheme.typography.headlineLarge,
-                color = Navy,
-                modifier = Modifier.semantics { heading() }
-            )
-            Text(stringResource(R.string.new_plan_sub), style = MaterialTheme.typography.bodyLarge, color = NavySoft)
-        }
-
         FormField(stringResource(R.string.field_title)) {
             OutlinedTextField(
                 value = title,
@@ -157,7 +163,7 @@ fun PlanEditorScreen(
                     error = null
                 },
                 placeholder = { Text(stringResource(R.string.field_title_hint)) },
-                trailingIcon = { Icon(painterResource(R.drawable.ic_edit), null, tint = NavySoft) },
+                trailingIcon = { Icon(painterResource(R.drawable.ic_edit), null, tint = Hava.inkSoft) },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
                 colors = plainFieldColors(),
@@ -205,7 +211,7 @@ fun PlanEditorScreen(
         Text(
             stringResource(R.string.field_type),
             style = MaterialTheme.typography.titleMedium,
-            color = NavySoft,
+            color = Hava.inkSoft,
             modifier = Modifier.padding(start = 4.dp, top = 4.dp)
         )
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -215,10 +221,10 @@ fun PlanEditorScreen(
                     Modifier
                         .weight(1f)
                         .clip(RoundedCornerShape(18.dp))
-                        .background(if (selected) HavaBlueLight else Color.White)
+                        .background(if (selected) Hava.p.blueTint else Hava.card)
                         .border(
                             if (selected) 1.5.dp else 1.dp,
-                            if (selected) HavaBlue else Navy.copy(alpha = 0.1f),
+                            if (selected) HavaBlue else Hava.ink.copy(alpha = 0.1f),
                             RoundedCornerShape(18.dp)
                         )
                         .selectable(selected = selected, role = Role.RadioButton) { type = option }
@@ -232,13 +238,13 @@ fun PlanEditorScreen(
                         PlanType.Indoor -> Icon(
                             painterResource(R.drawable.ic_home),
                             null,
-                            tint = if (selected) HavaBlue else NavySoft,
+                            tint = if (selected) HavaBlue else Hava.inkSoft,
                             modifier = Modifier.size(22.dp)
                         )
                         PlanType.Travel -> Icon(
                             painterResource(R.drawable.ic_car),
                             null,
-                            tint = if (selected) HavaBlue else NavySoft,
+                            tint = if (selected) HavaBlue else Hava.inkSoft,
                             modifier = Modifier.size(22.dp)
                         )
                     }
@@ -246,14 +252,14 @@ fun PlanEditorScreen(
                     Text(
                         option.label,
                         style = MaterialTheme.typography.labelLarge,
-                        color = if (selected) HavaBlue else NavySoft,
+                        color = if (selected) HavaBlue else Hava.inkSoft,
                         maxLines = 1
                     )
                 }
             }
         }
 
-        SoftCard(background = androidx.compose.ui.graphics.SolidColor(HavaBlueLight)) {
+        SoftCard(background = androidx.compose.ui.graphics.SolidColor(Hava.p.blueTint)) {
             Row(
                 Modifier
                     .toggleable(value = follow, role = Role.Switch) { follow = it }
@@ -263,8 +269,8 @@ fun PlanEditorScreen(
                 WeatherIcon(WeatherCondition.PartlyCloudy, true, size = 40.dp)
                 Spacer(Modifier.width(12.dp))
                 Column(Modifier.weight(1f)) {
-                    Text(stringResource(R.string.follow_title), style = MaterialTheme.typography.titleMedium, color = Navy)
-                    Text(stringResource(R.string.follow_body), style = MaterialTheme.typography.bodyMedium, color = NavySoft)
+                    Text(stringResource(R.string.follow_title), style = MaterialTheme.typography.titleMedium, color = Hava.ink)
+                    Text(stringResource(R.string.follow_body), style = MaterialTheme.typography.bodyMedium, color = Hava.inkSoft)
                 }
                 Switch(checked = follow, onCheckedChange = null)
             }
@@ -279,10 +285,10 @@ fun PlanEditorScreen(
                     Icon(painterResource(R.drawable.ic_bell), null, tint = HavaBlue)
                     Spacer(Modifier.width(12.dp))
                     Column(Modifier.weight(1f)) {
-                        Text(stringResource(R.string.reminder), style = MaterialTheme.typography.bodySmall, color = NavySoft)
-                        Text(reminder.label, style = MaterialTheme.typography.titleMedium, color = Navy)
+                        Text(stringResource(R.string.reminder), style = MaterialTheme.typography.bodySmall, color = Hava.inkSoft)
+                        Text(reminder.label, style = MaterialTheme.typography.titleMedium, color = Hava.ink)
                     }
-                    Icon(painterResource(R.drawable.ic_chevron_right), null, tint = Navy)
+                    Icon(painterResource(R.drawable.ic_chevron_right), null, tint = Hava.ink)
                 }
             }
             DropdownMenu(expanded = showReminders, onDismissRequest = { showReminders = false }) {
@@ -302,15 +308,19 @@ fun PlanEditorScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Box(
-                        Modifier.size(44.dp).clip(RoundedCornerShape(12.dp)).background(HavaBlueLight),
+                        Modifier.size(44.dp).clip(RoundedCornerShape(12.dp)).background(Hava.p.blueTint),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(painterResource(R.drawable.ic_calendar), null, tint = HavaBlue)
                     }
                     Spacer(Modifier.width(12.dp))
                     Column(Modifier.weight(1f)) {
-                        Text(stringResource(R.string.add_to_calendar), style = MaterialTheme.typography.titleMedium, color = Navy)
-                        Text(stringResource(R.string.add_to_calendar_body), style = MaterialTheme.typography.bodySmall, color = NavySoft)
+                        Text(stringResource(R.string.add_to_calendar), style = MaterialTheme.typography.titleMedium, color = Hava.ink)
+                        Text(
+                            stringResource(R.string.add_to_calendar_body),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Hava.inkSoft
+                        )
                     }
                     Checkbox(checked = addToCalendar, onCheckedChange = null)
                 }
@@ -417,7 +427,7 @@ fun PlanEditorScreen(
 private fun FormField(label: String, content: @Composable () -> Unit) {
     SoftCard {
         Column(Modifier.padding(start = 4.dp, end = 4.dp, top = 10.dp, bottom = 4.dp)) {
-            Text(label, style = MaterialTheme.typography.bodySmall, color = NavySoft, modifier = Modifier.padding(start = 12.dp))
+            Text(label, style = MaterialTheme.typography.bodySmall, color = Hava.inkSoft, modifier = Modifier.padding(start = 12.dp))
             content()
         }
     }
@@ -432,8 +442,8 @@ private fun PickerField(label: String, value: String, icon: Int, modifier: Modif
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column(Modifier.weight(1f)) {
-                    Text(label, style = MaterialTheme.typography.bodySmall, color = NavySoft)
-                    Text(value, style = MaterialTheme.typography.titleMedium, color = Navy, maxLines = 1)
+                    Text(label, style = MaterialTheme.typography.bodySmall, color = Hava.inkSoft)
+                    Text(value, style = MaterialTheme.typography.titleMedium, color = Hava.ink, maxLines = 1)
                 }
                 Icon(painterResource(icon), null, tint = HavaBlue)
             }

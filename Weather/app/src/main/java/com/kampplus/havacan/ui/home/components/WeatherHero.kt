@@ -28,6 +28,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.contentDescription
@@ -45,6 +46,7 @@ import com.kampplus.havacan.ui.theme.HavaBlue
 import com.kampplus.havacan.ui.theme.HavaBlueLight
 import com.kampplus.havacan.ui.theme.Navy
 import com.kampplus.havacan.ui.theme.NavySoft
+import com.kampplus.havacan.ui.theme.Sun
 import kotlin.math.roundToInt
 
 /** Big temperature and the facts around it, for "now" or the hour picked in the strip. */
@@ -97,18 +99,18 @@ fun WeatherHero(state: HomeUiState, onRetry: () -> Unit, modifier: Modifier = Mo
                     Text(
                         stringResource(R.string.temperature, value),
                         style = MaterialTheme.typography.displayLarge.copy(fontSize = 68.sp, lineHeight = 70.sp),
-                        color = Navy,
+                        color = Color.White,
                         maxLines = 1,
                         modifier = Modifier.semantics { heading() }
                     )
                 }
                 AnimatedContent(targetState = condition.label, label = "condition") { label ->
-                    Text(label, style = MaterialTheme.typography.titleLarge, color = Navy, maxLines = 2)
+                    Text(label, style = MaterialTheme.typography.titleLarge, color = Color.White, maxLines = 2)
                 }
                 Text(
                     stringResource(R.string.feels_like, feels.deg()),
                     style = MaterialTheme.typography.bodyLarge,
-                    color = NavySoft
+                    color = Color.White.copy(alpha = 0.85f)
                 )
                 // High and low of the day being shown (today, or the day picked on the forecast card)
                 val shownDate = if (isNow) forecast.todayDate else hour!!.date
@@ -119,7 +121,7 @@ fun WeatherHero(state: HomeUiState, onRetry: () -> Unit, modifier: Modifier = Mo
                         stringResource(R.string.high_low, today.temperatureMax.deg(), today.temperatureMin.deg()),
                         modifier = Modifier.semantics { contentDescription = highLow },
                         style = MaterialTheme.typography.titleMedium,
-                        color = Navy
+                        color = Color.White
                     )
                 }
             }
@@ -152,8 +154,8 @@ private fun HeroPlaceholder() {
 @Composable
 private fun HeroMessage(title: String, detail: String?, onRetry: () -> Unit) {
     Column(Modifier.padding(top = 26.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(title, style = MaterialTheme.typography.headlineSmall, color = Navy)
-        if (detail != null) Text(detail, style = MaterialTheme.typography.bodyMedium, color = NavySoft)
+        Text(title, style = MaterialTheme.typography.headlineSmall, color = Color.White)
+        if (detail != null) Text(detail, style = MaterialTheme.typography.bodyMedium, color = Color.White.copy(alpha = 0.85f))
         Button(onClick = onRetry) { Text(stringResource(R.string.retry)) }
     }
 }

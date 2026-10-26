@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import com.kampplus.havacan.ui.theme.Hava
 import com.kampplus.havacan.ui.theme.SkyTint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -38,6 +39,6 @@ fun LocalImage(path: String, contentDescription: String?, modifier: Modifier = M
     if (bitmap != null) {
         Image(bitmap, contentDescription, modifier, contentScale = ContentScale.Crop)
     } else {
-        Box(modifier.background(SkyTint))
+        Box(modifier.background(Hava.cardTint))
     }
 }

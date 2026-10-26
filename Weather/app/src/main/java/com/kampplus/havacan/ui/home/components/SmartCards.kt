@@ -42,6 +42,7 @@ import com.kampplus.havacan.domain.insight.WeatherInsight
 import com.kampplus.havacan.domain.running.RunningAdvice
 import com.kampplus.havacan.model.HourlyWeather
 import com.kampplus.havacan.model.deg
+import com.kampplus.havacan.ui.theme.Hava
 import com.kampplus.havacan.ui.theme.HavaBlue
 import com.kampplus.havacan.ui.theme.Navy
 import com.kampplus.havacan.ui.theme.NavySoft
@@ -76,7 +77,7 @@ fun WeatherInsightCard(insight: WeatherInsight, clock: () -> Float, onShowHour: 
         )
     }
     val rainy = insight !is WeatherInsight.Dry
-    SoftCard(modifier, background = CardGradient) {
+    SoftCard(modifier, background = Hava.p.highlight) {
         Row(
             Modifier.heightIn(min = 160.dp).padding(start = 20.dp, top = 18.dp, bottom = 18.dp),
             verticalAlignment = Alignment.CenterVertically
@@ -84,11 +85,11 @@ fun WeatherInsightCard(insight: WeatherInsight, clock: () -> Float, onShowHour: 
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text(title, style = MaterialTheme.typography.titleMedium, color = HavaBlue)
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(painterResource(R.drawable.ic_schedule), null, tint = Navy, modifier = Modifier.size(18.dp))
+                    Icon(painterResource(R.drawable.ic_schedule), null, tint = Hava.ink, modifier = Modifier.size(18.dp))
                     Spacer(Modifier.width(6.dp))
-                    Text(line, style = MaterialTheme.typography.bodyLarge, color = Navy)
+                    Text(line, style = MaterialTheme.typography.bodyLarge, color = Hava.ink)
                 }
-                Text(headline, style = MaterialTheme.typography.headlineSmall, color = Navy)
+                Text(headline, style = MaterialTheme.typography.headlineSmall, color = Hava.ink)
                 Spacer(Modifier.height(4.dp))
                 PillButton(stringResource(R.string.insight_show_hour), null) { onShowHour(hour) }
             }
@@ -108,7 +109,7 @@ fun WeatherInsightCard(insight: WeatherInsight, clock: () -> Float, onShowHour: 
 /** Runner mode card: the best window computed from the real hourly forecast, or an honest "none". */
 @Composable
 fun RunnerInsightCard(advice: RunningAdvice, clock: () -> Float, onPlan: () -> Unit, onInspect: () -> Unit, modifier: Modifier = Modifier) {
-    SoftCard(modifier, background = CardGradient) {
+    SoftCard(modifier, background = Hava.p.highlight) {
         Row(
             Modifier.heightIn(min = 120.dp).padding(start = 18.dp, top = 14.dp, bottom = 14.dp),
             verticalAlignment = Alignment.CenterVertically
@@ -117,15 +118,15 @@ fun RunnerInsightCard(advice: RunningAdvice, clock: () -> Float, onPlan: () -> U
                 when (advice) {
                     is RunningAdvice.BestWindow -> {
                         Text(stringResource(R.string.runner_best_title), style = MaterialTheme.typography.titleMedium, color = HavaBlue)
-                        Text(advice.window.rangeLabel, style = MaterialTheme.typography.headlineMedium, color = Navy, maxLines = 1)
-                        Text(advice.window.reasons.joinToString(" • "), style = MaterialTheme.typography.bodyMedium, color = NavySoft)
+                        Text(advice.window.rangeLabel, style = MaterialTheme.typography.headlineMedium, color = Hava.ink, maxLines = 1)
+                        Text(advice.window.reasons.joinToString(" • "), style = MaterialTheme.typography.bodyMedium, color = Hava.inkSoft)
                         Spacer(Modifier.height(4.dp))
                         PillButton(stringResource(R.string.runner_plan), R.drawable.ic_run, onPlan)
                     }
                     is RunningAdvice.NoGoodTime -> {
                         Text(stringResource(R.string.runner_none_title), style = MaterialTheme.typography.titleMedium, color = HavaBlue)
-                        Text(stringResource(R.string.runner_none_detail), style = MaterialTheme.typography.titleLarge, color = Navy)
-                        advice.mainBlocker?.let { Text(it.message, style = MaterialTheme.typography.bodyLarge, color = NavySoft) }
+                        Text(stringResource(R.string.runner_none_detail), style = MaterialTheme.typography.titleLarge, color = Hava.ink)
+                        advice.mainBlocker?.let { Text(it.message, style = MaterialTheme.typography.bodyLarge, color = Hava.inkSoft) }
                         Spacer(Modifier.height(4.dp))
                         PillButton(stringResource(R.string.runner_inspect), null, onInspect)
                     }
@@ -154,7 +155,7 @@ fun SallaKombinCard(runner: Boolean, wiggleSignal: Int, clock: () -> Float, onCl
         wiggle.animateTo(0f, spring(dampingRatio = 0.18f, stiffness = 260f))
     }
     val subtitle = stringResource(if (runner) R.string.salla_runner else R.string.salla_normal)
-    SoftCard(modifier, background = Brush.horizontalGradient(listOf(SunLight, Color(0xFFFFF9E3)))) {
+    SoftCard(modifier, background = Hava.p.sallaCard) {
         Row(
             Modifier
                 .clickable(role = Role.Button, onClick = onClick)
@@ -163,8 +164,8 @@ fun SallaKombinCard(runner: Boolean, wiggleSignal: Int, clock: () -> Float, onCl
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(Modifier.weight(1f)) {
-                Text(stringResource(R.string.salla_title), style = MaterialTheme.typography.titleLarge, color = Navy)
-                Text(subtitle, style = MaterialTheme.typography.bodyMedium, color = NavySoft)
+                Text(stringResource(R.string.salla_title), style = MaterialTheme.typography.titleLarge, color = Hava.ink)
+                Text(subtitle, style = MaterialTheme.typography.bodyMedium, color = Hava.inkSoft)
             }
             Canvas(Modifier.width(72.dp).fillMaxHeight().heightIn(min = 76.dp)) {
                 val t = clock()
@@ -174,11 +175,11 @@ fun SallaKombinCard(runner: Boolean, wiggleSignal: Int, clock: () -> Float, onCl
             Box(
                 Modifier
                     .size(40.dp)
-                    .background(Color.White.copy(alpha = 0.7f), CircleShape),
+                    .background(Hava.card.copy(alpha = 0.7f), CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 // The whole card is the button; the chevron is decoration
-                Icon(painterResource(R.drawable.ic_chevron_right), null, tint = Navy)
+                Icon(painterResource(R.drawable.ic_chevron_right), null, tint = Hava.ink)
             }
         }
     }

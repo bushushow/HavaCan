@@ -43,10 +43,14 @@ import androidx.compose.ui.unit.dp
 import com.kampplus.havacan.R
 import com.kampplus.havacan.data.wardrobe.ClothingCategory
 import com.kampplus.havacan.data.wardrobe.ClothingItem
+import com.kampplus.havacan.ui.common.OnSky
+import com.kampplus.havacan.ui.common.OnSkySoft
+import com.kampplus.havacan.ui.common.SkyHeader
 import com.kampplus.havacan.ui.home.character.HavaCanArt
 import com.kampplus.havacan.ui.home.character.HavaCanPoseStyle
 import com.kampplus.havacan.ui.home.components.HavaCanLogo
 import com.kampplus.havacan.ui.home.components.SoftCard
+import com.kampplus.havacan.ui.theme.Hava
 import com.kampplus.havacan.ui.theme.HavaBlue
 import com.kampplus.havacan.ui.theme.Navy
 import com.kampplus.havacan.ui.theme.NavySoft
@@ -67,31 +71,31 @@ fun WardrobeScreen(
     Column(
         Modifier
             .fillMaxSize()
-            .statusBarsPadding()
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
-        Row(Modifier.fillMaxWidth().padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-            HavaCanLogo(Modifier.padding(start = 4.dp))
+        SkyHeader(bleed = 16.dp) {
+            Row(Modifier.fillMaxWidth().padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                HavaCanLogo(Modifier.padding(start = 4.dp))
+            }
+            Row(Modifier.padding(start = 4.dp), verticalAlignment = Alignment.Bottom) {
+                Text(
+                    stringResource(R.string.nav_wardrobe),
+                    style = MaterialTheme.typography.displaySmall,
+                    color = OnSky,
+                    modifier = Modifier.weight(1f).semantics {
+                        heading()
+                    }
+                )
+                Text(
+                    stringResource(R.string.wardrobe_count, totalCount),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = OnSkySoft,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+            }
         }
-        Row(Modifier.padding(start = 4.dp), verticalAlignment = Alignment.Bottom) {
-            Text(
-                stringResource(R.string.nav_wardrobe),
-                style = MaterialTheme.typography.displaySmall,
-                color = Navy,
-                modifier = Modifier.weight(1f).semantics {
-                    heading()
-                }
-            )
-            Text(
-                stringResource(R.string.wardrobe_count, totalCount),
-                style = MaterialTheme.typography.titleMedium,
-                color = NavySoft,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-        }
-
         SallaCard(clock, onMakeOutfit)
 
         Button(
@@ -116,7 +120,7 @@ fun WardrobeScreen(
             state.items.isEmpty() -> Text(
                 stringResource(R.string.filter_empty),
                 style = MaterialTheme.typography.bodyLarge,
-                color = NavySoft
+                color = Hava.inkSoft
             )
             else -> state.items.chunked(2).forEach { row ->
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -130,7 +134,7 @@ fun WardrobeScreen(
             Text(
                 stringResource(R.string.saved_outfits),
                 style = MaterialTheme.typography.titleLarge,
-                color = Navy,
+                color = Hava.ink,
                 modifier = Modifier.padding(start = 4.dp, top = 6.dp).semantics {
                     heading()
                 }
@@ -145,13 +149,13 @@ fun WardrobeScreen(
                         Text(
                             saved.outfit.reason,
                             style = MaterialTheme.typography.bodySmall,
-                            color = NavySoft,
+                            color = Hava.inkSoft,
                             maxLines = 3,
                             overflow = TextOverflow.Ellipsis,
                             modifier = Modifier.weight(1f).padding(start = 4.dp)
                         )
                         IconButton(onClick = { onDeleteOutfit(saved.outfit.id) }) {
-                            Icon(painterResource(R.drawable.ic_clear), stringResource(R.string.delete_outfit), tint = NavySoft)
+                            Icon(painterResource(R.drawable.ic_clear), stringResource(R.string.delete_outfit), tint = Hava.inkSoft)
                         }
                     }
                 }
@@ -163,14 +167,14 @@ fun WardrobeScreen(
 
 @Composable
 private fun SallaCard(clock: () -> Float, onClick: () -> Unit) {
-    SoftCard(background = Brush.horizontalGradient(listOf(SunLight, Color(0xFFFFF9E3)))) {
+    SoftCard(background = Hava.p.sallaCard) {
         Row(
             Modifier.clickable(role = Role.Button, onClick = onClick).padding(start = 20.dp, top = 16.dp, bottom = 16.dp, end = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text(stringResource(R.string.salla_title), style = MaterialTheme.typography.headlineSmall, color = Navy)
-                Text(stringResource(R.string.salla_hint), style = MaterialTheme.typography.bodyMedium, color = NavySoft)
+                Text(stringResource(R.string.salla_title), style = MaterialTheme.typography.headlineSmall, color = Hava.ink)
+                Text(stringResource(R.string.salla_hint), style = MaterialTheme.typography.bodyMedium, color = Hava.inkSoft)
             }
             HavaCanArt(HavaCanPoseStyle.Cheer, clock, Modifier.size(96.dp))
         }
@@ -182,10 +186,10 @@ private fun FilterChip(text: String, selected: Boolean, onClick: () -> Unit) {
     Text(
         text,
         style = MaterialTheme.typography.labelLarge,
-        color = if (selected) Color.White else NavySoft,
+        color = if (selected) Color.White else Hava.inkSoft,
         modifier = Modifier
             .clip(CircleShape)
-            .background(if (selected) HavaBlue else Color.White)
+            .background(if (selected) HavaBlue else Hava.card)
             .selectable(selected = selected, role = Role.Tab, onClick = onClick)
             .padding(horizontal = 14.dp, vertical = 9.dp)
     )
@@ -197,11 +201,17 @@ private fun ItemCard(item: ClothingItem, modifier: Modifier, onClick: () -> Unit
         Column(Modifier.clickable(role = Role.Button, onClick = onClick)) {
             LocalImage(item.photoPath, item.name, Modifier.fillMaxWidth().aspectRatio(1f), maxSide = 480)
             Column(Modifier.padding(12.dp)) {
-                Text(item.name, style = MaterialTheme.typography.titleSmall, color = Navy, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(
+                    item.name,
+                    style = MaterialTheme.typography.titleSmall,
+                    color = Hava.ink,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
                 Text(
                     "${item.category.label} · ${item.colorName}",
                     style = MaterialTheme.typography.bodySmall,
-                    color = NavySoft,
+                    color = Hava.inkSoft,
                     maxLines = 1
                 )
             }
@@ -214,8 +224,8 @@ private fun EmptyWardrobe(clock: () -> Float) {
     SoftCard {
         Row(Modifier.padding(20.dp), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
-                Text(stringResource(R.string.wardrobe_empty_title), style = MaterialTheme.typography.titleLarge, color = Navy)
-                Text(stringResource(R.string.wardrobe_empty_body), style = MaterialTheme.typography.bodyLarge, color = NavySoft)
+                Text(stringResource(R.string.wardrobe_empty_title), style = MaterialTheme.typography.titleLarge, color = Hava.ink)
+                Text(stringResource(R.string.wardrobe_empty_body), style = MaterialTheme.typography.bodyLarge, color = Hava.inkSoft)
             }
             HavaCanArt(HavaCanPoseStyle.Cheer, clock, Modifier.size(90.dp))
         }

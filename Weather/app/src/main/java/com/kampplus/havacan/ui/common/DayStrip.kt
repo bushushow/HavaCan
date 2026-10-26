@@ -42,6 +42,7 @@ import com.kampplus.havacan.model.WeatherCondition
 import com.kampplus.havacan.ui.home.components.SoftCard
 import com.kampplus.havacan.ui.home.components.WeatherIcon
 import com.kampplus.havacan.ui.plans.capitalizeTr
+import com.kampplus.havacan.ui.theme.Hava
 import com.kampplus.havacan.ui.theme.HavaBlue
 import com.kampplus.havacan.ui.theme.Navy
 import com.kampplus.havacan.ui.theme.NavySoft
@@ -79,7 +80,7 @@ fun DayStrip(
     SoftCard {
         Column(Modifier.padding(top = 14.dp, bottom = 12.dp)) {
             Row(Modifier.padding(horizontal = 18.dp), verticalAlignment = Alignment.CenterVertically) {
-                Text(title, style = MaterialTheme.typography.titleSmall, color = NavySoft, modifier = Modifier.weight(1f))
+                Text(title, style = MaterialTheme.typography.titleSmall, color = Hava.inkSoft, modifier = Modifier.weight(1f))
                 Text(selected.format(LongDate).capitalizeTr(), style = MaterialTheme.typography.titleSmall, color = HavaBlue)
             }
             Spacer(Modifier.height(10.dp))
@@ -119,13 +120,13 @@ private fun DayCell(top: String, number: String?, condition: WeatherCondition?, 
         spring(dampingRatio = 0.45f, stiffness = Spring.StiffnessMedium),
         label = "dayScale"
     )
-    val textColor by animateColorAsState(if (selected) Color.White else Navy, tween(200), label = "dayText")
+    val textColor by animateColorAsState(if (selected) Color.White else Hava.ink, tween(200), label = "dayText")
     Column(
         Modifier
             .width(66.dp)
             .scale(scale)
             .clip(RoundedCornerShape(20.dp))
-            .background(if (selected) Brush.verticalGradient(listOf(Color(0xFF3D82FF), HavaBlue)) else SolidColor(SkyTint))
+            .background(if (selected) Brush.verticalGradient(listOf(Color(0xFF3D82FF), HavaBlue)) else SolidColor(Hava.cardTint))
             .selectable(selected = selected, role = Role.RadioButton, onClick = onClick)
             .padding(vertical = 10.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -134,7 +135,7 @@ private fun DayCell(top: String, number: String?, condition: WeatherCondition?, 
         Text(
             top,
             style = MaterialTheme.typography.labelLarge,
-            color = if (selected) Color.White.copy(alpha = 0.9f) else NavySoft,
+            color = if (selected) Color.White.copy(alpha = 0.9f) else Hava.inkSoft,
             maxLines = 1
         )
         if (number != null) Text(number, style = MaterialTheme.typography.titleLarge, color = textColor)

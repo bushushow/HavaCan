@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HavaCan renk önerisi</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #f4f2ec; font-family: Nunito, system-ui, sans-serif; color: #0b1b3f; padding: 28px 16px 44px; }
+  h1 { text-align: center; font-size: 24px; font-weight: 900; }
+  .lead { text-align: center; color: #5b6478; font-size: 15px; margin: 6px auto 26px; max-width: 680px; }
+  .row { display: flex; flex-wrap: wrap; gap: 26px; justify-content: center; }
+  .col { width: 290px; }
+  .label { font-weight: 900; font-size: 17px; margin: 12px 4px 2px; }
+  .why { color: #5b6478; font-size: 14px; margin: 0 4px; line-height: 1.5; }
+  .phone { width: 290px; height: 600px; border-radius: 40px; padding: 9px; background: #111; box-shadow: 0 22px 55px rgba(0,0,0,.22); }
+  .screen { position: relative; height: 100%; border-radius: 32px; overflow: hidden; background: #fff; }
+  .sky { position: relative; height: 300px; padding: 14px 16px 0; }
+  .bar { display: flex; align-items: center; gap: 8px; font-weight: 900; }
+  .logo { font-size: 19px; }
+  .pill { font-size: 11px; font-weight: 800; padding: 6px 10px; border-radius: 99px; }
+  .temp { font-size: 72px; font-weight: 900; line-height: 1; margin-top: 34px; }
+  .cond { font-size: 20px; font-weight: 900; margin-top: 6px; }
+  .feel { font-size: 13px; font-weight: 700; margin-top: 2px; }
+  .island { position: absolute; right: 6px; top: 118px; width: 128px; height: 76px; border-radius: 50%;
+    background: radial-gradient(ellipse at 50% 40%, #7cc95a 0 55%, #4f9e3b 56% 62%, #e9e3d6 63% 100%); box-shadow: 0 14px 22px rgba(0,0,0,.18); }
+  .island::after { content: ""; position: absolute; left: 30px; top: 30px; width: 70px; height: 14px; border-radius: 50%; border-bottom: 6px solid #d9694e; }
+  .can { position: absolute; right: 46px; top: 86px; width: 50px; height: 50px; border-radius: 50%;
+    background: radial-gradient(circle at 34% 30%, #fff6c9, #ffd84a 32%, #f5b400 72%, #c98a00); }
+  .orb { position: absolute; border-radius: 50%; }
+  .sheet { position: absolute; top: 278px; left: 0; right: 0; bottom: 0; background: #fff; border-radius: 28px 28px 0 0; padding: 18px 16px; }
+  .sheet h3 { font-size: 20px; font-weight: 900; }
+  .sheet .when { font-size: 12px; color: #5b6478; font-weight: 700; }
+  .chips { display: flex; gap: 6px; margin-top: 12px; }
+  .chip { flex: 1; border-radius: 99px; padding: 8px 0; text-align: center; font-size: 12px; font-weight: 900; }
+  .tabs { display: flex; margin-top: 12px; border-radius: 99px; padding: 4px; background: #eef3ff; }
+  .tab { flex: 1; text-align: center; font-size: 12px; font-weight: 800; padding: 7px 0; border-radius: 99px; color: #5b6478; }
+  .tab.on { background: #0b1b3f; color: #ffc72c; }
+  .chart { height: 70px; margin-top: 14px; border-radius: 12px;
+    background: linear-gradient(180deg, rgba(255,199,44,.35), rgba(255,199,44,0)); clip-path: polygon(0 80%, 18% 78%, 32% 40%, 48% 18%, 62% 20%, 74% 52%, 86% 66%, 100% 66%, 100% 100%, 0 100%); }
+  .nav { position: absolute; left: 0; right: 0; bottom: 0; height: 58px; background: #fff; border-top: 1px solid #eef0f5; display: flex; justify-content: space-around; align-items: center; font-size: 10px; font-weight: 800; color: #5b6478; }
+  .nav .on { color: #1d63f0; }
+
+  .day .sky { background: linear-gradient(180deg, #3d8bff 0%, #74b6ff 55%, #bfe0ff 100%); color: #fff; }
+  .day .pill { background: rgba(255,255,255,.22); color: #fff; }
+  .day .pill.run { background: #ffc72c; color: #0b1b3f; }
+
+  .sunset .sky { background: linear-gradient(180deg, #4b3b9a 0%, #c45a8c 50%, #ffb36b 100%); color: #fff; }
+  .sunset .pill { background: rgba(255,255,255,.2); color: #fff; }
+  .sunset .pill.run { background: #ffc72c; color: #0b1b3f; }
+
+  .night .sky { background: radial-gradient(120% 90% at 70% 10%, #1e3a8a 0%, #0b1b3f 60%, #070f28 100%); color: #fff; }
+  .night .temp { color: #ffc72c; }
+  .night .pill { background: rgba(255,255,255,.12); color: #fff; }
+  .night .pill.run { background: #ffc72c; color: #0b1b3f; }
+  .star { position: absolute; width: 3px; height: 3px; background: #fff; border-radius: 50%; opacity: .8; }
+
+  .rain-chip { background: #e3eeff; color: #1d63f0; }
+  .hum-chip { background: #dff6ef; color: #0f8a68; }
+  .wind-chip { background: #ece9ff; color: #5a49c9; }
+
+  .after { max-width: 900px; margin: 26px auto 0; background: #fff; border-radius: 16px; padding: 16px 18px; font-size: 14px; line-height: 1.6; }
+  .after b { display: block; font-size: 15px; margin-bottom: 4px; }
+</style>
+</head>
+<body>
+  <h1>Aynı düzen, canlı renkler</h1>
+  <p class="lead">Ekran yerleşimi bugünkü gibi kalır. Değişen: üst kısım havaya ve saate göre renk alan bir gökyüzü olur, tahmin kartı onun üstüne beyaz bir yaprak gibi oturur, sarı vurgu rengine dönüşür. Sayılar örnek.</p>
+
+  <div class="row">
+    <div class="col day">
+      <div class="phone"><div class="screen">
+        <div class="sky">
+          <div class="bar"><span class="logo">HavaCan</span><span class="pill">📍 Gümüşhane ▾</span><span class="pill run">Koşucu</span></div>
+          <div class="orb" style="right:-30px; top:-30px; width:140px; height:140px; background: radial-gradient(circle, rgba(255,240,170,.95), rgba(255,240,170,0) 70%);"></div>
+          <div class="temp">19°</div><div class="cond">Açık</div><div class="feel">Hissedilen 18° · ↑22° ↓9°</div>
+          <div class="island"></div><div class="can"></div>
+        </div>
+        <div class="sheet">
+          <h3>Tahmin</h3><div class="when">Bugün · 13.00</div>
+          <div class="chips"><div class="chip rain-chip">%0 Yağış</div><div class="chip hum-chip">%45 Nem</div><div class="chip wind-chip">8 km/sa</div></div>
+          <div class="tabs"><div class="tab on">Sıcaklık</div><div class="tab">Yağış</div><div class="tab">Rüzgar</div></div>
+          <div class="chart"></div>
+        </div>
+        <div class="nav"><span class="on">Hava</span><span>Planlar</span><span>HavaCan</span><span>Dolabım</span><span>Profil</span></div>
+      </div></div>
+      <p class="label">Gündüz, açık hava</p>
+      <p class="why">Parlak gök mavisi, köşede güneş ışığı. Beyaz yazılar, sarı Koşucu hapı.</p>
+    </div>
+
+    <div class="col sunset">
+      <div class="phone"><div class="screen">
+        <div class="sky">
+          <div class="bar"><span class="logo">HavaCan</span><span class="pill">📍 Gümüşhane ▾</span><span class="pill run">Koşucu</span></div>
+          <div class="temp">15°</div><div class="cond">Az bulutlu</div><div class="feel">Hissedilen 13° · ↑22° ↓9°</div>
+          <div class="island"></div><div class="can"></div>
+        </div>
+        <div class="sheet">
+          <h3>Tahmin</h3><div class="when">Bugün · 18.00</div>
+          <div class="chips"><div class="chip rain-chip">%5 Yağış</div><div class="chip hum-chip">%60 Nem</div><div class="chip wind-chip">12 km/sa</div></div>
+          <div class="tabs"><div class="tab on">Sıcaklık</div><div class="tab">Yağış</div><div class="tab">Rüzgar</div></div>
+          <div class="chart"></div>
+        </div>
+        <div class="nav"><span class="on">Hava</span><span>Planlar</span><span>HavaCan</span><span>Dolabım</span><span>Profil</span></div>
+      </div></div>
+      <p class="label">Akşamüstü</p>
+      <p class="why">Mor-pembe-turuncu gün batımı. Saat ilerledikçe gökyüzü kendiliğinden bu tona geçer.</p>
+    </div>
+
+    <div class="col night">
+      <div class="phone"><div class="screen">
+        <div class="sky">
+          <span class="star" style="left:150px; top:60px"></span><span class="star" style="left:210px; top:40px"></span><span class="star" style="left:250px; top:90px"></span><span class="star" style="left:120px; top:110px"></span><span class="star" style="left:265px; top:150px"></span>
+          <div class="bar"><span class="logo">HavaCan</span><span class="pill">📍 Gümüşhane ▾</span><span class="pill run">Koşucu</span></div>
+          <div class="temp">9°</div><div class="cond">Açık</div><div class="feel">Hissedilen 7° · ↑22° ↓9°</div>
+          <div class="island"></div><div class="can" style="box-shadow: 0 0 30px rgba(255,199,44,.7)"></div>
+        </div>
+        <div class="sheet">
+          <h3>Tahmin</h3><div class="when">Bugün · 04.00</div>
+          <div class="chips"><div class="chip rain-chip">%0 Yağış</div><div class="chip hum-chip">%79 Nem</div><div class="chip wind-chip">8 km/sa</div></div>
+          <div class="tabs"><div class="tab on">Sıcaklık</div><div class="tab">Yağış</div><div class="tab">Rüzgar</div></div>
+          <div class="chart"></div>
+        </div>
+        <div class="nav"><span class="on">Hava</span><span>Planlar</span><span>HavaCan</span><span>Dolabım</span><span>Profil</span></div>
+      </div></div>
+      <p class="label">Gece (şu anki saat)</p>
+      <p class="why">Lacivert gece göğü ve yıldızlar, sıcaklık altın sarısı, HavaCan hafifçe parlıyor. Turkcell'in lacivert-sarı hissi burada.</p>
+    </div>
+  </div>
+
+  <div class="after">
+    <b>Diğer ekranlara yansıması</b>
+    Planlar, Dolabım ve Profil'de de üst başlık alanı aynı gökyüzü rengini alır; içerik kartları bugünkü gibi beyaz kalır. Yağış, nem ve rüzgar hapları kendi renklerini alır (mavi, yeşil, mor). Seçili sekme ve haplar lacivert zemin üstünde sarı olur. Yağmurlu ve karlı havalar için gri-mavi ve buz mavisi gökyüzü de eklenir.
+  </div>
+</body>
+</html>

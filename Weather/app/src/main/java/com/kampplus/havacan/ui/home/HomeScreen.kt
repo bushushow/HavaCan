@@ -9,6 +9,7 @@ import android.provider.Settings
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.SizeTransform
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
@@ -22,6 +23,7 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -44,6 +46,8 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
@@ -56,6 +60,8 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.kampplus.havacan.R
 import com.kampplus.havacan.domain.running.RunningAdvice
 import com.kampplus.havacan.model.HourlyWeather
+import com.kampplus.havacan.ui.common.LightStatusBarIcons
+import com.kampplus.havacan.ui.common.skyColors
 import com.kampplus.havacan.ui.home.character.HavaCanEvent
 import com.kampplus.havacan.ui.home.character.HavaCanMotion
 import com.kampplus.havacan.ui.home.character.HavaCanStateMachine
@@ -67,6 +73,7 @@ import com.kampplus.havacan.ui.home.components.WeatherHero
 import com.kampplus.havacan.ui.home.scene.SceneLook
 import com.kampplus.havacan.ui.home.scene.WeatherScene
 import com.kampplus.havacan.ui.home.scene.segment
+import com.kampplus.havacan.ui.theme.Hava
 import kotlinx.coroutines.delay
 
 /** Callbacks the home screen sends up; the app decides what each one opens. */
@@ -192,54 +199,68 @@ fun HomeScreen(
     val look = animatedLook(SceneLook.of(condition, isDay), reduceMotion)
     val runScorer = remember { com.kampplus.havacan.domain.running.RunningSuitabilityCalculator() }
 
+    // The top of the screen is the sky itself, coloured by the weather and the time of day
+    val sky = skyColors(condition, isDay, hour?.hour)
+    val skyTop by animateColorAsState(sky.top, tween(900), label = "skyTop")
+    val skyBottom by animateColorAsState(sky.bottom, tween(900), label = "skyBottom")
+    LightStatusBarIcons()
+
     Column(
         modifier
             .fillMaxSize()
-            .statusBarsPadding()
+            .background(Hava.p.page)
             .verticalScroll(rememberScrollState())
     ) {
-        HomeTopBar(
-            cityName = state.city.name,
-            runnerActive = runner,
-            onCityClick = actions.onCityClick,
-            onRunnerToggle = {
-                haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                onToggleRunner()
-            },
-            onBellClick = actions.onBellClick,
-            modifier = Modifier.stagger(intro.value, 0f, 0.3f)
-        )
-
-        Box(Modifier.fillMaxWidth().height(210.dp)) {
-            WeatherScene(
-                look = look,
-                motion = motion,
-                gear = gear,
-                track = track,
-                gait = gait,
-                intro = intro.value,
-                still = reduceMotion,
-                showGreeting = bubble != null,
-                greeting = bubble.orEmpty(),
-                onCharacterTap = {
+        Column(
+            Modifier
+                .background(Brush.verticalGradient(listOf(skyTop, skyBottom)))
+                .statusBarsPadding()
+                .padding(bottom = 12.dp)
+        ) {
+            HomeTopBar(
+                cityName = state.city.name,
+                runnerActive = runner,
+                onCityClick = actions.onCityClick,
+                onRunnerToggle = {
                     haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                    motion.send(HavaCanEvent.Tapped, runner, clock())
-                    val tips = havaCanTips(state)
-                    say(tips[tipIndex % tips.size])
-                    tipIndex++
+                    onToggleRunner()
                 },
-                clock = clock,
-                modifier = Modifier.fillMaxSize()
+                onBellClick = actions.onBellClick,
+                modifier = Modifier.stagger(intro.value, 0f, 0.3f)
             )
-            WeatherHero(
-                state = state,
-                onRetry = onRetry,
-                modifier = Modifier
-                    .padding(start = 20.dp, top = 4.dp)
-                    .fillMaxWidth(0.56f)
-                    .stagger(intro.value, 0f, 0.35f)
-            )
+
+            Box(Modifier.fillMaxWidth().height(210.dp)) {
+                WeatherScene(
+                    look = look,
+                    motion = motion,
+                    gear = gear,
+                    track = track,
+                    gait = gait,
+                    intro = intro.value,
+                    still = reduceMotion,
+                    showGreeting = bubble != null,
+                    greeting = bubble.orEmpty(),
+                    onCharacterTap = {
+                        haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                        motion.send(HavaCanEvent.Tapped, runner, clock())
+                        val tips = havaCanTips(state)
+                        say(tips[tipIndex % tips.size])
+                        tipIndex++
+                    },
+                    clock = clock,
+                    modifier = Modifier.fillMaxSize()
+                )
+                WeatherHero(
+                    state = state,
+                    onRetry = onRetry,
+                    modifier = Modifier
+                        .padding(start = 20.dp, top = 4.dp)
+                        .fillMaxWidth(0.56f)
+                        .stagger(intro.value, 0f, 0.35f)
+                )
+            }
         }
+        Spacer(Modifier.height(14.dp))
 
         Column(
             Modifier.padding(horizontal = 16.dp),

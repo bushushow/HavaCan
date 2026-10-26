@@ -108,6 +108,7 @@ import com.kampplus.havacan.domain.voice.TurkishText
 import com.kampplus.havacan.model.City
 import com.kampplus.havacan.ui.home.character.HavaCanArt
 import com.kampplus.havacan.ui.home.character.HavaCanPoseStyle
+import com.kampplus.havacan.ui.theme.Hava
 import com.kampplus.havacan.ui.theme.HavaBlue
 import com.kampplus.havacan.ui.theme.HavaBlueLight
 import com.kampplus.havacan.ui.theme.Navy
@@ -256,7 +257,7 @@ private fun MainPage(
     PickerList {
         item {
             PickerHeader("Konum seç", clock, onBack, "Geri dön") {
-                Text("HavaCan neresi için baksın?", style = MaterialTheme.typography.titleMedium, color = Navy)
+                Text("HavaCan neresi için baksın?", style = MaterialTheme.typography.titleMedium, color = Hava.ink)
             }
         }
         item { SearchField(query, onQuery, "Şehir veya ilçe ara…") }
@@ -288,7 +289,7 @@ private fun MainPage(
                     StatusCard {
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
                             CircularProgressIndicator(Modifier.size(24.dp), color = HavaBlue, strokeWidth = 3.dp)
-                            Text("Aranıyor…", style = MaterialTheme.typography.titleMedium, color = Navy)
+                            Text("Aranıyor…", style = MaterialTheme.typography.titleMedium, color = Hava.ink)
                         }
                     }
                 }
@@ -305,13 +306,13 @@ private fun MainPage(
                                     ErrorReason.Unknown -> "Beklenmeyen bir sorun oldu"
                                 },
                                 style = MaterialTheme.typography.titleMedium,
-                                color = Navy,
+                                color = Hava.ink,
                                 fontWeight = FontWeight.Bold
                             )
                             Text(
                                 "Türkiye'deki il ve ilçeler internetsiz bulunur; bu arama yurt dışı için internete ihtiyaç duyuyor.",
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = NavySoft
+                                color = Hava.inkSoft
                             )
                             TextButton(onClick = onRetry) { Text("Tekrar dene") }
                         }
@@ -368,7 +369,7 @@ private fun DistrictsPage(
         item {
             Column(Modifier.padding(top = 8.dp)) {
                 SectionTitle("İlçeler", trailing = "${page.districts.size}")
-                Text("İlçe seçerek devam et", style = MaterialTheme.typography.bodyLarge, color = NavySoft)
+                Text("İlçe seçerek devam et", style = MaterialTheme.typography.bodyLarge, color = Hava.inkSoft)
             }
         }
         if (page.districts.isEmpty()) {
@@ -406,13 +407,13 @@ private fun PickerHeader(title: String, clock: () -> Float, onBack: () -> Unit, 
             shadowElevation = 4.dp,
             modifier = Modifier.size(56.dp).semantics { contentDescription = backLabel }
         ) {
-            Box(contentAlignment = Alignment.Center) { Icon(painterResource(R.drawable.ic_arrow_back), null, tint = Navy) }
+            Box(contentAlignment = Alignment.Center) { Icon(painterResource(R.drawable.ic_arrow_back), null, tint = Hava.ink) }
         }
         Column(Modifier.weight(1f).padding(start = 14.dp)) {
             Text(
                 title,
                 style = MaterialTheme.typography.headlineLarge,
-                color = Navy,
+                color = Hava.ink,
                 fontWeight = FontWeight.Black,
                 modifier = Modifier.semantics {
                     heading()
@@ -455,15 +456,15 @@ private fun SearchField(value: String, onValueChange: (String) -> Unit, placehol
         onValueChange = onValueChange,
         singleLine = true,
         interactionSource = interaction,
-        textStyle = MaterialTheme.typography.titleMedium.merge(TextStyle(color = Navy)),
+        textStyle = MaterialTheme.typography.titleMedium.merge(TextStyle(color = Hava.ink)),
         cursorBrush = SolidColor(HavaBlue),
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
         keyboardActions = KeyboardActions(onSearch = { focusManager.clearFocus() }),
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp)
-            .shadow(elevation, shape, ambientColor = Navy.copy(alpha = 0.1f), spotColor = Navy.copy(alpha = 0.1f))
-            .background(Color.White, shape)
+            .shadow(elevation, shape, ambientColor = Hava.ink.copy(alpha = 0.1f), spotColor = Hava.ink.copy(alpha = 0.1f))
+            .background(Hava.card, shape)
             .border(BorderStroke(1.5.dp, border), shape)
             .semantics { contentDescription = placeholder },
         decorationBox = { inner ->
@@ -474,7 +475,7 @@ private fun SearchField(value: String, onValueChange: (String) -> Unit, placehol
                         Text(
                             placeholder,
                             style = MaterialTheme.typography.titleMedium,
-                            color = NavySoft.copy(alpha = 0.85f),
+                            color = Hava.inkSoft.copy(alpha = 0.85f),
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
@@ -484,7 +485,7 @@ private fun SearchField(value: String, onValueChange: (String) -> Unit, placehol
                 if (value.isNotEmpty()) {
                     IconButton(onClick = {
                         onValueChange("")
-                    }) { Icon(painterResource(R.drawable.ic_clear), "Aramayı temizle", tint = NavySoft) }
+                    }) { Icon(painterResource(R.drawable.ic_clear), "Aramayı temizle", tint = Hava.inkSoft) }
                 }
             }
         }
@@ -502,7 +503,7 @@ private fun ActionCard(title: String, subtitle: String, busy: Boolean, onClick: 
             .padding(vertical = 10.dp)
             .scale(scale)
             .shadow(6.dp, CardShape, ambientColor = HavaBlue.copy(alpha = 0.15f), spotColor = HavaBlue.copy(alpha = 0.15f))
-            .background(Brush.linearGradient(listOf(HavaBlueLight, SkyTint, Color(0xFFF5F9FF))), CardShape)
+            .background(Hava.p.highlight, CardShape)
             .border(1.dp, Color.White, CardShape)
             .clickable(interactionSource = interaction, indication = null, role = Role.Button, enabled = !busy, onClick = onClick)
             .semantics(mergeDescendants = true) { contentDescription = "$title. $subtitle" }
@@ -524,8 +525,8 @@ private fun ActionCard(title: String, subtitle: String, busy: Boolean, onClick: 
                 }
             }
             Column(Modifier.weight(1f)) {
-                Text(title, style = MaterialTheme.typography.titleLarge, color = Navy, fontWeight = FontWeight.ExtraBold)
-                Text(subtitle, style = MaterialTheme.typography.bodyLarge, color = NavySoft)
+                Text(title, style = MaterialTheme.typography.titleLarge, color = Hava.ink, fontWeight = FontWeight.ExtraBold)
+                Text(subtitle, style = MaterialTheme.typography.bodyLarge, color = Hava.inkSoft)
             }
             Box(Modifier.size(52.dp).background(HavaBlue, CircleShape), contentAlignment = Alignment.Center) {
                 if (busy) {
@@ -565,13 +566,13 @@ private fun SectionTitle(text: String, trailing: String? = null) {
         Text(
             text,
             style = MaterialTheme.typography.headlineSmall,
-            color = Navy,
+            color = Hava.ink,
             fontWeight = FontWeight.ExtraBold,
             modifier = Modifier.weight(1f).semantics {
                 heading()
             }
         )
-        trailing?.let { Text(it, style = MaterialTheme.typography.titleMedium, color = NavySoft) }
+        trailing?.let { Text(it, style = MaterialTheme.typography.titleMedium, color = Hava.inkSoft) }
     }
 }
 
@@ -597,7 +598,7 @@ private fun RecentChip(city: City, onClick: () -> Unit) {
             Text(
                 label,
                 style = MaterialTheme.typography.titleSmall,
-                color = Navy,
+                color = Hava.ink,
                 fontWeight = FontWeight.Bold,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -619,9 +620,9 @@ private fun LazyListScope.placeRows(items: List<PlaceItem>, chevron: Boolean, sh
             bottomStart = if (last) 28.dp else 0.dp,
             bottomEnd = if (last) 28.dp else 0.dp
         )
-        Column(Modifier.background(Color.White, shape)) {
+        Column(Modifier.background(Hava.card, shape)) {
             PlaceRow(item, chevron, showSubtitle, if (first) 8.dp else 0.dp, if (last) 8.dp else 0.dp) { onClick(item) }
-            if (!last) HorizontalDivider(Modifier.padding(horizontal = 20.dp), color = Navy.copy(alpha = 0.07f))
+            if (!last) HorizontalDivider(Modifier.padding(horizontal = 20.dp), color = Hava.ink.copy(alpha = 0.07f))
         }
     }
 }
@@ -653,25 +654,25 @@ private fun PlaceRow(item: PlaceItem, chevron: Boolean, showSubtitle: Boolean, t
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Box(Modifier.size(52.dp).background(HavaBlueLight.copy(alpha = 0.6f), CircleShape), contentAlignment = Alignment.Center) {
+        Box(Modifier.size(52.dp).background(Hava.p.blueTint.copy(alpha = 0.6f), CircleShape), contentAlignment = Alignment.Center) {
             Icon(painterResource(R.drawable.ic_place), null, tint = HavaBlue, modifier = Modifier.size(28.dp))
         }
         Column(Modifier.weight(1f)) {
-            Text(item.city.name, style = MaterialTheme.typography.titleLarge, color = Navy, fontWeight = FontWeight.Bold)
+            Text(item.city.name, style = MaterialTheme.typography.titleLarge, color = Hava.ink, fontWeight = FontWeight.Bold)
             // On an ilçe page the province is already in the title; elsewhere say what and where it is
             if (showSubtitle &&
                 item.subtitle.isNotBlank()
             ) {
-                Text(item.subtitle, style = MaterialTheme.typography.bodyLarge, color = NavySoft)
+                Text(item.subtitle, style = MaterialTheme.typography.bodyLarge, color = Hava.inkSoft)
             }
         }
-        if (chevron) Icon(painterResource(R.drawable.ic_chevron_right), null, tint = Navy, modifier = Modifier.size(28.dp))
+        if (chevron) Icon(painterResource(R.drawable.ic_chevron_right), null, tint = Hava.ink, modifier = Modifier.size(28.dp))
     }
 }
 
 @Composable
 private fun StatusCard(content: @Composable () -> Unit) {
-    Box(Modifier.fillMaxWidth().padding(vertical = 8.dp).background(Color.White, CardShape).padding(20.dp)) { content() }
+    Box(Modifier.fillMaxWidth().padding(vertical = 8.dp).background(Hava.card, CardShape).padding(20.dp)) { content() }
 }
 
 @Composable
@@ -683,8 +684,8 @@ private fun EmptyCard(title: String, body: String) {
             },
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            Text(title, style = MaterialTheme.typography.titleMedium, color = Navy, fontWeight = FontWeight.Bold)
-            Text(body, style = MaterialTheme.typography.bodyMedium, color = NavySoft)
+            Text(title, style = MaterialTheme.typography.titleMedium, color = Hava.ink, fontWeight = FontWeight.Bold)
+            Text(body, style = MaterialTheme.typography.bodyMedium, color = Hava.inkSoft)
         }
     }
 }
@@ -696,8 +697,8 @@ private fun Footer(text: String) {
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(painterResource(R.drawable.ic_info), null, tint = NavySoft, modifier = Modifier.size(22.dp))
-        Text(text, style = MaterialTheme.typography.bodyMedium, color = NavySoft, modifier = Modifier.padding(start = 8.dp))
+        Icon(painterResource(R.drawable.ic_info), null, tint = Hava.inkSoft, modifier = Modifier.size(22.dp))
+        Text(text, style = MaterialTheme.typography.bodyMedium, color = Hava.inkSoft, modifier = Modifier.padding(start = 8.dp))
     }
 }
 
@@ -714,8 +715,8 @@ private fun SuccessBadge(item: PlaceItem) {
             Box(Modifier.size(64.dp).background(HavaBlue, CircleShape), contentAlignment = Alignment.Center) {
                 Icon(painterResource(R.drawable.ic_check), null, tint = Color.White, modifier = Modifier.size(36.dp))
             }
-            Text(item.shortLabel, style = MaterialTheme.typography.titleLarge, color = Navy, fontWeight = FontWeight.ExtraBold)
-            Text("seçildi", style = MaterialTheme.typography.bodyLarge, color = NavySoft)
+            Text(item.shortLabel, style = MaterialTheme.typography.titleLarge, color = Hava.ink, fontWeight = FontWeight.ExtraBold)
+            Text("seçildi", style = MaterialTheme.typography.bodyLarge, color = Hava.inkSoft)
         }
     }
 }

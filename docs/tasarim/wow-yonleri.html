@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HavaCan tasarım yönleri</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root { --page: #f4f2ec; --ink: #1b1b1b; --muted: #6b6a66; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--page); color: var(--ink); font-family: Nunito, system-ui, sans-serif; padding: 32px 16px 48px; }
+  h1 { font-size: 26px; font-weight: 900; text-align: center; }
+  .lead { text-align: center; color: var(--muted); margin: 6px auto 28px; max-width: 640px; font-size: 15px; }
+  .row { display: flex; flex-wrap: wrap; gap: 28px; justify-content: center; }
+  .col { width: 300px; }
+  .tag { font-weight: 900; font-size: 18px; margin: 14px 4px 4px; }
+  .why { color: var(--muted); font-size: 14px; margin: 0 4px; line-height: 1.5; }
+  .phone { width: 300px; height: 620px; border-radius: 42px; padding: 10px; background: #111; box-shadow: 0 24px 60px rgba(0,0,0,.25); }
+  .screen { position: relative; width: 100%; height: 100%; border-radius: 34px; overflow: hidden; }
+  .status { display: flex; justify-content: space-between; font-size: 12px; font-weight: 800; padding: 12px 22px 0; }
+  .top { display: flex; justify-content: space-between; align-items: center; padding: 10px 18px 0; font-weight: 800; font-size: 14px; }
+  .chip { padding: 6px 12px; border-radius: 99px; font-size: 13px; font-weight: 800; }
+  .hero { text-align: center; padding-top: 8px; }
+  .temp { font-size: 92px; font-weight: 900; line-height: .95; letter-spacing: -3px; }
+  .cond { font-size: 14px; font-weight: 700; margin-top: 4px; }
+  .hours { display: flex; gap: 6px; padding: 14px 14px 0; }
+  .hour { flex: 1; text-align: center; border-radius: 18px; padding: 8px 0; font-size: 12px; font-weight: 800; }
+  .hour b { display: block; font-size: 15px; margin-top: 2px; }
+  .card { margin: 12px 14px 0; border-radius: 24px; padding: 14px 16px; }
+  .card small { font-size: 12px; font-weight: 800; letter-spacing: .3px; }
+  .card .big { font-size: 26px; font-weight: 900; margin-top: 2px; }
+  .card .sub { font-size: 12px; font-weight: 700; margin-top: 2px; }
+  .nav { position: absolute; left: 12px; right: 12px; bottom: 12px; height: 60px; border-radius: 30px; display: flex; justify-content: space-around; align-items: center; font-size: 11px; font-weight: 800; }
+  .nav span { text-align: center; }
+  .nav i { display: block; width: 20px; height: 20px; margin: 0 auto 2px; border-radius: 6px; }
+  .can { position: relative; width: 92px; height: 92px; margin: 6px auto 0; border-radius: 50%;
+    background: radial-gradient(circle at 34% 30%, #fff6c9 0%, #ffd84a 30%, #f5b400 72%, #c98a00 100%); }
+  .can::before, .can::after { content: ""; position: absolute; top: 34px; width: 14px; height: 8px; border: 3px solid #3a2400; border-bottom: 0; border-radius: 10px 10px 0 0; }
+  .can::before { left: 26px; } .can::after { right: 26px; }
+  .mouth { position: absolute; left: 36px; top: 52px; width: 20px; height: 12px; background: #7a1d1d; border-radius: 0 0 12px 12px; }
+  .mouth::after { content: ""; position: absolute; left: 5px; bottom: 1px; width: 10px; height: 5px; background: #ff7a8a; border-radius: 6px 6px 3px 3px; }
+  .note { text-align: center; color: var(--muted); font-size: 12px; margin-top: 28px; }
+  .ideas { max-width: 940px; margin: 30px auto 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+  .idea { background: #fff; border-radius: 16px; padding: 14px 16px; font-size: 14px; line-height: 1.5; }
+  .idea b { display: block; font-size: 15px; margin-bottom: 2px; }
+
+  /* A: Canlı gökyüzü */
+  .a .screen { background: linear-gradient(170deg, #2f7bff 0%, #39a8ff 45%, #7fd6ff 100%); color: #fff; }
+  .a .chip, .a .hour, .a .card, .a .nav { background: rgba(255,255,255,.18); border: 1px solid rgba(255,255,255,.35); backdrop-filter: blur(14px); }
+  .a .hour.on { background: #fff; color: #1d63f0; }
+  .a .card .big { color: #fff; }
+  .a .sun { position: absolute; top: -60px; right: -60px; width: 220px; height: 220px; border-radius: 50%; background: radial-gradient(circle, rgba(255,236,150,.9), rgba(255,236,150,0) 70%); }
+  .a .can { box-shadow: 0 0 40px rgba(255,220,90,.8); }
+  .a .nav i { background: rgba(255,255,255,.85); }
+
+  /* B: Gece mavisi ve altın */
+  .b .screen { background: radial-gradient(120% 70% at 50% 0%, #1e3a8a 0%, #0b1433 60%, #070d24 100%); color: #eef2ff; }
+  .b .chip { background: rgba(255,199,44,.14); color: #ffc72c; border: 1px solid rgba(255,199,44,.4); }
+  .b .temp { background: linear-gradient(180deg, #ffffff, #ffd76a); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .b .hour { background: #15204a; border: 1px solid #24336b; }
+  .b .hour.on { background: #ffc72c; color: #0b1433; border-color: #ffc72c; }
+  .b .card { background: linear-gradient(135deg, #15204a, #1b2a63); border: 1px solid #2b3d7d; }
+  .b .card small { color: #ffc72c; }
+  .b .nav { background: #10193d; border: 1px solid #24336b; }
+  .b .nav i { background: #3b4c8c; } .b .nav span.on { color: #ffc72c; } .b .nav span.on i { background: #ffc72c; }
+  .b .can { box-shadow: 0 0 0 6px rgba(255,199,44,.15), 0 0 50px rgba(255,199,44,.55); }
+
+  /* C: Oyuncak 3D (clay) */
+  .c .screen { background: linear-gradient(180deg, #e8f0ff 0%, #fff7dc 100%); color: #0b1b3f; }
+  .c .chip, .c .hour, .c .card, .c .nav { background: #f7f9ff; box-shadow: 6px 6px 14px rgba(29,99,240,.16), -6px -6px 14px rgba(255,255,255,.95); }
+  .c .hour.on { background: #1d63f0; color: #fff; box-shadow: inset -4px -4px 8px rgba(0,0,0,.18), inset 4px 4px 8px rgba(255,255,255,.35), 6px 6px 14px rgba(29,99,240,.35); }
+  .c .card.hi { background: #ffc72c; box-shadow: inset -5px -5px 10px rgba(180,110,0,.25), inset 5px 5px 10px rgba(255,255,255,.5), 8px 8px 16px rgba(245,163,0,.3); }
+  .c .temp { color: #1d63f0; text-shadow: 0 6px 0 #c9dbff; }
+  .c .nav i { background: #c9dbff; } .c .nav span.on i { background: #1d63f0; }
+  .c .can { box-shadow: 0 14px 0 -4px rgba(29,99,240,.15); }
+</style>
+</head>
+<body>
+  <h1>HavaCan için üç tasarım yönü</h1>
+  <p class="lead">Aynı ana ekran üç farklı dille. Ekrandaki sayılar yalnızca görünüm için örnek; uygulamada hepsi gerçek tahminden gelir.</p>
+
+  <div class="row">
+    <div class="col a">
+      <div class="phone"><div class="screen">
+        <div class="sun"></div>
+        <div class="status"><span>9:41</span><span>●●● 100%</span></div>
+        <div class="top"><span class="chip">İstanbul ▾</span><span class="chip">Koşucu</span></div>
+        <div class="can"><div class="mouth"></div></div>
+        <div class="hero"><div class="temp">19°</div><div class="cond">Parçalı bulutlu · ↑22 ↓14</div></div>
+        <div class="hours">
+          <div class="hour on">Şimdi<b>19°</b></div><div class="hour">13<b>20°</b></div><div class="hour">14<b>21°</b></div><div class="hour">15<b>21°</b></div><div class="hour">16<b>20°</b></div>
+        </div>
+        <div class="card"><small>KOŞU İÇİN EN İYİ SAAT</small><div class="big">17.00–19.00</div><div class="sub">Serin · Hafif rüzgar</div></div>
+        <div class="nav"><span><i></i>Hava</span><span><i></i>Planlar</span><span><i></i>HavaCan</span><span><i></i>Dolabım</span><span><i></i>Profil</span></div>
+      </div></div>
+      <p class="tag">A · Canlı gökyüzü</p>
+      <p class="why">Arka plan havanın kendisi olur: güneşte parlak mavi, akşam turuncu-mor, yağmurda gri-lacivert, gece yıldızlı. Kartlar buzlu cam. En "yaşayan" seçenek; demoda hava değiştikçe ekran da değişir.</p>
+    </div>
+
+    <div class="col b">
+      <div class="phone"><div class="screen">
+        <div class="status"><span>9:41</span><span>●●● 100%</span></div>
+        <div class="top"><span class="chip">İstanbul ▾</span><span class="chip">Koşucu</span></div>
+        <div class="can"><div class="mouth"></div></div>
+        <div class="hero"><div class="temp">19°</div><div class="cond">Parçalı bulutlu · ↑22 ↓14</div></div>
+        <div class="hours">
+          <div class="hour on">Şimdi<b>19°</b></div><div class="hour">13<b>20°</b></div><div class="hour">14<b>21°</b></div><div class="hour">15<b>21°</b></div><div class="hour">16<b>20°</b></div>
+        </div>
+        <div class="card"><small>KOŞU İÇİN EN İYİ SAAT</small><div class="big">17.00–19.00</div><div class="sub">Serin · Hafif rüzgar</div></div>
+        <div class="nav"><span class="on"><i></i>Hava</span><span><i></i>Planlar</span><span><i></i>HavaCan</span><span><i></i>Dolabım</span><span><i></i>Profil</span></div>
+      </div></div>
+      <p class="tag">B · Gece mavisi ve altın</p>
+      <p class="why">Koyu lacivert zemin, altın sarısı vurgular, parlayan HavaCan. Turkcell'in lacivert-sarı hissine en yakın, en "premium" görünen yön. Sahnede projeksiyonda da çok iyi okunur.</p>
+    </div>
+
+    <div class="col c">
+      <div class="phone"><div class="screen">
+        <div class="status"><span>9:41</span><span>●●● 100%</span></div>
+        <div class="top"><span class="chip">İstanbul ▾</span><span class="chip">Koşucu</span></div>
+        <div class="can"><div class="mouth"></div></div>
+        <div class="hero"><div class="temp">19°</div><div class="cond">Parçalı bulutlu · ↑22 ↓14</div></div>
+        <div class="hours">
+          <div class="hour on">Şimdi<b>19°</b></div><div class="hour">13<b>20°</b></div><div class="hour">14<b>21°</b></div><div class="hour">15<b>21°</b></div><div class="hour">16<b>20°</b></div>
+        </div>
+        <div class="card hi"><small>KOŞU İÇİN EN İYİ SAAT</small><div class="big">17.00–19.00</div><div class="sub">Serin · Hafif rüzgar</div></div>
+        <div class="nav"><span class="on"><i></i>Hava</span><span><i></i>Planlar</span><span><i></i>HavaCan</span><span><i></i>Dolabım</span><span><i></i>Profil</span></div>
+      </div></div>
+      <p class="tag">C · Oyuncak 3D (kil)</p>
+      <p class="why">Her şey basılabilir oyuncak gibi kabarık: yumuşak gölgeler, tok renkler, basınca içe gömülen butonlar. HavaCan'ın 3D karakteriyle en uyumlu, en oyunlaştırılmış yön.</p>
+    </div>
+  </div>
+
+  <div class="ideas">
+    <div class="idea"><b>Renkten fazlası: hareket</b>Yağmur, kar, rüzgar ve güneş ışını tüm ekranın üstünde akar; telefonu eğince bulutlar hafifçe kayar (parallax).</div>
+    <div class="idea"><b>Dev rakamlar</b>Sıcaklık ekranın kahramanı olur; saat değişince rakamlar sayaç gibi döner.</div>
+    <div class="idea"><b>Ekranlar arası geçiş</b>Saat kartına dokununca kart büyüyerek detay ekranına dönüşür; HavaCan sekmeler arasında seni takip eder.</div>
+  </div>
+  <p class="note">Bu sayfa yalnızca yön seçmek için bir taslaktır.</p>
+</body>
+</html>

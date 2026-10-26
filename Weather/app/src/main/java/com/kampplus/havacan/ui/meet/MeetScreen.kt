@@ -76,12 +76,16 @@ import com.kampplus.havacan.model.MeetPerson
 import com.kampplus.havacan.model.MeetWindow
 import com.kampplus.havacan.model.deg
 import com.kampplus.havacan.ui.common.DayStrip
+import com.kampplus.havacan.ui.common.OnSky
+import com.kampplus.havacan.ui.common.OnSkySoft
+import com.kampplus.havacan.ui.common.SkyHeader
 import com.kampplus.havacan.ui.home.character.HavaCanArt
 import com.kampplus.havacan.ui.home.character.HavaCanPoseStyle
 import com.kampplus.havacan.ui.home.components.SoftCard
 import com.kampplus.havacan.ui.home.components.WeatherIcon
 import com.kampplus.havacan.ui.plans.capitalizeTr
 import com.kampplus.havacan.ui.theme.GoodGreen
+import com.kampplus.havacan.ui.theme.Hava
 import com.kampplus.havacan.ui.theme.HavaBlue
 import com.kampplus.havacan.ui.theme.HavaBlueLight
 import com.kampplus.havacan.ui.theme.Navy
@@ -127,32 +131,32 @@ fun MeetScreen(state: MeetUiState, clock: () -> Float, actions: MeetActions) {
     Column(
         Modifier
             .fillMaxSize()
-            .statusBarsPadding()
             .verticalScroll(rememberScrollState())
             .navigationBarsPadding()
             .padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
-        Row(Modifier.padding(top = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = actions.onBack) {
-                Icon(painterResource(R.drawable.ic_arrow_back), stringResource(R.string.back), tint = Navy)
+        SkyHeader(bleed = 16.dp) {
+            Row(Modifier.padding(top = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+                IconButton(onClick = actions.onBack) {
+                    Icon(painterResource(R.drawable.ic_arrow_back), stringResource(R.string.back), tint = OnSky)
+                }
+                Text(stringResource(R.string.meet_title), style = MaterialTheme.typography.titleLarge, color = OnSky)
             }
-            Text(stringResource(R.string.meet_title), style = MaterialTheme.typography.titleLarge, color = Navy)
-        }
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Column(Modifier.weight(1f).padding(start = 4.dp)) {
-                Text(
-                    stringResource(R.string.meet_headline),
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = Navy,
-                    modifier = Modifier.semantics { heading() }
-                )
-                Spacer(Modifier.height(4.dp))
-                Text(stringResource(R.string.meet_sub), style = MaterialTheme.typography.bodyMedium, color = NavySoft)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.weight(1f).padding(start = 4.dp)) {
+                    Text(
+                        stringResource(R.string.meet_headline),
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = OnSky,
+                        modifier = Modifier.semantics { heading() }
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Text(stringResource(R.string.meet_sub), style = MaterialTheme.typography.bodyMedium, color = OnSkySoft)
+                }
+                HavaCanArt(HavaCanPoseStyle.Cheer, clock, Modifier.size(96.dp))
             }
-            HavaCanArt(HavaCanPoseStyle.Cheer, clock, Modifier.size(96.dp))
         }
-
         Step(1, stringResource(R.string.meet_step_people))
         PeopleCard(state, actions)
 
@@ -204,7 +208,7 @@ private fun Step(number: Int, title: String) {
             Text("$number", style = MaterialTheme.typography.titleSmall, color = Color.White)
         }
         Spacer(Modifier.width(10.dp))
-        Text(title, style = MaterialTheme.typography.titleLarge, color = Navy, modifier = Modifier.semantics { heading() })
+        Text(title, style = MaterialTheme.typography.titleLarge, color = Hava.ink, modifier = Modifier.semantics { heading() })
     }
 }
 
@@ -231,25 +235,29 @@ private fun PeopleCard(state: MeetUiState, actions: MeetActions) {
                     Avatar(person.name, i)
                     Spacer(Modifier.width(12.dp))
                     Column(Modifier.weight(1f)) {
-                        Text(person.name, style = MaterialTheme.typography.titleMedium, color = Navy)
+                        Text(person.name, style = MaterialTheme.typography.titleMedium, color = Hava.ink)
                         Text(
                             person.city.label(),
                             style = MaterialTheme.typography.bodySmall,
-                            color = NavySoft,
+                            color = Hava.inkSoft,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
                     }
                     if (i > 0) {
                         IconButton(onClick = { actions.onRemovePerson(i) }) {
-                            Icon(painterResource(R.drawable.ic_clear), stringResource(R.string.meet_remove, person.name), tint = NavySoft)
+                            Icon(
+                                painterResource(R.drawable.ic_clear),
+                                stringResource(R.string.meet_remove, person.name),
+                                tint = Hava.inkSoft
+                            )
                         }
                     }
                 }
             }
 
             // Add someone: a name and where they'll come from
-            Box(Modifier.fillMaxWidth().height(1.dp).background(Navy.copy(alpha = 0.06f)))
+            Box(Modifier.fillMaxWidth().height(1.dp).background(Hava.ink.copy(alpha = 0.06f)))
             OutlinedTextField(
                 value = name,
                 onValueChange = { name = it.take(30) },
@@ -262,14 +270,14 @@ private fun PeopleCard(state: MeetUiState, actions: MeetActions) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 OutlinedButton(
                     onClick = { actions.onPickCity { city = it } },
-                    border = BorderStroke(1.dp, Navy.copy(alpha = 0.15f)),
+                    border = BorderStroke(1.dp, Hava.ink.copy(alpha = 0.15f)),
                     modifier = Modifier.weight(1f).heightIn(min = 48.dp)
                 ) {
                     Icon(painterResource(R.drawable.ic_place), null, tint = HavaBlue, modifier = Modifier.size(18.dp))
                     Spacer(Modifier.width(6.dp))
                     Text(
                         city?.label() ?: stringResource(R.string.meet_pick_place),
-                        color = if (city == null) NavySoft else Navy,
+                        color = if (city == null) Hava.inkSoft else Hava.ink,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -304,16 +312,16 @@ private fun WindowRow(windows: Set<MeetWindow>, onToggle: (MeetWindow) -> Unit) 
                     .weight(1f)
                     .clip(RoundedCornerShape(18.dp))
                     .background(bg)
-                    .border(1.dp, if (on) Color.Transparent else Navy.copy(alpha = 0.1f), RoundedCornerShape(18.dp))
+                    .border(1.dp, if (on) Color.Transparent else Hava.ink.copy(alpha = 0.1f), RoundedCornerShape(18.dp))
                     .toggleable(on, role = Role.Checkbox) { onToggle(window) }
                     .padding(vertical = 10.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(window.label, style = MaterialTheme.typography.titleSmall, color = if (on) Color.White else Navy, maxLines = 1)
+                Text(window.label, style = MaterialTheme.typography.titleSmall, color = if (on) Color.White else Hava.ink, maxLines = 1)
                 Text(
                     "%02d–%02d".format(window.hours.first, window.hours.last + 1),
                     style = MaterialTheme.typography.labelMedium,
-                    color = if (on) Color.White.copy(alpha = 0.85f) else NavySoft
+                    color = if (on) Color.White.copy(alpha = 0.85f) else Hava.inkSoft
                 )
             }
         }
@@ -332,16 +340,16 @@ private fun PlaceRow(state: MeetUiState, actions: MeetActions) {
                 Icon(painterResource(R.drawable.ic_place), null, tint = HavaBlue, modifier = Modifier.size(26.dp))
                 Spacer(Modifier.width(12.dp))
                 Column(Modifier.weight(1f)) {
-                    Text(stringResource(R.string.meet_place), style = MaterialTheme.typography.bodySmall, color = NavySoft)
+                    Text(stringResource(R.string.meet_place), style = MaterialTheme.typography.bodySmall, color = Hava.inkSoft)
                     Text(
                         state.place?.label() ?: stringResource(R.string.meet_place_auto),
                         style = MaterialTheme.typography.titleMedium,
-                        color = Navy,
+                        color = Hava.ink,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
                 }
-                Icon(painterResource(R.drawable.ic_expand_more), null, tint = Navy)
+                Icon(painterResource(R.drawable.ic_expand_more), null, tint = Hava.ink)
             }
         }
         DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
@@ -392,7 +400,7 @@ private fun Result(state: MeetUiState, actions: MeetActions) {
                 Text(
                     stringResource(R.string.meet_other_options),
                     style = MaterialTheme.typography.titleSmall,
-                    color = NavySoft,
+                    color = Hava.inkSoft,
                     modifier = Modifier.padding(start = 4.dp)
                 )
                 state.options.forEachIndexed { i, option ->
@@ -408,7 +416,7 @@ private fun Result(state: MeetUiState, actions: MeetActions) {
 
 @Composable
 private fun PickCard(option: MeetOption) {
-    SoftCard(background = Brush.linearGradient(listOf(Color(0xFFE8F0FF), Color.White))) {
+    SoftCard(background = Hava.p.highlight) {
         Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             val (text, bg, fg) = if (option.everyoneDry) {
                 Triple(stringResource(R.string.meet_all_good), Color(0xFFEAF7E4), Color(0xFF2E7D32))
@@ -423,26 +431,26 @@ private fun PickCard(option: MeetOption) {
             )
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
-                    Text(option.time.format(OptionDay).capitalizeTr(), style = MaterialTheme.typography.bodyLarge, color = NavySoft)
-                    Text("%02d.00".format(option.time.hour), style = MaterialTheme.typography.displaySmall, color = Navy)
+                    Text(option.time.format(OptionDay).capitalizeTr(), style = MaterialTheme.typography.bodyLarge, color = Hava.inkSoft)
+                    Text("%02d.00".format(option.time.hour), style = MaterialTheme.typography.displaySmall, color = Hava.ink)
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(painterResource(R.drawable.ic_place), null, tint = HavaBlue, modifier = Modifier.size(18.dp))
                         Spacer(Modifier.width(4.dp))
-                        Text(option.place.name, style = MaterialTheme.typography.titleMedium, color = Navy)
+                        Text(option.place.name, style = MaterialTheme.typography.titleMedium, color = Hava.ink)
                     }
                 }
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     WeatherIcon(option.hour.condition, option.hour.isDay, size = 56.dp)
-                    Text("${option.hour.temperature.deg()}°", style = MaterialTheme.typography.headlineSmall, color = Navy)
+                    Text("${option.hour.temperature.deg()}°", style = MaterialTheme.typography.headlineSmall, color = Hava.ink)
                     Text(
                         option.hour.precipitationProbability?.let { stringResource(R.string.meet_rain, it) } ?: option.hour.condition.label,
                         style = MaterialTheme.typography.labelMedium,
-                        color = NavySoft
+                        color = Hava.inkSoft
                     )
                 }
             }
-            Box(Modifier.fillMaxWidth().height(1.dp).background(Navy.copy(alpha = 0.06f)))
-            Text(stringResource(R.string.meet_everyone), style = MaterialTheme.typography.titleSmall, color = NavySoft)
+            Box(Modifier.fillMaxWidth().height(1.dp).background(Hava.ink.copy(alpha = 0.06f)))
+            Text(stringResource(R.string.meet_everyone), style = MaterialTheme.typography.titleSmall, color = Hava.inkSoft)
             option.people.forEachIndexed { i, p -> PersonLine(p, i) }
         }
     }
@@ -456,21 +464,21 @@ private fun PersonLine(p: PersonWeather, index: Int) {
         Text(
             "${p.person.name} · ${p.person.city.name}",
             style = MaterialTheme.typography.bodyMedium,
-            color = Navy,
+            color = Hava.ink,
             modifier = Modifier.weight(1f),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
         val h = p.hour
         when {
-            h == null -> Text(stringResource(R.string.meet_unknown), style = MaterialTheme.typography.bodySmall, color = NavySoft)
+            h == null -> Text(stringResource(R.string.meet_unknown), style = MaterialTheme.typography.bodySmall, color = Hava.inkSoft)
             else -> {
                 WeatherIcon(h.condition, h.isDay, size = 22.dp)
                 Spacer(Modifier.width(4.dp))
                 Text(
                     "${h.temperature.deg()}°" + (p.risk?.let { " · ${it.noun}" } ?: ""),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = if (p.risk != null) RiskRed else NavySoft
+                    color = if (p.risk != null) RiskRed else Hava.inkSoft
                 )
             }
         }
@@ -486,26 +494,26 @@ private fun OptionRow(option: MeetOption, isPlanB: Boolean, onClick: () -> Unit)
         ) {
             Column(Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("%02d.00".format(option.time.hour), style = MaterialTheme.typography.titleMedium, color = Navy)
+                    Text("%02d.00".format(option.time.hour), style = MaterialTheme.typography.titleMedium, color = Hava.ink)
                     if (isPlanB) {
                         Spacer(Modifier.width(8.dp))
                         Text(
                             stringResource(R.string.meet_plan_b),
                             style = MaterialTheme.typography.labelMedium,
                             color = HavaBlue,
-                            modifier = Modifier.clip(CircleShape).background(HavaBlueLight).padding(horizontal = 8.dp, vertical = 2.dp)
+                            modifier = Modifier.clip(CircleShape).background(Hava.p.blueTint).padding(horizontal = 8.dp, vertical = 2.dp)
                         )
                     }
                 }
                 Text(
                     option.place.name + (option.risk?.let { " · ${it.label}" } ?: ""),
                     style = MaterialTheme.typography.bodySmall,
-                    color = if (option.risk != null) RiskRed else NavySoft
+                    color = if (option.risk != null) RiskRed else Hava.inkSoft
                 )
             }
             WeatherIcon(option.hour.condition, option.hour.isDay, size = 30.dp)
             Spacer(Modifier.width(6.dp))
-            Text("${option.hour.temperature.deg()}°", style = MaterialTheme.typography.titleMedium, color = Navy)
+            Text("${option.hour.temperature.deg()}°", style = MaterialTheme.typography.titleMedium, color = Hava.ink)
         }
     }
 }
@@ -548,15 +556,15 @@ private fun Actions(state: MeetUiState, actions: MeetActions) {
             Text(stringResource(R.string.meet_share), color = HavaBlue, style = MaterialTheme.typography.titleSmall)
         }
     } else {
-        SoftCard(background = Brush.linearGradient(listOf(Color(0xFFEAF7E4), Color.White))) {
+        SoftCard(background = Hava.p.highlight) {
             Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
                 Box(Modifier.size(40.dp).clip(CircleShape).background(Sun), contentAlignment = Alignment.Center) {
-                    Icon(painterResource(R.drawable.ic_check), null, tint = Navy)
+                    Icon(painterResource(R.drawable.ic_check), null, tint = Hava.ink)
                 }
                 Spacer(Modifier.width(12.dp))
                 Column(Modifier.weight(1f)) {
-                    Text(stringResource(R.string.meet_saved), style = MaterialTheme.typography.titleMedium, color = Navy)
-                    Text(stringResource(R.string.meet_saved_body), style = MaterialTheme.typography.bodySmall, color = NavySoft)
+                    Text(stringResource(R.string.meet_saved), style = MaterialTheme.typography.titleMedium, color = Hava.ink)
+                    Text(stringResource(R.string.meet_saved_body), style = MaterialTheme.typography.bodySmall, color = Hava.inkSoft)
                 }
                 Icon(painterResource(R.drawable.ic_check_circle), null, tint = GoodGreen)
             }
@@ -575,9 +583,9 @@ private fun Actions(state: MeetUiState, actions: MeetActions) {
 
 @Composable
 private fun Notice(text: String, action: Pair<String, () -> Unit>? = null) {
-    SoftCard(background = androidx.compose.ui.graphics.SolidColor(SkyTint)) {
+    SoftCard(background = androidx.compose.ui.graphics.SolidColor(Hava.cardTint)) {
         Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text(text, style = MaterialTheme.typography.bodyMedium, color = Navy, modifier = Modifier.weight(1f))
+            Text(text, style = MaterialTheme.typography.bodyMedium, color = Hava.ink, modifier = Modifier.weight(1f))
             if (action != null) TextButton(onClick = action.second) { Text(action.first, color = HavaBlue) }
         }
     }

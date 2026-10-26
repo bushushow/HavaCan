@@ -60,11 +60,15 @@ import com.kampplus.havacan.domain.wardrobe.OutfitResult
 import com.kampplus.havacan.domain.wardrobe.WeatherContext
 import com.kampplus.havacan.model.WeatherCondition
 import com.kampplus.havacan.model.deg
+import com.kampplus.havacan.ui.common.OnSky
+import com.kampplus.havacan.ui.common.OnSkySoft
+import com.kampplus.havacan.ui.common.SkyHeader
 import com.kampplus.havacan.ui.home.character.HavaCanArt
 import com.kampplus.havacan.ui.home.character.HavaCanPoseStyle
 import com.kampplus.havacan.ui.home.components.HavaCanLogo
 import com.kampplus.havacan.ui.home.components.SoftCard
 import com.kampplus.havacan.ui.home.components.WeatherIcon
+import com.kampplus.havacan.ui.theme.Hava
 import com.kampplus.havacan.ui.theme.HavaBlue
 import com.kampplus.havacan.ui.theme.HavaBlueLight
 import com.kampplus.havacan.ui.theme.Navy
@@ -97,55 +101,55 @@ fun OutfitScreen(
     Column(
         Modifier
             .fillMaxSize()
-            .background(Brush.verticalGradient(listOf(Color(0xFFFFFBF0), Color(0xFFEFF5FF))))
-            .statusBarsPadding()
+            .background(Hava.p.highlight)
             .navigationBarsPadding()
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
-        Row(Modifier.fillMaxWidth().padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-            BackLink(HavaBlue, HavaBlue, onBack)
-            Spacer(Modifier.weight(1f))
-            WeatherChip(weather)
-        }
+        SkyHeader(bleed = 16.dp) {
+            Row(Modifier.fillMaxWidth().padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                BackLink(OnSky, OnSky, onBack)
+                Spacer(Modifier.weight(1f))
+                WeatherChip(weather)
+            }
 
-        Box(Modifier.fillMaxWidth().height(170.dp)) {
-            Column(Modifier.align(Alignment.CenterStart).padding(start = 4.dp, end = 150.dp)) {
-                Text(
-                    stringResource(R.string.todays_outfit),
-                    style = MaterialTheme.typography.displaySmall,
-                    color = Navy,
-                    modifier = Modifier
-                        .semantics { heading() }
-                        .drawBehind {
-                            drawLine(
-                                Sun,
-                                Offset(0f, size.height + 4f),
-                                Offset(size.width * 0.7f, size.height),
-                                5.dp.toPx(),
-                                StrokeCap.Round
-                            )
+            Box(Modifier.fillMaxWidth().height(170.dp)) {
+                Column(Modifier.align(Alignment.CenterStart).padding(start = 4.dp, end = 150.dp)) {
+                    Text(
+                        stringResource(R.string.todays_outfit),
+                        style = MaterialTheme.typography.displaySmall,
+                        color = OnSky,
+                        modifier = Modifier
+                            .semantics { heading() }
+                            .drawBehind {
+                                drawLine(
+                                    Sun,
+                                    Offset(0f, size.height + 4f),
+                                    Offset(size.width * 0.7f, size.height),
+                                    5.dp.toPx(),
+                                    StrokeCap.Round
+                                )
+                            }
+                    )
+                    Spacer(Modifier.height(10.dp))
+                    if (outfit.result is OutfitResult.Ready) {
+                        Text(stringResource(R.string.from_your_wardrobe), style = MaterialTheme.typography.bodyLarge, color = OnSkySoft)
+                    }
+                }
+                HavaCanArt(
+                    HavaCanPoseStyle.Cheer,
+                    clock,
+                    Modifier
+                        .align(Alignment.CenterEnd)
+                        .size(150.dp)
+                        .graphicsLayer {
+                            translationY = -hop.value * 40.dp.toPx()
+                            rotationZ = hop.value * -12f
                         }
                 )
-                Spacer(Modifier.height(10.dp))
-                if (outfit.result is OutfitResult.Ready) {
-                    Text(stringResource(R.string.from_your_wardrobe), style = MaterialTheme.typography.bodyLarge, color = NavySoft)
-                }
             }
-            HavaCanArt(
-                HavaCanPoseStyle.Cheer,
-                clock,
-                Modifier
-                    .align(Alignment.CenterEnd)
-                    .size(150.dp)
-                    .graphicsLayer {
-                        translationY = -hop.value * 40.dp.toPx()
-                        rotationZ = hop.value * -12f
-                    }
-            )
         }
-
         when (val result = outfit.result) {
             is OutfitResult.Ready -> ReadyOutfit(result, outfit.generation)
             is OutfitResult.Missing -> MissingPieces(result.categories, onAddCategory)
@@ -183,7 +187,7 @@ fun OutfitScreen(
         Text(
             stringResource(R.string.shake_footnote),
             style = MaterialTheme.typography.bodySmall,
-            color = NavySoft,
+            color = Hava.inkSoft,
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth()
         )
@@ -194,25 +198,25 @@ fun OutfitScreen(
 @Composable
 private fun WeatherChip(weather: WeatherContext?) {
     Row(
-        Modifier.clip(CircleShape).background(Color.White).padding(horizontal = 12.dp, vertical = 8.dp),
+        Modifier.clip(CircleShape).background(Hava.card).padding(horizontal = 12.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         if (weather != null) {
             WeatherIcon(if (weather.rainLikely) WeatherCondition.Rain else WeatherCondition.Clear, true, size = 22.dp)
             Spacer(Modifier.width(6.dp))
-            Text("${weather.placeName} · ${weather.feelsLike.deg()}°", style = MaterialTheme.typography.labelLarge, color = Navy)
+            Text("${weather.placeName} · ${weather.feelsLike.deg()}°", style = MaterialTheme.typography.labelLarge, color = Hava.ink)
         } else {
-            Text(stringResource(R.string.no_weather), style = MaterialTheme.typography.labelLarge, color = NavySoft)
+            Text(stringResource(R.string.no_weather), style = MaterialTheme.typography.labelLarge, color = Hava.inkSoft)
         }
     }
 }
 
 @Composable
 private fun ReadyOutfit(result: OutfitResult.Ready, generation: Int) {
-    SoftCard(background = Brush.verticalGradient(listOf(Color(0xFFF4F8FF), Color(0xFFDCE8FF)))) {
+    SoftCard(background = Hava.p.highlight) {
         Column(Modifier.padding(14.dp), horizontalAlignment = Alignment.CenterHorizontally) {
             Row(
-                Modifier.clip(CircleShape).background(Color.White).padding(horizontal = 16.dp, vertical = 8.dp),
+                Modifier.clip(CircleShape).background(Hava.card).padding(horizontal = 16.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(painterResource(R.drawable.ic_hanger), null, tint = HavaBlue, modifier = Modifier.size(20.dp))
@@ -237,13 +241,13 @@ private fun ReadyOutfit(result: OutfitResult.Ready, generation: Int) {
             }
         }
     }
-    SoftCard(background = Brush.horizontalGradient(listOf(HavaBlueLight, Color(0xFFF6F9FF)))) {
+    SoftCard(background = Hava.p.highlight) {
         Row(Modifier.padding(16.dp).semantics { liveRegion = LiveRegionMode.Polite }, verticalAlignment = Alignment.CenterVertically) {
             WeatherIcon(WeatherCondition.PartlyCloudy, true, size = 52.dp)
             Spacer(Modifier.width(12.dp))
             Column {
-                Text(stringResource(R.string.why_this), style = MaterialTheme.typography.titleMedium, color = Navy)
-                Text(result.reason, style = MaterialTheme.typography.bodyLarge, color = NavySoft)
+                Text(stringResource(R.string.why_this), style = MaterialTheme.typography.titleMedium, color = Hava.ink)
+                Text(result.reason, style = MaterialTheme.typography.bodyLarge, color = Hava.inkSoft)
                 result.note?.let {
                     Text(it, style = MaterialTheme.typography.bodySmall, color = HavaBlue, modifier = Modifier.padding(top = 4.dp))
                 }
@@ -267,14 +271,14 @@ private fun PieceCard(item: ClothingItem, index: Int, generation: Int, modifier:
                 rotationZ = (1 - enter.value) * if (index % 2 == 0) -8f else 8f
             }
             .clip(RoundedCornerShape(18.dp))
-            .background(Color.White),
+            .background(Hava.card),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         LocalImage(item.photoPath, item.name, Modifier.fillMaxWidth().aspectRatio(0.85f), maxSide = 420)
         Text(
             item.name,
             style = MaterialTheme.typography.titleSmall,
-            color = Navy,
+            color = Hava.ink,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis,
             textAlign = TextAlign.Center,
@@ -289,8 +293,8 @@ private fun PieceCard(item: ClothingItem, index: Int, generation: Int, modifier:
 private fun MissingPieces(categories: List<ClothingCategory>, onAdd: (ClothingCategory) -> Unit) {
     SoftCard {
         Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Text(stringResource(R.string.missing_title), style = MaterialTheme.typography.titleLarge, color = Navy)
-            Text(stringResource(R.string.missing_body), style = MaterialTheme.typography.bodyLarge, color = NavySoft)
+            Text(stringResource(R.string.missing_title), style = MaterialTheme.typography.titleLarge, color = Hava.ink)
+            Text(stringResource(R.string.missing_body), style = MaterialTheme.typography.bodyLarge, color = Hava.inkSoft)
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 categories.forEach { c ->
                     OutlinedButton(onClick = { onAdd(c) }, border = BorderStroke(1.5.dp, HavaBlue)) {
