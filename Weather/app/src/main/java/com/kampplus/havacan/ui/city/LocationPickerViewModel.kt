@@ -20,6 +20,7 @@ import com.kampplus.havacan.data.PlaceItem
 import com.kampplus.havacan.data.RecentPlaces
 import com.kampplus.havacan.di.AppContainer
 import com.kampplus.havacan.model.City
+import com.kampplus.havacan.ui.common.ErrorReason
 import java.io.IOException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -43,8 +44,6 @@ internal const val SEARCH_DEBOUNCE_MS = 250L
 private const val KEY_QUERY = "query"
 private const val KEY_DISTRICT_QUERY = "districtQuery"
 private const val KEY_PLATE = "plate"
-
-enum class ErrorReason { NoConnection, Server, Unknown }
 
 sealed interface SearchState {
     /** Nothing typed: the screen shows recents and the 81 provinces. */

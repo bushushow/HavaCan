@@ -2,9 +2,7 @@ package com.kampplus.havacan.ui.plans
 
 import com.kampplus.havacan.data.CalendarEvent
 import com.kampplus.havacan.data.FilePlanStore
-import com.kampplus.havacan.data.LocationStore
 import com.kampplus.havacan.data.OpenMeteoWeatherRepository
-import com.kampplus.havacan.data.PlanScheduler
 import com.kampplus.havacan.data.WeatherRepository
 import com.kampplus.havacan.data.provinceCities
 import com.kampplus.havacan.data.remote.CurrentDto
@@ -16,20 +14,18 @@ import com.kampplus.havacan.model.City
 import com.kampplus.havacan.model.Plan
 import com.kampplus.havacan.model.PlanSource
 import com.kampplus.havacan.model.PlanType
+import com.kampplus.havacan.testing.FakeLocationStore
+import com.kampplus.havacan.testing.MainDispatcherRule
+import com.kampplus.havacan.testing.RecordingScheduler
 import java.time.LocalDateTime
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
-import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.test.setMain
-import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -42,15 +38,13 @@ class PlansViewModelTest {
     private val dispatcher = StandardTestDispatcher()
     private val ankara = provinceCities.first { it.name == "Ankara" }
     private val now = LocalDateTime.parse("2026-10-25T10:00")
-    private val scheduled = mutableListOf<String>()
+    private val recorder = RecordingScheduler()
+    private val scheduled get() = recorder.scheduled
     private var events = emptyList<CalendarEvent>()
     private var calendarAllowed = false
 
-    @Before
-    fun setUp() = Dispatchers.setMain(dispatcher)
-
-    @After
-    fun tearDown() = Dispatchers.resetMain()
+    @get:Rule
+    val mainRule = MainDispatcherRule(dispatcher)
 
     /** Dry until 15:00, rain from 16:00 to 18:00. */
     private val api = object : ForecastApi {
@@ -87,22 +81,12 @@ class PlansViewModelTest {
         val vm = PlansViewModel(
             plans = store,
             weather = OpenMeteoWeatherRepository(api),
-            location = object : LocationStore {
-                override fun load(): City = ankara
-                override fun save(city: City) = Unit
-            },
+            location = FakeLocationStore(ankara),
             calendar = object : CalendarSource {
                 override fun hasPermission() = calendarAllowed
                 override suspend fun upcomingEvents() = events
             },
-            scheduler = object : PlanScheduler {
-                override fun schedule(plan: Plan) {
-                    scheduled += plan.id
-                }
-                override fun cancel(planId: String) {
-                    scheduled -= planId
-                }
-            },
+            scheduler = recorder,
             now = { now }
         )
         backgroundScope.launch(dispatcher) { vm.uiState.collect {} }

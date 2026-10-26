@@ -38,9 +38,9 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kampplus.havacan.R
-import com.kampplus.havacan.ui.city.ErrorReason
+import com.kampplus.havacan.ui.common.ErrorReason
+import com.kampplus.havacan.ui.common.LoadState
 import com.kampplus.havacan.ui.home.HomeUiState
-import com.kampplus.havacan.ui.home.WeatherLoadState
 import com.kampplus.havacan.ui.theme.HavaBlue
 import com.kampplus.havacan.ui.theme.HavaBlueLight
 import com.kampplus.havacan.ui.theme.Navy
@@ -54,9 +54,9 @@ import kotlin.math.roundToInt
 fun WeatherHero(state: HomeUiState, onRetry: () -> Unit, modifier: Modifier = Modifier) {
     Column(modifier.semantics { liveRegion = LiveRegionMode.Polite }) {
         when (val load = state.load) {
-            WeatherLoadState.Loading -> HeroPlaceholder()
-            WeatherLoadState.Empty -> HeroMessage(stringResource(R.string.weather_empty), null, onRetry)
-            is WeatherLoadState.Error -> HeroMessage(
+            LoadState.Loading -> HeroPlaceholder()
+            LoadState.Empty -> HeroMessage(stringResource(R.string.weather_empty), null, onRetry)
+            is LoadState.Error -> HeroMessage(
                 stringResource(R.string.weather_error_title),
                 stringResource(
                     when (load.reason) {
@@ -67,8 +67,8 @@ fun WeatherHero(state: HomeUiState, onRetry: () -> Unit, modifier: Modifier = Mo
                 ),
                 onRetry
             )
-            is WeatherLoadState.Success -> {
-                val forecast = load.forecast
+            is LoadState.Success -> {
+                val forecast = load.value
                 val hour = state.selectedHour
                 val isNow = state.isNowSelected || hour == null
                 val temperature = if (isNow) forecast.current.temperature else hour!!.temperature

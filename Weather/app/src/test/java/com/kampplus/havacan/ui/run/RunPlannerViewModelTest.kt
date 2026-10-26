@@ -1,9 +1,7 @@
 package com.kampplus.havacan.ui.run
 
 import com.kampplus.havacan.data.FilePlanStore
-import com.kampplus.havacan.data.LocationStore
 import com.kampplus.havacan.data.OpenMeteoWeatherRepository
-import com.kampplus.havacan.data.PlanScheduler
 import com.kampplus.havacan.data.WeatherRepository
 import com.kampplus.havacan.data.provinceCities
 import com.kampplus.havacan.data.remote.CurrentDto
@@ -15,25 +13,24 @@ import com.kampplus.havacan.model.City
 import com.kampplus.havacan.model.Plan
 import com.kampplus.havacan.model.Reminder
 import com.kampplus.havacan.model.RunDetails
+import com.kampplus.havacan.testing.FakeLocationStore
+import com.kampplus.havacan.testing.MainDispatcherRule
+import com.kampplus.havacan.testing.RecordingScheduler
+import com.kampplus.havacan.ui.common.LoadState
 import java.io.File
 import java.io.IOException
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
-import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.test.setMain
-import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -47,15 +44,13 @@ class RunPlannerViewModelTest {
     private val ankara = provinceCities.first { it.name == "Ankara" }
     private val izmir = provinceCities.first { it.name == "İzmir" }
     private val now = LocalDateTime.parse("2026-10-25T10:00")
-    private val scheduled = mutableListOf<String>()
+    private val recorder = RecordingScheduler()
+    private val scheduled get() = recorder.scheduled
     private var online = true
     private var notificationsAllowed = true
 
-    @Before
-    fun setUp() = Dispatchers.setMain(dispatcher)
-
-    @After
-    fun tearDown() = Dispatchers.resetMain()
+    @get:Rule
+    val mainRule = MainDispatcherRule(dispatcher)
 
     /** Today and tomorrow: 08–09 ideal, 07 cool, warm otherwise, rain 14–15, dark outside 07–17. */
     private val api = object : ForecastApi {
@@ -106,18 +101,8 @@ class RunPlannerViewModelTest {
     private fun viewModel(store: FilePlanStore, planId: String? = null, start: String? = null) = RunPlannerViewModel(
         plans = store,
         weather = OpenMeteoWeatherRepository(api),
-        location = object : LocationStore {
-            override fun load(): City = ankara
-            override fun save(city: City) = Unit
-        },
-        scheduler = object : PlanScheduler {
-            override fun schedule(plan: Plan) {
-                scheduled += plan.id
-            }
-            override fun cancel(planId: String) {
-                scheduled -= planId
-            }
-        },
+        location = FakeLocationStore(ankara),
+        scheduler = recorder,
         canNotify = { notificationsAllowed },
         planId = planId,
         initialStart = start,
@@ -197,7 +182,7 @@ class RunPlannerViewModelTest {
         val store = store()
         val vm = viewModel(store)
         advanceUntilIdle()
-        assertEquals(ForecastState.Failed, vm.uiState.value.forecast)
+        assertTrue(vm.uiState.value.forecast is LoadState.Error)
         assertTrue(vm.uiState.value.suggestions.isEmpty())
         assertNull(vm.uiState.value.start)
 
@@ -212,7 +197,7 @@ class RunPlannerViewModelTest {
         online = true
         vm.retry()
         advanceUntilIdle()
-        assertTrue(vm.uiState.value.forecast is ForecastState.Ready)
+        assertTrue(vm.uiState.value.forecast is LoadState.Success)
     }
 
     @Test
@@ -244,7 +229,7 @@ class RunPlannerViewModelTest {
         vm.setCity(izmir)
         advanceUntilIdle()
         assertEquals(izmir, vm.uiState.value.city)
-        assertTrue(vm.uiState.value.forecast is ForecastState.Ready)
+        assertTrue(vm.uiState.value.forecast is LoadState.Success)
     }
 
     @Test

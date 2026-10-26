@@ -10,23 +10,21 @@ import com.kampplus.havacan.data.remote.ForecastApi
 import com.kampplus.havacan.data.remote.ForecastResponse
 import com.kampplus.havacan.data.remote.HourlyDto
 import com.kampplus.havacan.model.City
-import com.kampplus.havacan.ui.city.ErrorReason
+import com.kampplus.havacan.testing.MainDispatcherRule
+import com.kampplus.havacan.ui.common.ErrorReason
+import com.kampplus.havacan.ui.common.LoadState
 import java.io.IOException
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceTimeBy
-import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.test.setMain
-import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
-import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -35,11 +33,8 @@ class HomeViewModelTest {
     private val api = FakeForecastApi()
     private val store = FakeStore()
 
-    @Before
-    fun setUp() = Dispatchers.setMain(dispatcher)
-
-    @After
-    fun tearDown() = Dispatchers.resetMain()
+    @get:Rule
+    val mainRule = MainDispatcherRule(dispatcher)
 
     private fun TestScope.viewModel(handle: SavedStateHandle = SavedStateHandle()): HomeViewModel {
         val vm = HomeViewModel(OpenMeteoWeatherRepository(api), store, handle)
@@ -54,7 +49,7 @@ class HomeViewModelTest {
         val vm = viewModel()
         val state = vm.uiState.value
         assertEquals("Ankara", state.city.name)
-        assertTrue(state.load is WeatherLoadState.Success)
+        assertTrue(state.load is LoadState.Success)
         assertEquals(listOf(39.91987), api.latitudes)
         assertEquals(15.0, state.selectedHour!!.temperature, 0.0)
         assertNotNull(state.runningAdvice)
@@ -101,18 +96,18 @@ class HomeViewModelTest {
     fun networkErrorThenRetry() = runTest(dispatcher) {
         api.failure = IOException("offline")
         val vm = viewModel()
-        assertEquals(WeatherLoadState.Error(ErrorReason.NoConnection), vm.uiState.value.load)
+        assertEquals(LoadState.Error(ErrorReason.NoConnection), vm.uiState.value.load)
         api.failure = null
         vm.retry()
         advanceTimeBy(1_000)
         runCurrent()
-        assertTrue(vm.uiState.value.load is WeatherLoadState.Success)
+        assertTrue(vm.uiState.value.load is LoadState.Success)
     }
 
     @Test
     fun responseWithoutDataIsEmpty() = runTest(dispatcher) {
         api.response = ForecastResponse()
-        assertEquals(WeatherLoadState.Empty, viewModel().uiState.value.load)
+        assertEquals(LoadState.Empty, viewModel().uiState.value.load)
     }
 
     private class FakeStore : LocationStore {

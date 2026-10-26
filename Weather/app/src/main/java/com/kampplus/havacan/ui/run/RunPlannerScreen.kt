@@ -98,6 +98,7 @@ import com.kampplus.havacan.domain.running.RunDayOutlook
 import com.kampplus.havacan.domain.running.RunSlot
 import com.kampplus.havacan.model.WeatherCondition
 import com.kampplus.havacan.ui.common.DayStrip
+import com.kampplus.havacan.ui.common.LoadState
 import com.kampplus.havacan.ui.home.components.SoftCard
 import com.kampplus.havacan.ui.home.components.WeatherIcon
 import com.kampplus.havacan.ui.plans.capitalizeTr
@@ -285,7 +286,7 @@ private fun SectionTitle(text: String) {
 
 @Composable
 private fun DayStrip(state: RunPlannerUiState, onDate: (LocalDate) -> Unit, onPickOther: () -> Unit) {
-    val daily = (state.forecast as? ForecastState.Ready)?.forecast?.daily.orEmpty()
+    val daily = (state.forecast as? LoadState.Success)?.value?.daily.orEmpty()
     DayStrip(
         title = stringResource(R.string.run_pick_date),
         today = state.today,
@@ -336,16 +337,16 @@ private fun Pill(
 private fun SuggestedHours(state: RunPlannerUiState, actions: RunPlannerActions, onOtherTime: () -> Unit) {
     val forecast = state.forecast
     when (forecast) {
-        ForecastState.Loading -> Box(Modifier.fillMaxWidth().height(120.dp), contentAlignment = Alignment.Center) {
+        LoadState.Loading -> Box(Modifier.fillMaxWidth().height(120.dp), contentAlignment = Alignment.Center) {
             CircularProgressIndicator(Modifier.size(26.dp), color = HavaBlue, strokeWidth = 2.5.dp)
         }
-        ForecastState.Failed -> NoticeCard(
+        is LoadState.Error, LoadState.Empty -> NoticeCard(
             title = stringResource(R.string.run_forecast_failed_title),
             body = stringResource(R.string.run_forecast_failed_body),
             icon = R.drawable.ic_cloud_off,
             action = stringResource(R.string.run_retry) to actions.onRetry
         )
-        is ForecastState.Ready -> when (val outlook = state.outlook) {
+        is LoadState.Success -> when (val outlook = state.outlook) {
             is RunDayOutlook.NoForecastYet -> NoticeCard(
                 title = stringResource(R.string.run_no_forecast_title),
                 body = stringResource(R.string.run_no_forecast_body, outlook.daysUntilAvailable.toInt()),
@@ -404,9 +405,9 @@ private fun SuggestedHours(state: RunPlannerUiState, actions: RunPlannerActions,
             )
         }
     }
-    if (forecast is ForecastState.Ready && rows.isNotEmpty()) {
+    if (forecast is LoadState.Success && rows.isNotEmpty()) {
         Text(
-            stringResource(R.string.run_source, forecast.forecast.current.time.substringAfter('T').replace(':', '.')),
+            stringResource(R.string.run_source, forecast.value.current.time.substringAfter('T').replace(':', '.')),
             style = MaterialTheme.typography.labelSmall,
             color = Hava.inkSoft.copy(alpha = 0.75f),
             modifier = Modifier.padding(start = 6.dp)

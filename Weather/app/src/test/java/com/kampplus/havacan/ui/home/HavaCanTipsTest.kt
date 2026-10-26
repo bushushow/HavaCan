@@ -7,6 +7,7 @@ import com.kampplus.havacan.model.Forecast
 import com.kampplus.havacan.model.HourlyWeather
 import com.kampplus.havacan.model.TemperatureUnit
 import com.kampplus.havacan.model.WeatherCondition
+import com.kampplus.havacan.ui.common.LoadState
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -31,7 +32,7 @@ class HavaCanTipsTest {
             Forecast("Europe/Istanbul", CurrentWeather("2026-10-26T10:00", 16.0, 15.0, WeatherCondition.Clear, true, 5.0), hours, null)
         return HomeUiState(
             city = provinceCities.first(),
-            load = WeatherLoadState.Success(forecast),
+            load = LoadState.Success(forecast),
             insight = WeatherInsightBuilder.build(forecast.upcoming)
         )
     }

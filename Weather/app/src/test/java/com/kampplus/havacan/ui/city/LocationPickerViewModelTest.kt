@@ -12,24 +12,26 @@ import com.kampplus.havacan.data.RecentPlaces
 import com.kampplus.havacan.data.remote.CityApi
 import com.kampplus.havacan.model.City
 import com.kampplus.havacan.model.CitySearchResponse
+import com.kampplus.havacan.testing.MainDispatcherRule
+import com.kampplus.havacan.ui.common.ErrorReason
 import java.io.IOException
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
-import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.test.setMain
-import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class LocationPickerViewModelTest {
     private val dispatcher = StandardTestDispatcher()
+
+    @get:Rule
+    val mainRule = MainDispatcherRule(dispatcher)
 
     private fun district(name: String, id: Long, province: String, lat: Double, lon: Double) =
         City(id, name, lat, lon, "TR", "Türkiye", province)
@@ -79,12 +81,8 @@ class LocationPickerViewModelTest {
 
     @Before
     fun setUp() {
-        Dispatchers.setMain(dispatcher)
         vm = LocationPickerViewModel(PlaceDirectory(districts), OpenMeteoCityRepository(api), recents, locator, SavedStateHandle())
     }
-
-    @After
-    fun tearDown() = Dispatchers.resetMain()
 
     @Test
     fun localSearchNeedsNoNetwork() = runTest(dispatcher) {

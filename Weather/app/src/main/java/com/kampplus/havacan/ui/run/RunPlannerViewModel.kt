@@ -24,6 +24,8 @@ import com.kampplus.havacan.model.Plan
 import com.kampplus.havacan.model.PlanType
 import com.kampplus.havacan.model.Reminder
 import com.kampplus.havacan.model.RunDetails
+import com.kampplus.havacan.ui.common.LoadState
+import com.kampplus.havacan.ui.common.toErrorReason
 import com.kampplus.havacan.ui.home.HomeViewModel
 import com.kampplus.havacan.ui.plans.PlanNotifications
 import com.kampplus.havacan.ui.plans.WorkPlanScheduler
@@ -41,13 +43,6 @@ enum class RunGoal(val distanceKm: Int?) { Two(2), Five(5), Ten(10), Free(null) 
 
 enum class DayChoice { Today, Tomorrow, Other }
 
-/** The forecast for the run's location, as far as we know it. */
-sealed interface ForecastState {
-    data object Loading : ForecastState
-    data object Failed : ForecastState
-    data class Ready(val forecast: Forecast) : ForecastState
-}
-
 /** What happened to the reminder when the run was saved; the user is told exactly this. */
 enum class ReminderResult { Scheduled, Off, TooLate, NotificationsBlocked }
 
@@ -58,7 +53,7 @@ data class RunPlannerUiState(
     val date: LocalDate,
     val city: City,
     val placeName: String = "",
-    val forecast: ForecastState = ForecastState.Loading,
+    val forecast: LoadState<Forecast> = LoadState.Loading,
     val outlook: RunDayOutlook? = null,
     /** The chosen start; null until a suggestion or a manual time is picked. */
     val start: LocalTime? = null,
@@ -161,13 +156,18 @@ class RunPlannerViewModel(
     }
 
     private suspend fun loadForecast() {
-        _uiState.update { it.copy(forecast = ForecastState.Loading) }
+        _uiState.update { it.copy(forecast = LoadState.Loading) }
         val city = _uiState.value.city
-        val forecast = runCatching { weather.forecast(city.latitude, city.longitude) }.getOrNull()
+        val result = runCatching { weather.forecast(city.latitude, city.longitude) }
         // The user may have picked another place while this one was loading
         if (_uiState.value.city != city) return
         _uiState.update {
-            it.copy(forecast = if (forecast != null) ForecastState.Ready(forecast) else ForecastState.Failed)
+            it.copy(
+                forecast = result.fold(
+                    onSuccess = { f -> if (f != null) LoadState.Success(f) else LoadState.Empty },
+                    onFailure = { e -> LoadState.Error(e.toErrorReason()) }
+                )
+            )
         }
         recompute(keepStart = true)
     }
@@ -175,7 +175,7 @@ class RunPlannerViewModel(
     /** Re-scores the day; picks the best start unless the user already chose one that still fits. */
     private fun recompute(keepStart: Boolean) {
         _uiState.update { s ->
-            val forecast = (s.forecast as? ForecastState.Ready)?.forecast
+            val forecast = (s.forecast as? LoadState.Success)?.value
             val outlook = forecast?.let { planner.outlook(it, s.date, s.durationMinutes, now()) }
             val suggestions = (outlook as? RunDayOutlook.Ready)?.suggestions.orEmpty()
             val start = s.start?.takeIf { keepStart && !LocalDateTime.of(s.date, it).isBefore(now()) }
@@ -210,7 +210,7 @@ class RunPlannerViewModel(
 
     fun selectStart(time: LocalTime) {
         _uiState.update { s ->
-            val forecast = (s.forecast as? ForecastState.Ready)?.forecast
+            val forecast = (s.forecast as? LoadState.Success)?.value
             s.copy(start = time, selectedSlot = slotFor(forecast, s.date, time, s.durationMinutes), error = null)
         }
     }

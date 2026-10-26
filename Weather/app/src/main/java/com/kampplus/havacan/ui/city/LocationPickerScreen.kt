@@ -106,6 +106,7 @@ import com.kampplus.havacan.R
 import com.kampplus.havacan.data.PlaceItem
 import com.kampplus.havacan.domain.voice.TurkishText
 import com.kampplus.havacan.model.City
+import com.kampplus.havacan.ui.common.ErrorReason
 import com.kampplus.havacan.ui.home.character.HavaCanArt
 import com.kampplus.havacan.ui.home.character.HavaCanPoseStyle
 import com.kampplus.havacan.ui.theme.Hava

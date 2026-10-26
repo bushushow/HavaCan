@@ -16,7 +16,9 @@ import com.kampplus.havacan.di.AppContainer
 import com.kampplus.havacan.domain.insight.WeatherInsightBuilder
 import com.kampplus.havacan.domain.running.RunningSuitabilityCalculator
 import com.kampplus.havacan.model.City
-import com.kampplus.havacan.ui.city.ErrorReason
+import com.kampplus.havacan.model.Forecast
+import com.kampplus.havacan.ui.common.ErrorReason
+import com.kampplus.havacan.ui.common.LoadState
 import java.io.IOException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -41,12 +43,12 @@ class HomeViewModel(
     private val city = MutableStateFlow(locationStore.load() ?: DEFAULT_CITY)
     private val mode = savedStateHandle.getStateFlow(KEY_MODE, HomeMode.Normal.name)
     private val selectedTime = savedStateHandle.getStateFlow<String?>(KEY_SELECTED_TIME, null)
-    private val load = MutableStateFlow<WeatherLoadState>(WeatherLoadState.Loading)
+    private val load = MutableStateFlow<LoadState<Forecast>>(LoadState.Loading)
     private var loadJob: Job? = null
 
     val uiState: StateFlow<HomeUiState> =
         combine(city, mode, load, selectedTime) { city, mode, load, selected ->
-            val forecast = (load as? WeatherLoadState.Success)?.forecast
+            val forecast = (load as? LoadState.Success)?.value
             val upcoming = forecast?.upcoming.orEmpty()
             HomeUiState(
                 city = city,
@@ -67,16 +69,16 @@ class HomeViewModel(
         val target = city.value
         loadJob?.cancel()
         loadJob = viewModelScope.launch {
-            if (load.value !is WeatherLoadState.Success || force) load.value = WeatherLoadState.Loading
+            if (load.value !is LoadState.Success || force) load.value = LoadState.Loading
             load.value = try {
                 val forecast = repository.forecast(target.latitude, target.longitude, forceRefresh = force)
-                if (forecast == null) WeatherLoadState.Empty else WeatherLoadState.Success(forecast)
+                if (forecast == null) LoadState.Empty else LoadState.Success(forecast)
             } catch (e: IOException) {
-                WeatherLoadState.Error(ErrorReason.NoConnection)
+                LoadState.Error(ErrorReason.NoConnection)
             } catch (e: HttpException) {
-                WeatherLoadState.Error(ErrorReason.Server)
+                LoadState.Error(ErrorReason.Server)
             } catch (e: JsonParseException) {
-                WeatherLoadState.Error(ErrorReason.Unknown)
+                LoadState.Error(ErrorReason.Unknown)
             }
         }
     }
@@ -88,7 +90,7 @@ class HomeViewModel(
         locationStore.save(chosen)
         city.value = chosen
         savedStateHandle[KEY_SELECTED_TIME] = null
-        load.value = WeatherLoadState.Loading
+        load.value = LoadState.Loading
         refresh()
     }
 
