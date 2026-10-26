@@ -48,7 +48,9 @@ data class Plan(
     /** Set for plans made in Koşu Planla; null for every other plan (and older saved plans). */
     val run: RunDetails? = null,
     /** A reminder at any offset (picked on a clock); when set it wins over [reminder]. */
-    val reminderMinutes: Long? = null
+    val reminderMinutes: Long? = null,
+    /** Set for plans made in Weather Meet: who's coming. Null for every other plan. */
+    val meet: MeetDetails? = null
 ) {
     val localDate: LocalDate get() = LocalDate.parse(date)
     val localTime: LocalTime get() = LocalTime.parse(time)

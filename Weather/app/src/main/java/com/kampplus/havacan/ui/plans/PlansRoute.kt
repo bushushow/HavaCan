@@ -40,6 +40,7 @@ import com.kampplus.havacan.data.AppGraph
 import com.kampplus.havacan.model.City
 import com.kampplus.havacan.model.Plan
 import com.kampplus.havacan.model.PlanSource
+import com.kampplus.havacan.ui.meet.MeetRoute
 import com.kampplus.havacan.ui.run.RunSaved
 import java.time.LocalDateTime
 
@@ -48,6 +49,7 @@ sealed interface PlansDestination {
     data object List : PlansDestination
     data class Editor(val planId: String?) : PlansDestination
     data class PlanB(val planId: String) : PlansDestination
+    data class Meet(val token: Long) : PlansDestination
 }
 
 /**
@@ -143,7 +145,19 @@ fun PlansRoute(
                     onAddPlan = {
                         editorCity = null
                         destination = PlansDestination.Editor(null)
-                    }
+                    },
+                    onOpenMeet = { destination = PlansDestination.Meet(System.currentTimeMillis()) }
+                )
+                is PlansDestination.Meet -> MeetRoute(
+                    token = dest.token,
+                    clock = clock,
+                    onPickCity = onPickPlanCity,
+                    onSaved = {
+                        if (Build.VERSION.SDK_INT >= 33 && !PlanNotifications.canNotify(context)) {
+                            notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+                        }
+                    },
+                    onClose = { destination = PlansDestination.List }
                 )
                 is PlansDestination.Editor -> {
                     val existing = dest.planId?.let { id -> state.items.firstOrNull { it.plan.id == id }?.plan }
@@ -243,12 +257,14 @@ private val DestinationSaver = androidx.compose.runtime.saveable.Saver<PlansDest
             PlansDestination.List -> "list"
             is PlansDestination.Editor -> "editor:${it.planId.orEmpty()}"
             is PlansDestination.PlanB -> "planb:${it.planId}"
+            is PlansDestination.Meet -> "meet:${it.token}"
         }
     },
     restore = {
         when {
             it.startsWith("editor:") -> PlansDestination.Editor(it.removePrefix("editor:").ifEmpty { null })
             it.startsWith("planb:") -> PlansDestination.PlanB(it.removePrefix("planb:"))
+            it.startsWith("meet:") -> PlansDestination.Meet(it.removePrefix("meet:").toLongOrNull() ?: 0L)
             else -> PlansDestination.List
         }
     }

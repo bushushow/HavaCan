@@ -98,6 +98,7 @@ import com.kampplus.havacan.domain.running.RunDayOutlook
 import com.kampplus.havacan.domain.running.RunSlot
 import com.kampplus.havacan.model.WeatherCondition
 import com.kampplus.havacan.model.deg
+import com.kampplus.havacan.ui.common.DayStrip
 import com.kampplus.havacan.ui.home.components.SoftCard
 import com.kampplus.havacan.ui.home.components.WeatherIcon
 import com.kampplus.havacan.ui.plans.capitalizeTr
@@ -123,9 +124,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 private val TURKISH = Locale.forLanguageTag("tr")
-private val LongDate = DateTimeFormatter.ofPattern("d MMMM EEEE", TURKISH)
-private val DayName = DateTimeFormatter.ofPattern("EEE", TURKISH)
-private const val STRIP_DAYS = 14L
 
 private fun LocalTime.label() = "%02d.%02d".format(hour, minute)
 
@@ -284,98 +282,17 @@ private fun SectionTitle(text: String) {
     )
 }
 
-/**
- * The next two weeks as a strip of day cells, each with the forecast's weather for that day;
- * the calendar cell at the end reaches any later date.
- */
 @Composable
 private fun DayStrip(state: RunPlannerUiState, onDate: (LocalDate) -> Unit, onPickOther: () -> Unit) {
-    val daily = (state.forecast as? ForecastState.Ready)?.forecast?.daily.orEmpty().associateBy { it.date }
-    val days = (0L until STRIP_DAYS).map { state.today.plusDays(it) }
-    val listState = rememberLazyListState()
-    // Keep the chosen day in view, e.g. after picking one from the calendar
-    LaunchedEffect(state.date) {
-        val index = days.indexOf(state.date).takeIf { it >= 0 } ?: days.size
-        listState.animateScrollToItem((index - 1).coerceAtLeast(0))
-    }
-    SoftCard {
-        Column(Modifier.padding(top = 14.dp, bottom = 12.dp)) {
-            Row(Modifier.padding(horizontal = 18.dp), verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    stringResource(R.string.run_pick_date),
-                    style = MaterialTheme.typography.titleSmall,
-                    color = NavySoft,
-                    modifier = Modifier.weight(1f)
-                )
-                Text(state.date.format(LongDate).capitalizeTr(), style = MaterialTheme.typography.titleSmall, color = HavaBlue)
-            }
-            Spacer(Modifier.height(10.dp))
-            LazyRow(
-                state = listState,
-                contentPadding = PaddingValues(horizontal = 12.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(days, key = { it.toString() }) { day ->
-                    val top = when (day) {
-                        state.today -> stringResource(R.string.today)
-                        state.today.plusDays(1) -> stringResource(R.string.tomorrow)
-                        else -> day.format(DayName).capitalizeTr()
-                    }
-                    DayCell(top, day.dayOfMonth.toString(), daily[day.toString()]?.condition, day == state.date) { onDate(day) }
-                }
-                item(key = "other") {
-                    val beyond = state.date.isAfter(days.last())
-                    DayCell(
-                        top = if (beyond) state.date.format(DayName).capitalizeTr() else stringResource(R.string.run_other_day),
-                        number = if (beyond) state.date.dayOfMonth.toString() else null,
-                        condition = null,
-                        selected = beyond,
-                        icon = R.drawable.ic_calendar,
-                        onClick = onPickOther
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun DayCell(top: String, number: String?, condition: WeatherCondition?, selected: Boolean, icon: Int? = null, onClick: () -> Unit) {
-    val scale by animateFloatAsState(
-        if (selected) 1f else 0.96f,
-        spring(dampingRatio = 0.45f, stiffness = Spring.StiffnessMedium),
-        label = "dayScale"
+    val daily = (state.forecast as? ForecastState.Ready)?.forecast?.daily.orEmpty()
+    DayStrip(
+        title = stringResource(R.string.run_pick_date),
+        today = state.today,
+        selected = state.date,
+        conditions = daily.associate { it.date to it.condition },
+        onDate = onDate,
+        onPickOther = onPickOther
     )
-    val textColor by animateColorAsState(if (selected) Color.White else Navy, tween(200), label = "dayText")
-    Column(
-        Modifier
-            .width(66.dp)
-            .scale(scale)
-            .clip(RoundedCornerShape(20.dp))
-            .background(if (selected) Brush.verticalGradient(listOf(Color(0xFF3D82FF), HavaBlue)) else SolidColor(SkyTint))
-            .selectable(selected = selected, role = Role.RadioButton, onClick = onClick)
-            .padding(vertical = 10.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(2.dp)
-    ) {
-        Text(
-            top,
-            style = MaterialTheme.typography.labelLarge,
-            color = if (selected) Color.White.copy(alpha = 0.9f) else NavySoft,
-            maxLines = 1
-        )
-        if (number != null) Text(number, style = MaterialTheme.typography.titleLarge, color = textColor)
-        when {
-            icon != null -> Icon(
-                painterResource(icon),
-                null,
-                tint = if (selected) Color.White else HavaBlue,
-                modifier = Modifier.padding(top = 2.dp).size(26.dp)
-            )
-            condition != null -> WeatherIcon(condition, isDay = true, size = 26.dp)
-            else -> Spacer(Modifier.height(26.dp))
-        }
-    }
 }
 
 /** A rounded choice; the selected one turns blue with a soft springy pop. */

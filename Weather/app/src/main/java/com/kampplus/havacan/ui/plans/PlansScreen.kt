@@ -81,6 +81,7 @@ fun PlansScreen(
     onOpenPlan: (PlanItem) -> Unit,
     onPlanB: (PlanItem) -> Unit,
     onAddPlan: () -> Unit,
+    onOpenMeet: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -111,6 +112,7 @@ fun PlansScreen(
         if (!state.calendarConnected) CalendarCard(onConnectCalendar) else CalendarConnectedRow()
         WeekStrip(state, onSelectDate)
         state.suggestion?.let { SuggestionCard(it, clock) { onPlanB(it) } }
+        MeetEntryCard(onOpenMeet)
 
         val selected = state.selectedDate
         Text(
@@ -363,6 +365,19 @@ private fun PlanRow(item: PlanItem, onClick: () -> Unit) {
                         color = NavySoft
                     )
                 }
+                item.plan.meet?.let { meet ->
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(painterResource(R.drawable.ic_group), null, tint = HavaBlue, modifier = Modifier.size(16.dp))
+                        Spacer(Modifier.width(4.dp))
+                        Text(
+                            meet.people.joinToString(", ") { it.name },
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = NavySoft,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                }
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(painterResource(R.drawable.ic_place), null, tint = NavySoft, modifier = Modifier.size(16.dp))
                     Spacer(Modifier.width(4.dp))
@@ -443,3 +458,24 @@ fun dayLabel(date: LocalDate, today: LocalDate): String = when (date) {
 }
 
 fun String.capitalizeTr() = replaceFirstChar { it.titlecase(TURKISH) }
+
+/** The way into Weather Meet: plan a meet-up around everyone's weather. */
+@Composable
+private fun MeetEntryCard(onClick: () -> Unit) {
+    SoftCard(background = Brush.linearGradient(listOf(Color(0xFFFFF4CC), Color(0xFFFFFBEE)))) {
+        Row(
+            Modifier.clickable(role = Role.Button, onClick = onClick).padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(Modifier.size(48.dp).clip(RoundedCornerShape(14.dp)).background(Sun), contentAlignment = Alignment.Center) {
+                Icon(painterResource(R.drawable.ic_group), null, tint = Navy)
+            }
+            Spacer(Modifier.width(12.dp))
+            Column(Modifier.weight(1f)) {
+                Text(stringResource(R.string.meet_title), style = MaterialTheme.typography.titleMedium, color = Navy)
+                Text(stringResource(R.string.meet_entry_body), style = MaterialTheme.typography.bodySmall, color = NavySoft)
+            }
+            Icon(painterResource(R.drawable.ic_chevron_right), null, tint = Navy)
+        }
+    }
+}
