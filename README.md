@@ -2,92 +2,96 @@
 
 # ☀️ HavaCan
 
-**Havaya göre gününü planlayan, konuşan ve oyunlaştırılmış kişisel hava asistanı**
+**English** · [Türkçe](README.tr.md)
 
-Turkcell Akademi × Gençlik ve Spor Bakanlığı **Kamp+** Android programında geliştirildi.
+**A talking, gamified personal weather assistant that plans your day around the weather**
 
-🥈 **Kamp+ proje yarışmasında 2. oldu.**
+Built during the **Kamp+** Android program by Turkcell Academy × the Turkish Ministry of Youth and Sports.
+
+🥈 **Took 2nd place in the Kamp+ project competition.**
 
 [![Android CI](https://github.com/bushushow/HavaCan/actions/workflows/android.yml/badge.svg)](https://github.com/bushushow/HavaCan/actions/workflows/android.yml)
 ![Kotlin](https://img.shields.io/badge/Kotlin-2.2-7F52FF?logo=kotlin&logoColor=white)
 ![Jetpack Compose](https://img.shields.io/badge/Jetpack%20Compose-Material%203-4285F4?logo=jetpackcompose&logoColor=white)
 ![minSdk](https://img.shields.io/badge/minSdk-24-3DDC84?logo=android&logoColor=white)
-![Tests](https://img.shields.io/badge/birim%20testi-158-2ea44f)
+![Tests](https://img.shields.io/badge/unit%20tests-158-2ea44f)
 
-[Özellikler](#özellikler) · [Mimari](#mimari) · [Çalıştırma](#çalıştırma) · [Testler](#testler) · [Veri ve gizlilik](#veri-kaynakları-ve-gizlilik) · [Kamp+ görevleri](#kamp-uygulamaları)
+[Features](#features) · [Architecture](#architecture) · [Running](#running) · [Tests](#tests) · [Data and privacy](#data-sources-and-privacy) · [Kamp+ assignments](#kamp-assignments)
 
 </div>
 
 ---
 
-HavaCan, Open-Meteo'nun gerçek tahminini alıp onu **kararlara** çevirir: koşu için en iyi saat, planın yağmura denk gelip gelmediği, Plan B, arkadaşlarla buluşmak için herkese uyan saat, dolaptaki gerçek kıyafetlerden kombin. Sarı maskot **HavaCan** ekranda yaşar, sohbet eder ve sesli komutla bütün uygulamayı gezdirir.
+HavaCan takes the real forecast from Open-Meteo and turns it into **decisions**: the best hour for a run, whether a plan collides with rain, a Plan B, a time that suits every friend you are meeting, and outfits built from the clothes actually in your wardrobe. The yellow mascot **HavaCan** lives on screen, chats with you and can walk you through the whole app by voice.
 
-> **Gerçek veri ilkesi.** Uygulamada demo verisi yoktur. Tahmin gelmezse puan ya da öneri uydurulmaz; ekranda nedeni ve "Tekrar dene" yazar. Kombinler yalnızca kullanıcının fotoğrafladığı kıyafetlerden kurulur.
+> **Real data only.** The app has no demo data. If the forecast does not arrive, no score or suggestion is made up; the screen shows the reason and a "Try again" button. Outfits are built only from clothes the user has photographed.
+
+> The app's interface and voice commands are in Turkish.
 
 <div align="center">
 
-| Ana sayfa | Koyu tema | Planlarım | Dolabım | HavaCan Asistan |
+| Home | Dark theme | My Plans | My Wardrobe | HavaCan Assistant |
 |:---:|:---:|:---:|:---:|:---:|
-| <img src="docs/screenshots/ana-sayfa.png" width="170" alt="Ana sayfa: gökyüzü başlığı, 15 derece açık hava, ada üstünde HavaCan ve saatlik sıcaklık grafiği"> | <img src="docs/screenshots/ana-sayfa-koyu.png" width="170" alt="Ana sayfanın koyu teması: lacivert kartlar ve sarı seçili sekme"> | <img src="docs/screenshots/planlarim.png" width="170" alt="Planlarım: haftalık hava şeridi, Weather Meet kartı ve hava takibi açık bir koşu planı"> | <img src="docs/screenshots/dolabim.png" width="170" alt="Dolabım: Salla Kombin kartı, kıyafet ekle düğmesi ve fotoğraflı kıyafetler"> | <img src="docs/screenshots/havacan-asistan.png" width="170" alt="HavaCan Asistan: karakter, karşılama ve iki hazır soru"> |
+| <img src="docs/screenshots/ana-sayfa.png" width="170" alt="Home: sky header, 15 degrees and clear, HavaCan on an island and an hourly temperature chart"> | <img src="docs/screenshots/ana-sayfa-koyu.png" width="170" alt="Dark theme of the home screen: navy cards and a yellow selected tab"> | <img src="docs/screenshots/planlarim.png" width="170" alt="My Plans: weekly weather strip, a Weather Meet card and a running plan with weather tracking on"> | <img src="docs/screenshots/dolabim.png" width="170" alt="My Wardrobe: Shake for an Outfit card, add clothing button and photographed clothes"> | <img src="docs/screenshots/havacan-asistan.png" width="170" alt="HavaCan Assistant: the character, a greeting and two suggested questions"> |
 
-<sub>Emülatörde gerçek Open-Meteo verisiyle alındı (Gümüşhane, 26 Ekim). Dolaptaki kıyafetler test için eklenmiş çizim fotoğraflardır.</sub>
+<sub>Captured on the emulator with live Open-Meteo data (Gümüşhane, 26 October). The wardrobe items are drawn test photos.</sub>
 
 </div>
 
-## Özellikler
+## Features
 
-| | Özellik | Ne yapar | Kural nerede |
+| | Feature | What it does | Where the rules live |
 |---|---|---|---|
-| 🏝️ | **Ana sayfa** | Canlı ada sahnesi, havaya ve saate göre renk alan gökyüzü, sıcaklık/yağış/rüzgar grafiği, 16 günlük gün şeridi. HavaCan'a dokununca gerçek veriden ipuçları verir | `domain/insight` |
-| 🏃 | **Koşucu Modu** | Her saat için 0–100 koşu uygunluğu (hissedilen sıcaklık, yağış, rüzgar, UV, gün ışığı) ve en iyi pencere | `RunningSuitabilityCalculator` |
-| 📅 | **Planlarım ve Plan B** | Planın saatindeki riski (yağmur, fırtına, kar, rüzgar, sıcak, soğuk) gösterir; ±4 saatte kuru bir saat önerir. Takvim etkinliklerini içe alır | `PlanAdvisor` |
-| 🔔 | **Hatırlatma ve hava takibi** | Plan öncesi hatırlatma; hava bozulursa ya da düzelirse bildirim (uygulama kapalıyken de) | WorkManager |
-| 👟 | **Koşu Planla** | Seçilen günün en uygun başlangıç saatleri, hedef mesafe, süre tekerleği, "koşudan ne kadar önce" hatırlatması | `RunSlotPlanner` |
-| 👥 | **Weather Meet** | Arkadaşlar ve nereden gelecekleri eklenir; herkesin tahminine göre en uygun saat ve yer, kişi bazında hava, Plan B; davet paylaşılır | `MeetPlanner` |
-| 👕 | **Dolabım ve Salla Kombin** | Galeriden ya da kameradan kıyafet; renk telefonda bulunur, yapay zekâ etiketleri önerir. Telefonu sallayınca havaya uygun kombin. Eksik parça varsa sahte kombin değil, eksik kategori gösterilir | `OutfitEngine` |
-| 💬 | **HavaCan Asistan** | Yazılı ve sesli sohbet: hava, plan, kombin, koşu saati; plan oluşturma ve değiştirme (her değişiklik okunur, onay beklenir) | `HavaCanAssistant` |
-| 🎙️ | **Sesli rehber** | Uygulama genelinde sesle gezinme; TalkBack açıksa yanıtları TalkBack okur. Sürüklenebilir mikrofon düğmesi | `VoiceCommandParser` |
-| 📍 | **Konum seç** | 81 il ve 973 ilçe telefonda, internetsiz ve Türkçe karakter duyarsız arama; yurt dışı için Open-Meteo; "mevcut konumum" en yakın gerçek ilçeyi bulur | `PlaceDirectory` |
-| 👤 | **Profil** | °C/°F, aktivite ve stil tercihleri, bildirim tercihleri, erişilebilirlik, gizlilik ve onaylı veri silme | `ProfileStore` |
-| 🌗 | **Tema** | Açık ve koyu tema telefonun ayarını izler; bütün başlıklar gökyüzü renginde | `ui/theme` |
+| 🏝️ | **Home** | Animated island scene, a sky that changes with the weather and time of day, temperature/precipitation/wind chart, 16-day strip. Tap HavaCan for tips drawn from the real forecast | `domain/insight` |
+| 🏃 | **Runner Mode** | A 0–100 running score for every hour (feels-like temperature, precipitation, wind, UV, daylight) and the best window | `RunningSuitabilityCalculator` |
+| 📅 | **My Plans and Plan B** | Shows the risk at the plan's time (rain, storm, snow, wind, heat, cold) and suggests a dry hour within ±4 hours. Imports calendar events | `PlanAdvisor` |
+| 🔔 | **Reminders and weather tracking** | Reminder before a plan; a notification if the weather turns bad or clears up (even while the app is closed) | WorkManager |
+| 👟 | **Plan a Run** | Best start times for the chosen day, target distance, duration wheel, "how long before the run" reminder | `RunSlotPlanner` |
+| 👥 | **Weather Meet** | Add friends and where they are coming from; the best time and place based on everyone's forecast, weather per person, Plan B; share the invite | `MeetPlanner` |
+| 👕 | **My Wardrobe and Shake for an Outfit** | Add clothes from the gallery or camera; colour is detected on the phone and AI suggests tags. Shake the phone for a weather-appropriate outfit. If a piece is missing, it shows the missing category instead of a fake outfit | `OutfitEngine` |
+| 💬 | **HavaCan Assistant** | Text and voice chat about weather, plans, outfits and running times; creates and edits plans (every change is read back and waits for confirmation) | `HavaCanAssistant` |
+| 🎙️ | **Voice guide** | Navigate the whole app by voice; with TalkBack on, TalkBack reads the replies. Draggable microphone button | `VoiceCommandParser` |
+| 📍 | **Choose location** | All 81 provinces and 973 districts of Turkey on the phone, searchable offline and insensitive to Turkish characters; Open-Meteo for places abroad; "my current location" finds the nearest real district | `PlaceDirectory` |
+| 👤 | **Profile** | °C/°F, activity and style preferences, notification preferences, accessibility, privacy and confirmed data deletion | `ProfileStore` |
+| 🌗 | **Theme** | Light and dark themes follow the phone setting; every header takes the colour of the sky | `ui/theme` |
 
-### Erişilebilirlik
+### Accessibility
 
-- Bütün dokunma alanları en az 48 dp, simgelerin anlamlı `contentDescription`'ı var; bilgi yalnızca renkle verilmez.
-- Profil'de **büyük yazı**, **yüksek kontrast** ve **animasyonları azalt**; Android'in animasyon ayarına da uyulur.
-- Sesli rehber ve TalkBack birlikte çalışır: konuşma bitmeden mikrofon açılmaz.
+- Every touch target is at least 48 dp, icons have meaningful `contentDescription`s, and information is never conveyed by colour alone.
+- **Large text**, **high contrast** and **reduce motion** in Profile; Android's animation setting is respected too.
+- The voice guide and TalkBack work together: the microphone does not open until speech has finished.
 
-## Mimari
+## Architecture
 
-İki Gradle modülü, dört katman. Ayrıntılar ve gerekçeler: **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**, kararlar: **[docs/adr/](docs/adr/)**.
+Two Gradle modules, four layers. Details and rationale (in Turkish): **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**, decisions: **[docs/adr/](docs/adr/)**.
 
 ```
-ui (Route → Screen)  →  ViewModel (StateFlow)  →  Repository (arayüz)  →  Retrofit · Room · dosya · SharedPreferences
+ui (Route → Screen)  →  ViewModel (StateFlow)  →  Repository (interface)  →  Retrofit · Room · file · SharedPreferences
         │                      │
-        └──── domain kuralları (saf Kotlin, birim testli) ◄────┘
+        └──── domain rules (pure Kotlin, unit tested) ◄────┘
 ```
 
-| Modül | İçinde | Kural |
+| Module | Contains | Rule |
 |---|---|---|
-| `:core:domain` | `model/` · `domain/` | Saf Kotlin/JVM. Android, Room ya da Compose importu **derlenmez** |
-| `:app` | `data/` · `di/` · `ui/` | Tek kurulum noktası `di/AppContainer`; ViewModel'ler yalnızca arayüzleri görür |
+| `:core:domain` | `model/` · `domain/` | Pure Kotlin/JVM. Android, Room or Compose imports **do not compile** |
+| `:app` | `data/` · `di/` · `ui/` | Single wiring point `di/AppContainer`; ViewModels only see interfaces |
 
-- **UI internete gitmez, ViewModel çizim yapmaz, repository ekranı bilmez.**
-- Her ağ isteği tek bir `LoadState<T>` (Loading · Success · Empty · Error) ile gösterilir; hata ViewModel'de `ErrorReason`'a çevrilir.
-- Ekranlar **Route + Screen** olarak ikiye ayrılır; Screen ViewModel tanımaz.
-- Gezinme **Navigation Compose** ile; sesli komutlar da aynı rotaları kullanır.
-- Global değişken durum yoktur: sıcaklık birimi ve ekran tercihleri profil akışından `CompositionLocal` ile gelir.
+- **The UI never touches the network, ViewModels never draw, repositories never know about screens.**
+- Every network request is exposed as a single `LoadState<T>` (Loading · Success · Empty · Error); errors are mapped to an `ErrorReason` in the ViewModel.
+- Screens are split into **Route + Screen**; a Screen does not know its ViewModel.
+- Navigation uses **Navigation Compose**; voice commands use the same routes.
+- No global mutable state: the temperature unit and display preferences come from the profile flow through a `CompositionLocal`.
 
 <details>
-<summary><b>Paket yapısı</b></summary>
+<summary><b>Package layout</b></summary>
 
 ```
 Weather/
-├── core/domain/                          :core:domain (saf Kotlin)
+├── core/domain/                          :core:domain (pure Kotlin)
 │   └── com.kampplus.havacan
 │       ├── model/                        City, Forecast, Plan, ClothingItem, MeetPerson, TemperatureUnit…
 │       └── domain/
-│           ├── plans/                    PlanAdvisor: risk ve Plan B
+│           ├── plans/                    PlanAdvisor: risk and Plan B
 │           ├── running/                  RunningSuitabilityCalculator, RunSlotPlanner
 │           ├── meet/                     MeetPlanner
 │           ├── wardrobe/                 OutfitEngine, ClothingColors, ColorDetector
@@ -95,35 +99,35 @@ Weather/
 │           └── voice/                    VoiceCommandParser, HavaCanAssistant
 └── app/                                  :app (Android)
     └── com.kampplus.havacan
-        ├── di/AppContainer.kt            tek kurulum noktası
-        ├── data/                         repository'ler, Retrofit, plan dosyası, profil, takvim, konum
-        │   └── wardrobe/                 Room varlıkları ve DAO, fotoğraf deposu, yapay zekâ istemcisi
+        ├── di/AppContainer.kt            single wiring point
+        ├── data/                         repositories, Retrofit, plan file, profile, calendar, location
+        │   └── wardrobe/                 Room entities and DAO, photo store, AI client
         └── ui/
             ├── navigation/               HavaRoutes
-            ├── common/                   LoadState, ErrorReason, gökyüzü başlığı, gün şeridi
-            ├── theme/                    açık/koyu palet, tipografi, DisplaySettings
+            ├── common/                   LoadState, ErrorReason, sky header, day strip
+            ├── theme/                    light/dark palette, typography, DisplaySettings
             └── home · plans · run · meet · wardrobe · chat · voice · city · profile
 ```
 
 </details>
 
-### Teknoloji
+### Tech stack
 
-| Alan | Kullanılan |
+| Area | Used |
 |---|---|
-| Dil ve UI | Kotlin 2.2, Jetpack Compose (BOM 2026.02), Material 3, Canvas ile çizilen sahne ve karakter |
-| Durum | ViewModel + `StateFlow`, Coroutines, `SavedStateHandle` |
-| Gezinme | Navigation Compose |
-| Ağ | Retrofit 3 + Gson, OkHttp |
-| Kalıcılık | Room (dolap), atomik JSON dosyası (planlar), SharedPreferences (tercihler) |
-| Arka plan | WorkManager (hatırlatma, 3 saatte bir hava takibi) |
-| Sistem | Photo Picker, kamera, `SpeechRecognizer`, `TextToSpeech`, takvim, konum, bildirimler |
-| Backend | Vercel'de küçük bir API (yapay zekâ anahtarını saklar) |
-| Kalite | ktlint (Spotless), JUnit, kotlinx-coroutines-test, GitHub Actions |
+| Language and UI | Kotlin 2.2, Jetpack Compose (BOM 2026.02), Material 3, scene and character drawn with Canvas |
+| State | ViewModel + `StateFlow`, Coroutines, `SavedStateHandle` |
+| Navigation | Navigation Compose |
+| Network | Retrofit 3 + Gson, OkHttp |
+| Persistence | Room (wardrobe), atomic JSON file (plans), SharedPreferences (preferences) |
+| Background | WorkManager (reminders, weather check every 3 hours) |
+| System | Photo Picker, camera, `SpeechRecognizer`, `TextToSpeech`, calendar, location, notifications |
+| Backend | A small API on Vercel (keeps the AI key) |
+| Quality | ktlint (Spotless), JUnit, kotlinx-coroutines-test, GitHub Actions |
 
-## Çalıştırma
+## Running
 
-**Gereksinimler:** Android Studio (güncel), JDK 21 veya üzeri, Android SDK 37. Uygulama Android 7.0 (API 24) ve üzerinde çalışır.
+**Requirements:** Android Studio (current), JDK 21 or newer, Android SDK 37. The app runs on Android 7.0 (API 24) and above.
 
 ```bash
 git clone https://github.com/bushushow/HavaCan.git
@@ -131,103 +135,103 @@ cd HavaCan/Weather
 ./gradlew assembleDebug        # debug APK: app/build/outputs/apk/debug/
 ```
 
-Android Studio'da `Weather/` klasörünü açıp **Run** ile de kurabilirsiniz.
+You can also open the `Weather/` folder in Android Studio and install with **Run**.
 
-**Yapay zekâ özellikleri (isteğe bağlı).** Kıyafet etiketi önerisi ve serbest sohbet için backend adresi gerekir. Adres olmadan uygulama eksiksiz çalışır: renk telefonda bulunur, etiketler elle girilir, sohbet kurala dayalı yanıt verir.
+**AI features (optional).** Clothing tag suggestions and free-form chat need a backend URL. Without it the app still works fully: colour is detected on the phone, tags are entered by hand and the chat answers with rule-based replies.
 
 ```properties
-# Weather/local.properties  (Git'e girmez)
-HAVACAN_API_URL=https://<backend-adresiniz>
+# Weather/local.properties  (not committed)
+HAVACAN_API_URL=https://<your-backend-url>
 ```
 
-Kendi backend'inizi kurmak için: [backend/havacan-api/README.md](backend/havacan-api/README.md).
+To set up your own backend: [backend/havacan-api/README.md](backend/havacan-api/README.md).
 
-**Emülatörde ses.** Sesli rehber için Extended controls → Microphone → *Enable Host Microphone Access* açılmalı ve Türkçe konuşma tanıma paketi yüklü olmalı (Settings → System → Languages → Speech).
+**Voice on the emulator.** For the voice guide, turn on Extended controls → Microphone → *Enable Host Microphone Access* and install the Turkish speech recognition pack (Settings → System → Languages → Speech).
 
-## Testler
+## Tests
 
 ```bash
 cd Weather
 ./gradlew spotlessCheck :core:domain:test testDebugUnitTest assembleDebug
 ```
 
-**158 birim testi** (80'i `:core:domain`'de, 78'i `:app`'te) ve cihazda çalışan Room testi:
+**158 unit tests** (80 in `:core:domain`, 78 in `:app`) plus an on-device Room test:
 
-| Alan | Testler | Neyi korur |
+| Area | Tests | What they protect |
 |---|---|---|
-| Kurallar | `PlanAdvisorTest`, `RunningSuitabilityCalculatorTest`, `RunSlotPlannerTest`, `MeetPlannerTest`, `OutfitEngineTest` | Risk eşikleri, koşu puanı, saat önerisi, buluşma sıralaması, yalnızca gerçek kıyafetlerden kombin |
-| Asistan | `VoiceCommandParserTest`, `HavaCanAssistantTest` | Türkçe komutlar, onaysız değişiklik olmaması, internetsiz davranış |
-| Veri | `ForecastMapperTest`, `CitySearchResponseTest`, `PlanStoreTest`, `PlaceDirectoryTest`, `TurkishProvincesTest`, `WardrobeDataTest`, `BackendAssistantTest` | JSON eşleme, sütun→satır çevrimi, atomik dosya yazımı, il/ilçe araması, yapay zekâ yanıtının doğrulanması |
-| ViewModel | `HomeViewModelTest`, `PlansViewModelTest`, `RunPlannerViewModelTest`, `LocationPickerViewModelTest`, `VoiceGuideControllerTest` | Dört durum, "Tekrar dene", internetsiz kayıt, çift dokunmada tek kayıt, kalıcılık |
-| Arayüz mantığı | `ForecastCardTest`, `HomeLogicTest`, `HavaCanTipsTest`, `HavaRoutesTest`, `UnitsTest` | Grafik verisi, ipuçları, rota tablosu, °C/°F |
-| Cihazda | `WardrobeDaoTest` | Room'a yazılanın aynen geri okunması |
+| Rules | `PlanAdvisorTest`, `RunningSuitabilityCalculatorTest`, `RunSlotPlannerTest`, `MeetPlannerTest`, `OutfitEngineTest` | Risk thresholds, running score, time suggestions, meeting ranking, outfits only from real clothes |
+| Assistant | `VoiceCommandParserTest`, `HavaCanAssistantTest` | Turkish commands, no change without confirmation, offline behaviour |
+| Data | `ForecastMapperTest`, `CitySearchResponseTest`, `PlanStoreTest`, `PlaceDirectoryTest`, `TurkishProvincesTest`, `WardrobeDataTest`, `BackendAssistantTest` | JSON mapping, column→row conversion, atomic file writes, province/district search, validation of AI replies |
+| ViewModel | `HomeViewModelTest`, `PlansViewModelTest`, `RunPlannerViewModelTest`, `LocationPickerViewModelTest`, `VoiceGuideControllerTest` | The four states, "Try again", offline saving, one save on a double tap, persistence |
+| UI logic | `ForecastCardTest`, `HomeLogicTest`, `HavaCanTipsTest`, `HavaRoutesTest`, `UnitsTest` | Chart data, tips, route table, °C/°F |
+| On device | `WardrobeDaoTest` | What is written to Room reads back unchanged |
 
-Testler ağı sahte `ForecastApi`/`CityApi` ile taklit eder; ortak yardımcılar `app/src/test/.../testing/` altında (`MainDispatcherRule`, `FakeLocationStore`, `RecordingScheduler`).
+Tests fake the network with stub `ForecastApi`/`CityApi`; shared helpers live under `app/src/test/.../testing/` (`MainDispatcherRule`, `FakeLocationStore`, `RecordingScheduler`).
 
-## Kalite kapıları
+## Quality gates
 
-- **CI:** Her push ve PR'da [`.github/workflows/android.yml`](.github/workflows/android.yml): biçim kontrolü, iki modülün testleri, derleme ve backend sözdizimi.
-- **Kod stili:** ktlint (Spotless), Kamp+ temel reposuyla aynı `.editorconfig`.
-- **PR şablonu:** katman kuralları, durumlar, erişilebilirlik ve gizli anahtar kontrol listesi ([`.github/pull_request_template.md`](.github/pull_request_template.md)).
-- **Commit'ler:** Conventional Commits; her commit neyin nasıl doğrulandığını yazar ([docs/GIT-HISTORY.md](docs/GIT-HISTORY.md)).
+- **CI:** [`.github/workflows/android.yml`](.github/workflows/android.yml) on every push and PR: format check, tests for both modules, build and backend syntax check.
+- **Code style:** ktlint (Spotless), same `.editorconfig` as the Kamp+ base repository.
+- **PR template:** checklist for layer rules, states, accessibility and secrets ([`.github/pull_request_template.md`](.github/pull_request_template.md)).
+- **Commits:** Conventional Commits; each commit says what was verified and how ([docs/GIT-HISTORY.md](docs/GIT-HISTORY.md)).
 
-## Veri kaynakları ve gizlilik
+## Data sources and privacy
 
-| Kaynak | Kullanım | Lisans |
+| Source | Used for | License |
 |---|---|---|
-| [Open-Meteo Forecast](https://open-meteo.com/) | Anlık, 16 günlük saatlik ve günlük tahmin (`timezone=auto`) | CC BY 4.0 |
-| [Open-Meteo Geocoding](https://open-meteo.com/en/docs/geocoding-api) | Yurt dışı yer araması | CC BY 4.0 |
-| [GeoNames](https://www.geonames.org/) | 81 il ve 973 ilçenin listesi ve eksik koordinatlar | CC BY 4.0 |
-| OpenRouter (backend üzerinden) | Kıyafet fotoğrafı etiketi, serbest sohbet | — |
+| [Open-Meteo Forecast](https://open-meteo.com/) | Current, 16-day hourly and daily forecast (`timezone=auto`) | CC BY 4.0 |
+| [Open-Meteo Geocoding](https://open-meteo.com/en/docs/geocoding-api) | Searching places abroad | CC BY 4.0 |
+| [GeoNames](https://www.geonames.org/) | List of the 81 provinces and 973 districts, and missing coordinates | CC BY 4.0 |
+| OpenRouter (through the backend) | Clothing photo tags, free-form chat | — |
 
-Ayrıntı ve verinin yeniden üretilmesi: [docs/data-sources.md](docs/data-sources.md).
+Details and how to regenerate the data: [docs/data-sources.md](docs/data-sources.md).
 
-**Gizlilik ve güvenlik**
+**Privacy and security**
 
-- **API anahtarı APK'da ve Git geçmişinde yoktur;** yalnızca backend'in ortam sırrındadır ([ADR-0003](docs/adr/0003-backend-for-secrets.md)).
-- Kıyafet fotoğrafları uygulamanın özel klasöründe kalır. Backend kuruluysa, fotoğraf eklendiğinde etiket önerisi için 512 piksele küçültülmüş bir kopya backend'e gider; backend yoksa fotoğraf telefondan çıkmaz.
-- Plan, kıyafet ve tercihler yalnızca telefonda tutulur; Profil'den onaylı olarak silinebilir.
+- **The API key is not in the APK or the Git history;** it lives only in the backend's environment secrets ([ADR-0003](docs/adr/0003-backend-for-secrets.md)).
+- Clothing photos stay in the app's private folder. If a backend is configured, a copy scaled down to 512 pixels is sent to it for tag suggestions when a photo is added; without a backend, photos never leave the phone.
+- Plans, clothes and preferences are stored only on the phone and can be deleted from Profile after confirmation.
 
-| İzin | Ne zaman istenir | Neden |
+| Permission | When it is requested | Why |
 |---|---|---|
-| İnternet | Kurulumda | Hava tahmini |
-| Bildirim | İlk plan kaydında | Hatırlatma ve hava uyarısı |
-| Takvim (okuma) | "Takvimi bağla"ya dokununca | Etkinlikleri plan olarak almak |
-| Mikrofon | İlk sesli komutta, açıklamadan sonra | Sesli rehber |
-| Yaklaşık konum | "Mevcut konumumu kullan"a dokununca | En yakın ilçeyi bulmak |
+| Internet | At install | Weather forecast |
+| Notifications | When the first plan is saved | Reminders and weather alerts |
+| Calendar (read) | On tapping "Connect calendar" | Importing events as plans |
+| Microphone | On the first voice command, after an explanation | Voice guide |
+| Approximate location | On tapping "Use my current location" | Finding the nearest district |
 
-## Kamp+ uygulamaları
+## Kamp+ assignments
 
-Zorunlu uygulamaların teslim anları etiketlidir; kanıtlar (ekran görüntüleri, Logcat) `docs/kamp/` altında.
+The submission point of each required assignment is tagged; evidence (screenshots, Logcat) is under `docs/kamp/`.
 
-| Etiket | Görev | Kanıt |
+| Tag | Assignment | Evidence |
 |---|---|---|
-| `kamp-uygulama-2` | "Merhaba Kamp!", şehir kartları, `LazyColumn`, tıklama kaydı | [docs/kamp/uygulama-2](docs/kamp/uygulama-2/README.md) |
-| `kamp-uygulama-3` | Arama, `remember` / `rememberSaveable`, filtre, boş durum | [docs/kamp/uygulama-3](docs/kamp/uygulama-3/README.md) |
-| `kamp-uygulama-4` | Retrofit ile Open-Meteo arama, ViewModel, dört durum | [docs/kamp/uygulama-4](docs/kamp/uygulama-4/README.md) |
+| `kamp-uygulama-2` | "Merhaba Kamp!", city cards, `LazyColumn`, click logging | [docs/kamp/uygulama-2](docs/kamp/uygulama-2/README.md) |
+| `kamp-uygulama-3` | Search, `remember` / `rememberSaveable`, filter, empty state | [docs/kamp/uygulama-3](docs/kamp/uygulama-3/README.md) |
+| `kamp-uygulama-4` | Open-Meteo search with Retrofit, ViewModel, the four states | [docs/kamp/uygulama-4](docs/kamp/uygulama-4/README.md) |
 
-Diğer etiketler: `pre-architecture-final` (mimari düzenlemeden önceki son hal).
+Other tags: `pre-architecture-final` (the last state before the architecture refactor).
 
-## Depo yapısı
+## Repository layout
 
 ```
 HavaCan/
-├── Weather/            Android projesi (:app, :core:domain)
-├── backend/havacan-api Yapay zekâ anahtarını saklayan küçük API (Vercel; Cloudflare girişi de var)
-├── docs/               Mimari, ADR'ler, Git stratejisi, veri kaynakları, Kamp+ kanıtları, tasarım taslakları
-├── tools/places/       İl ve ilçe verisini GeoNames'ten üreten betikler
-└── .github/            CI ve PR şablonu
+├── Weather/            Android project (:app, :core:domain)
+├── backend/havacan-api Small API that keeps the AI key (Vercel; a Cloudflare entry point too)
+├── docs/               Architecture, ADRs, Git strategy, data sources, Kamp+ evidence, design drafts
+├── tools/places/       Scripts that generate the province and district data from GeoNames
+└── .github/            CI and PR template
 ```
 
-## Bilinen sınırlar
+## Known limitations
 
-- WorkManager kesin saatli değildir; pil tasarrufunda hatırlatma birkaç dakika gecikebilir.
-- Tahmin önbelleği yalnızca bellekte (10 dk); internet yokken eski tahmin gösterilmez, hata gösterilir.
-- Weather Meet'te katılımcılar uygulama içinde oy vermez (hesap ve sunucu gerektirir); öneri paylaşılan davetle iletilir.
-- HavaCan karakteri ve sahneler Canvas çizimidir; gerçek 3D asset'ler ve uygulama simgesi henüz yok ([docs/havacan-assets.md](docs/havacan-assets.md)).
-- Veri kaynaklarının uygulama içi tam atıf sayfası (Profil › Hakkında) henüz yok; atıflar bu README'de ve `docs/data-sources.md`'de.
-- `applicationId` demo cihazındaki verileri korumak için şimdilik `com.example.weather`; kod paketi `com.kampplus.havacan`.
+- WorkManager is not exact; in battery saver a reminder can be a few minutes late.
+- The forecast cache is in memory only (10 min); with no internet an old forecast is not shown, an error is.
+- In Weather Meet, participants do not vote inside the app (that would need accounts and a server); the suggestion is passed on through a shared invite.
+- The HavaCan character and scenes are Canvas drawings; real 3D assets and an app icon do not exist yet ([docs/havacan-assets.md](docs/havacan-assets.md)).
+- There is no full in-app attribution page for the data sources yet (Profile › About); attributions are in this README and in `docs/data-sources.md`.
+- `applicationId` is still `com.example.weather` to keep the data on the demo device; the code package is `com.kampplus.havacan`.
 
-## Lisanslar
+## Licenses
 
-Veri kaynaklarının lisansları yukarıda. Nunito yazı tipi SIL Open Font License 1.1 ile kullanılır ([docs/licenses/Nunito-OFL.txt](docs/licenses/Nunito-OFL.txt)).
+Data source licenses are listed above. The Nunito font is used under the SIL Open Font License 1.1 ([docs/licenses/Nunito-OFL.txt](docs/licenses/Nunito-OFL.txt)).
