@@ -8,7 +8,7 @@ Turkcell Akademi × Gençlik ve Spor Bakanlığı **Kamp+** Android programında
 
 🥈 **Kamp+ proje yarışmasında 2. oldu.**
 
-[![Android CI](https://github.com/bushushow/turkcell_camp/actions/workflows/android.yml/badge.svg)](https://github.com/bushushow/turkcell_camp/actions/workflows/android.yml)
+[![Android CI](https://github.com/bushushow/HavaCan/actions/workflows/android.yml/badge.svg)](https://github.com/bushushow/HavaCan/actions/workflows/android.yml)
 ![Kotlin](https://img.shields.io/badge/Kotlin-2.2-7F52FF?logo=kotlin&logoColor=white)
 ![Jetpack Compose](https://img.shields.io/badge/Jetpack%20Compose-Material%203-4285F4?logo=jetpackcompose&logoColor=white)
 ![minSdk](https://img.shields.io/badge/minSdk-24-3DDC84?logo=android&logoColor=white)
@@ -126,8 +126,8 @@ Weather/
 **Gereksinimler:** Android Studio (güncel), JDK 21 veya üzeri, Android SDK 37. Uygulama Android 7.0 (API 24) ve üzerinde çalışır.
 
 ```bash
-git clone https://github.com/bushushow/turkcell_camp.git
-cd turkcell_camp/Weather
+git clone https://github.com/bushushow/HavaCan.git
+cd HavaCan/Weather
 ./gradlew assembleDebug        # debug APK: app/build/outputs/apk/debug/
 ```
 
@@ -211,7 +211,7 @@ Diğer etiketler: `pre-architecture-final` (mimari düzenlemeden önceki son hal
 ## Depo yapısı
 
 ```
-turkcell_camp/
+HavaCan/
 ├── Weather/            Android projesi (:app, :core:domain)
 ├── backend/havacan-api Yapay zekâ anahtarını saklayan küçük API (Vercel; Cloudflare girişi de var)
 ├── docs/               Mimari, ADR'ler, Git stratejisi, veri kaynakları, Kamp+ kanıtları, tasarım taslakları

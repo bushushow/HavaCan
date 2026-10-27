@@ -25,7 +25,7 @@ Bu dosya, işi yeni bir oturumda (başka bir Claude hesabında) devralacak asist
 
 ## 3. Konumlar ve araçlar
 
-- Git deposu: `C:\Users\bsroz\turkcell_camp` (remote `https://github.com/bushushow/turkcell_camp.git`, dal `main`).
+- Git deposu: `C:\Users\bsroz\turkcell_camp` (remote `https://github.com/bushushow/HavaCan.git`, dal `main`).
 - Android projesi: `C:\Users\bsroz\turkcell_camp\Weather`. Kod paketi **`com.kampplus.havacan`** (`Weather/app/src/main/java/com/kampplus/havacan`). `applicationId` bilerek hâlâ `com.example.weather`: emülatördeki demo verileri kaybolmasın diye; demodan sonra değiştirilebilir (`app/build.gradle.kts` içinde not var).
 - Backend: `backend/havacan-api` (mantık `src/app.js`; Vercel girişi `api/index.js`, Cloudflare girişi `src/index.js`).
 - Temel (referans) repo: `C:\Users\bsroz\StudioProjects\weather-app` (github.com/tc-yusufburakdemir/weather-app).
