@@ -4,7 +4,9 @@
 
 **Havaya göre gününü planlayan, konuşan ve oyunlaştırılmış kişisel hava asistanı**
 
-Turkcell × Gençlik ve Spor Bakanlığı **Kamp+** Android programı için geliştirildi.
+Turkcell Akademi × Gençlik ve Spor Bakanlığı **Kamp+** Android programında geliştirildi.
+
+🥈 **Kamp+ proje yarışmasında 2. oldu.**
 
 [![Android CI](https://github.com/bushushow/turkcell_camp/actions/workflows/android.yml/badge.svg)](https://github.com/bushushow/turkcell_camp/actions/workflows/android.yml)
 ![Kotlin](https://img.shields.io/badge/Kotlin-2.2-7F52FF?logo=kotlin&logoColor=white)
